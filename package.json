@@ -1,0 +1,36 @@
+{
+  "name": "@rosh100yx/outlier",
+  "version": "0.1.0",
+  "description": "A governance framework and local telemetry tool for AI carbon footprint and authorship erosion.",
+  "bin": {
+    "outlier": "./bin/outlier"
+  },
+  "scripts": {
+    "test": "bun test",
+    "start": "bun run src/cli.ts",
+    "build": "bun build ./src/cli.ts --compile --outfile outlier"
+  },
+  "type": "module",
+  "private": false,
+  "author": "Roshan Abraham",
+  "license": "MIT",
+  "keywords": [
+    "ai",
+    "governance",
+    "carbon",
+    "telemetry",
+    "authorship",
+    "cli"
+  ],
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.6.0",
+    "commander": "^15.0.0",
+    "picocolors": "^1.1.1"
+  }
+}
