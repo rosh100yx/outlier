@@ -97,6 +97,14 @@ No. `outlier` is a zero-trust, local-first engine. It parses `git log` and local
 **Can I run this in CI/CD like GitHub Actions?**  
 Yes. Use the `--strict` flag (`npx github:rosh100yx/outlier audit --strict`) to return standard zero-exit-code parsing for headless CI environments.
 
+## Who is this for?
+
+If you hold one of these roles, `outlier` was built specifically for you. Please help us improve the framework by running an audit and sharing your terminal screenshot on X.com or your favorite developer community!
+
+- **Engineering Managers & CTOs:** Stop flying blind. Measure true AI adoption, enforce zero-trust security on your IP, and cut your API token bloat.
+- **Principal & Staff Engineers:** Protect the craft. Use the Bouncer hook to enforce architectural standards and prevent your team from deskilling.
+- **Developers & "Vibe Coders":** Prove your mastery. Run the audit, check your vibe, and post your "Artisan" or "Centaur" terminal status to the community.
+
 ## Contributing
 We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) to get started. Great first issues include adding new regional grid factors to `data/grid-factors.json` or writing custom CI/CD pipeline integrations.
 
