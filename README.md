@@ -1,10 +1,10 @@
 <div align="center">
   <h1>outlier</h1>
-  <p><b>The Anti-Deskilling Engine for AI Engineering</b></p>
+  <p><b>The Governance Framework for AI Engineering</b></p>
   <p><i>Measure AI adoption. Enforce Zero-Trust. Protect Human Mastery.</i></p>
 </div>
 
-`outlier` is a local-first framework to measure real AI adoption and usage. It acts as a strict orchestration gate to cut token waste, block hallucinated code, and serve as an anti-deskilling engine for your engineering team—all without a single byte leaving your terminal.
+`outlier` is a local-first framework to measure real AI adoption and usage. It acts as a strict orchestration gate to cut token waste, block hallucinated code, and serve as an anti-deskilling engine for when you are building in a room full of agents—all without a single byte leaving your terminal.
 
 ```text
 ┌   outlier 
