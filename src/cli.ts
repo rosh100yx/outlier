@@ -93,8 +93,16 @@ Conservative Floor: ${color(nmPct + '%')}`,
         let authPct = '0%';
         let ruleFailures = 0;
         let authWarning = '';
+        let wittyRemark = 'No git history 😿';
+        
         if (gitStats) {
           authPct = `${(gitStats.ratio * 100).toFixed(1)}%`;
+          
+          if (gitStats.ratio < 0.1) wittyRemark = 'Artisan, hand-crafted code. Very 2019 of you 😸';
+          else if (gitStats.ratio < 0.6) wittyRemark = 'A true centaur. Half human, half matrix 😼';
+          else if (gitStats.ratio < 0.95) wittyRemark = 'Did you write any of this, or are you just the manager now? 🙀';
+          else wittyRemark = 'You are officially a spectator in your own repository 😾';
+
           if (gitStats.ratio > 0.7) {
             authWarning = pc.red(`⚠ Mentoring Emergency: ${authPct} AI-generated. High risk of skill atrophy.`);
             ruleFailures++;
@@ -113,14 +121,15 @@ Conservative Floor: ${color(nmPct + '%')}`,
         }
 
         note(
-          `${pc.dim('[1] Capability Engine')} ${pc.cyan('▰▰▰▰▰▰▱▱▱▱')}  ${pc.bold('Active')}
+          `🕵️😼 ${pc.dim('[1] Capability Engine')} ${pc.cyan('▰▰▰▰▰▰▱▱▱▱')}  ${pc.bold('Active')}
     status: ${pc.green('✓ Configured')}
-${pc.dim('[2] AI Code Reliance')} ${pc.yellow('▰▰▰▰▰▰▰▰▱▱')}  ${pc.bold(`${authPct} Reliance`)}
-    gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Human Mastery Sustained') : `${pc.red('⚠ Deskilling Risk Detected')} ${pc.red('⚠ Security Audit Required')}`}
-${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
+🧠😸 ${pc.dim('[2] AI Code Reliance')} ${pc.yellow('▰▰▰▰▰▰▰▰▱▱')}  ${pc.bold(`${authPct} Reliance`)}
+    vibe: ${pc.italic(wittyRemark)}
+    gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Human Mastery Sustained') : `${pc.red('😾 Deskilling Risk Detected')} ${pc.red('⚠ Security Audit Required')}`}
+💸🙀 ${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
     waste: ${pc.yellow(`⚠ ${cachePct}% of tokens are redundant context reads`)}
-${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`⚠ ${ruleFailures + 1} policy failures`) : pc.green('✓ All clear')}`,
-          `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green('✓ safe surface')} • Local CI`
+${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`😾 ${ruleFailures + 1} policy failures`) : pc.green('😸 All clear')}`,
+          `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green('😸 safe surface')} • Local CI`
         );
       }
     } catch (e: any) {
@@ -194,13 +203,13 @@ echo "[outlier] Checking governance policy..."
 TOTAL=$(git log --oneline | wc -l | tr -d ' ')
 AI=$(git log -i --grep='Co-Authored-By' --oneline | wc -l | tr -d ' ')
 if [ "$TOTAL" -eq 0 ]; then exit 0; fi
-RATIO=$(awk "BEGIN {print ($AI / $TOTAL) * 100}")
-MAX=${maxAuthorship}
+CURRENT_RATIO=$(awk "BEGIN {print ($AI / $TOTAL) * 100}")
+MAX_RATIO=${maxAuthorship}
 
-if awk "BEGIN {exit !($RATIO > $MAX)}"; then
-  echo "❌ Governance Violation: AI Authorship is $RATIO%, exceeding the $MAX% limit."
-  echo "Please commit manually or drop the Co-Authored-By trailer if this was a human rewrite."
-  exit 1
+if [ "$(echo "$CURRENT_RATIO > $MAX_RATIO" | bc -l)" -eq 1 ]; then
+    echo "😾 ✋ The Bouncer says no: Your code is $CURRENT_RATIO% AI-generated."
+    echo "A human must review this before it enters the club (main branch)."
+    exit 1
 fi
 echo "✅ Governance Policy OK"
 `;
