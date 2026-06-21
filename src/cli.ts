@@ -122,10 +122,12 @@ Conservative Floor: ${color(nmPct + '%')}`,
         }
         
         let cachePct = '0';
+        let co2Str = '0.0kg';
         if (carbon) {
           if (carbon.totalTokens > 0) {
             cachePct = ((carbon.cacheReadTokens / carbon.totalTokens) * 100).toFixed(1);
           }
+          co2Str = `${carbon.co2KgVietnam.toFixed(2)}kg CO2`;
         }
 
         const vibeRow = !isStrict ? `\n    vibe: ${pc.italic(wittyRemark)}` : '';
@@ -142,8 +144,9 @@ ${authIcon}${pc.dim('[2] AI Code Reliance')} ${pc.yellow('▰▰▰▰▰▰▰�
     gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Human Mastery Sustained') : `${pc.red(`${failIcon} Deskilling Risk Detected`)} ${pc.red('⚠ Security Audit Required')}`}${mentorString}
 ${costIcon}${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
     waste: ${pc.yellow(`⚠ ${cachePct}% of tokens are redundant context reads`)}
+    carbon: ${pc.green(`✓ ${co2Str} (Grid-weighted estimate)`)}
 ${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`${failIcon} ${ruleFailures + 1} policy failures`) : pc.green(`${passIcon} All clear`)}`,
-          `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green(`${passIcon} safe surface`)} • Local CI`
+          `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green(`${passIcon} safe surface`)} • ${co2Str}`
         );
       }
     } catch (e: any) {
