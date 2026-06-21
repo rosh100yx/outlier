@@ -13,43 +13,56 @@ export interface CarbonStats {
   sessions: number;
 }
 
-export async function getCarbonStats(): Promise<CarbonStats> {
-  const logPath = join(homedir(), '.claude', 'tokenomics-log.jsonl');
-  const logFile = file(logPath);
-  
-  if (!(await logFile.exists())) {
-    throw new Error(`No tokenomics log found at ${logPath}`);
-  }
+export interface TokenLogParser {
+  parse(): Promise<{ total: number, output: number, cache: number, sessions: number }>;
+}
 
-  const text = await logFile.text();
-  const lines = text.trim().split('\n').filter(l => l.length > 0);
-  
-  let totalTokens = 0;
-  let outputTokens = 0;
-  let cacheReadTokens = 0;
-  const sessions = new Set<string>();
+class ClaudeLogParser implements TokenLogParser {
+  async parse() {
+    const logPath = join(homedir(), '.claude', 'tokenomics-log.jsonl');
+    const logFile = file(logPath);
+    if (!(await logFile.exists())) return { total: 0, output: 0, cache: 0, sessions: 0 };
 
-  for (const line of lines) {
-    try {
-      const data = JSON.parse(line);
-      totalTokens += data.total_tokens || 0;
-      outputTokens += data.output_tokens || 0;
-      cacheReadTokens += data.cache_read || 0;
-      if (data.session_id) {
-        sessions.add(data.session_id);
-      }
-    } catch (e) {
-      // skip invalid lines
+    const text = await logFile.text();
+    const lines = text.trim().split('\n').filter(l => l.length > 0);
+    
+    let total = 0, output = 0, cache = 0;
+    const sessions = new Set<string>();
+
+    for (const line of lines) {
+      try {
+        const data = JSON.parse(line);
+        total += data.total_tokens || 0;
+        output += data.output_tokens || 0;
+        cache += data.cache_read || 0;
+        if (data.session_id) sessions.add(data.session_id);
+      } catch (e) {}
     }
+    return { total, output, cache, sessions: sessions.size };
+  }
+}
+
+class CursorLogParser implements TokenLogParser {
+  async parse() {
+    // Stub for future Cursor sqlite/json parsing
+    return { total: 0, output: 0, cache: 0, sessions: 0 };
+  }
+}
+
+export async function getCarbonStats(): Promise<CarbonStats> {
+  const parsers: TokenLogParser[] = [new ClaudeLogParser(), new CursorLogParser()];
+  
+  let totalTokens = 0, outputTokens = 0, cacheReadTokens = 0, sessions = 0;
+
+  for (const parser of parsers) {
+    const stats = await parser.parse();
+    totalTokens += stats.total;
+    outputTokens += stats.output;
+    cacheReadTokens += stats.cache;
+    sessions += stats.sessions;
   }
 
-  // Energy estimate: 10 kWh per 15.1M output tokens (from paper)
-  // ≈ 0.662 kWh per million output tokens
   const energyKwh = (outputTokens / 1_000_000) * 0.662;
-
-  // Grid intensities
-  const VIETNAM_GRID_G_KWH = 681;
-  const FRANCE_GRID_G_KWH = 21.7;
 
   return {
     totalTokens,
@@ -58,6 +71,6 @@ export async function getCarbonStats(): Promise<CarbonStats> {
     energyKwh,
     co2KgVietnam: (energyKwh * gridFactors.vietnam) / 1000,
     co2KgFrance: (energyKwh * gridFactors.france) / 1000,
-    sessions: sessions.size
+    sessions
   };
 }

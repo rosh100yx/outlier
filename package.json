@@ -1,7 +1,7 @@
 {
   "name": "@rosh100yx/outlier",
-  "version": "0.1.0",
-  "description": "A governance framework and local telemetry tool for AI carbon footprint and authorship erosion.",
+  "version": "0.2.1",
+  "description": "AI Code Governance & Capability Auditing for the Terminal. Measures AI reliance, context waste, and enforces local CI/CD policies.",
   "bin": {
     "outlier": "./bin/outlier"
   },

@@ -5,6 +5,22 @@
 
 `outlier` is a local-first, zero-cloud CI/CD tool that audits your repository for AI Code Reliance, Hallucination Risk, and Cache Context Waste. It acts as a strict governance gate for AI-generated code.
 
+```text
+┌   outlier 
+│
+◇  [outlier] 4/5 policies • ✓ safe surface • Local CI ───────╮
+│                                                            │
+│  [1] Capability Engine ▰▰▰▰▰▰▱▱▱▱  Active                  │
+│      status: ✓ Configured                                  │
+│  [2] AI Code Reliance ▰▰▰▰▰▰▰▰▱▱  20.0% Reliance           │
+│      gate: ✓ Hallucination Risk Low                        │
+│  [3] Tokenomics & Cost ▰▰▰▰▰▰▰▰▰▱ 96.5% Cache Bloat        │
+│      waste: ⚠ 96.5% of tokens are redundant context reads  │
+│  Governance: ✓ All clear                                   │
+│                                                            │
+├────────────────────────────────────────────────────────────╯
+```
+
 ## The Problem
 When developers rely heavily on AI agents to write code, two invisible risks enter the codebase:
 1. **Code Durability & Hallucination Risk:** High AI reliance means lower human mastery. Codebases that are >70% AI-generated face severe maintenance and security risks.
