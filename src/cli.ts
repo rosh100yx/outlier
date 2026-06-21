@@ -3,6 +3,8 @@ import pc from 'picocolors';
 import { getAuthorshipStats } from './git';
 import { getCarbonStats } from './carbon';
 import { getCapabilitiesStats } from './capabilities';
+import { writeFileSync, chmodSync, existsSync } from 'fs';
+import { join } from 'path';
 
 async function main() {
   console.clear();
@@ -97,9 +99,13 @@ Conservative Floor: ${color(nmPct + '%')}`,
         
         let co2Kg = '0.0';
         let sessions = 0;
+        let cachePct = '0';
         if (carbon) {
           co2Kg = carbon.co2KgVietnam.toFixed(1);
           sessions = carbon.sessions;
+          if (carbon.totalTokens > 0) {
+            cachePct = ((carbon.cacheReadTokens / carbon.totalTokens) * 100).toFixed(1);
+          }
         }
 
         note(
@@ -107,6 +113,8 @@ Conservative Floor: ${color(nmPct + '%')}`,
     rules: ${pc.green('✓ ✓ ✓')}
 ${pc.dim('[2] Version control (git)')} ${pc.yellow('▰▰▰▰▰▰▰▰▱▱')}  ${pc.bold('Parsed')}
     rules: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ ✓ ✓') : `${pc.green('✓')} ${pc.red('⚠ authorship')} ${pc.red('⚠ skill')}`}
+${pc.dim('[3] Tokenomics & Cache Waste')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
+    waste: ${pc.yellow(`⚠ ${cachePct}% of tokens are context cache reads`)}
 ${pc.bold('Aggregate:')} Authorship ${authPct} | CO2 ${co2Kg}kg | ${ruleFailures > 0 ? pc.red(`⚠ ${ruleFailures + 1} rule failures`) : pc.green('✓ All clear')}`,
           `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 rules • ${authWarning || pc.green('✓ healthy')} • CO2 ${co2Kg}kg\noutlier: ${sessions} sessions`
         );
@@ -173,6 +181,29 @@ ${caps.skills.length > 5 ? pc.red('⚠ High Surface Area: Ensure strict authorsh
       }
 
       s.start(`Applying ${tier} policy guardrails...`);
+      
+      const gitDir = join(process.cwd(), '.git');
+      if (existsSync(gitDir)) {
+        const hookPath = join(gitDir, 'hooks', 'pre-commit');
+        const hookScript = `#!/bin/sh
+echo "[outlier] Checking governance policy..."
+TOTAL=$(git log --oneline | wc -l | tr -d ' ')
+AI=$(git log -i --grep='Co-Authored-By' --oneline | wc -l | tr -d ' ')
+if [ "$TOTAL" -eq 0 ]; then exit 0; fi
+RATIO=$(awk "BEGIN {print ($AI / $TOTAL) * 100}")
+MAX=${maxAuthorship}
+
+if awk "BEGIN {exit !($RATIO > $MAX)}"; then
+  echo "❌ Governance Violation: AI Authorship is $RATIO%, exceeding the $MAX% limit."
+  echo "Please commit manually or drop the Co-Authored-By trailer if this was a human rewrite."
+  exit 1
+fi
+echo "✅ Governance Policy OK"
+`;
+        writeFileSync(hookPath, hookScript);
+        chmodSync(hookPath, '755');
+      }
+
       await new Promise(resolve => setTimeout(resolve, 800));
       s.stop('Policy Applied');
 

@@ -5,6 +5,7 @@ import { join } from 'path';
 export interface CarbonStats {
   totalTokens: number;
   outputTokens: number;
+  cacheReadTokens: number;
   energyKwh: number;
   co2KgVietnam: number;
   co2KgFrance: number;
@@ -24,6 +25,7 @@ export async function getCarbonStats(): Promise<CarbonStats> {
   
   let totalTokens = 0;
   let outputTokens = 0;
+  let cacheReadTokens = 0;
   const sessions = new Set<string>();
 
   for (const line of lines) {
@@ -31,6 +33,7 @@ export async function getCarbonStats(): Promise<CarbonStats> {
       const data = JSON.parse(line);
       totalTokens += data.total_tokens || 0;
       outputTokens += data.output_tokens || 0;
+      cacheReadTokens += data.cache_read || 0;
       if (data.session_id) {
         sessions.add(data.session_id);
       }
@@ -50,6 +53,7 @@ export async function getCarbonStats(): Promise<CarbonStats> {
   return {
     totalTokens,
     outputTokens,
+    cacheReadTokens,
     energyKwh,
     co2KgVietnam: (energyKwh * VIETNAM_GRID_G_KWH) / 1000,
     co2KgFrance: (energyKwh * FRANCE_GRID_G_KWH) / 1000,
