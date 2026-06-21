@@ -11,21 +11,25 @@ async function main() {
   intro(pc.inverse(' outlier '));
 
   let action = process.argv[2] as any;
-  if (!action) {
-    action = await select({
-      message: 'What would you like to measure?',
-      options: [
-        { value: 'status', label: 'Status', hint: 'Run full authorship and session carbon audit' },
-        { value: 'capabilities', label: 'Capabilities Map', hint: 'Audit active MCPs, skills, and orchestrations' },
-        { value: 'authorship', label: 'Authorship Only', hint: 'Scan git history for AI co-authors' },
-        { value: 'carbon', label: 'Carbon Only', hint: 'Scan local logs for token-based carbon footprint' },
-        { value: 'policy', label: 'Policy Profiles', hint: 'Set Personal, Team, or Enterprise guardrails' }
-      ],
-    });
+  if (!action || action === 'audit') {
+    if (action !== 'audit') {
+      action = await select({
+        message: 'Select outlier governance module:',
+        options: [
+          { value: 'status', label: 'Status Report', hint: 'Run full AI reliance and capability audit' },
+          { value: 'capabilities', label: 'Capabilities Map', hint: 'Audit active MCPs, skills, and orchestrations' },
+          { value: 'authorship', label: 'Code Durability', hint: 'Scan git history for AI Code Reliance & Hallucination Risk' },
+          { value: 'carbon', label: 'Cache Bloat', hint: 'Scan local logs for context waste & token costs' },
+          { value: 'policy', label: 'Policy Profiles', hint: 'Set Personal, Team, or Enterprise guardrails in CI' }
+        ],
+      });
 
-    if (isCancel(action)) {
-      cancel('Operation cancelled.');
-      process.exit(0);
+      if (isCancel(action)) {
+        cancel('Operation cancelled.');
+        process.exit(0);
+      }
+    } else {
+      action = 'status'; // Map the 'audit' alias directly to status for CI
     }
   }
 
@@ -86,14 +90,14 @@ Conservative Floor: ${color(nmPct + '%')}`,
         );
       } else if (action === 'status') {
         // Build the combined status view
-        let authPct = '0.00';
+        let authPct = '0%';
         let ruleFailures = 0;
         let authWarning = '';
         if (gitStats) {
-          authPct = gitStats.ratio.toFixed(2);
+          authPct = `${(gitStats.ratio * 100).toFixed(1)}%`;
           if (gitStats.ratio > 0.7) {
+            authWarning = pc.red(`⚠ High Risk Surface: ${authPct} AI-generated. Require human code-review before CI.`);
             ruleFailures++;
-            authWarning = pc.red('⚠ authorship high');
           }
         }
         
@@ -109,14 +113,14 @@ Conservative Floor: ${color(nmPct + '%')}`,
         }
 
         note(
-          `${pc.dim('[1] Local workspace logs')} ${pc.cyan('▰▰▰▰▰▰▱▱▱▱')}  ${pc.bold('Active')}
-    rules: ${pc.green('✓ ✓ ✓')}
-${pc.dim('[2] Version control (git)')} ${pc.yellow('▰▰▰▰▰▰▰▰▱▱')}  ${pc.bold('Parsed')}
-    rules: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ ✓ ✓') : `${pc.green('✓')} ${pc.red('⚠ authorship')} ${pc.red('⚠ skill')}`}
-${pc.dim('[3] Tokenomics & Cache Waste')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
-    waste: ${pc.yellow(`⚠ ${cachePct}% of tokens are context cache reads`)}
-${pc.bold('Aggregate:')} Authorship ${authPct} | CO2 ${co2Kg}kg | ${ruleFailures > 0 ? pc.red(`⚠ ${ruleFailures + 1} rule failures`) : pc.green('✓ All clear')}`,
-          `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 rules • ${authWarning || pc.green('✓ healthy')} • CO2 ${co2Kg}kg\noutlier: ${sessions} sessions`
+          `${pc.dim('[1] Capability Engine')} ${pc.cyan('▰▰▰▰▰▰▱▱▱▱')}  ${pc.bold('Active')}
+    status: ${pc.green('✓ Configured')}
+${pc.dim('[2] AI Code Reliance')} ${pc.yellow('▰▰▰▰▰▰▰▰▱▱')}  ${pc.bold(`${authPct} Reliance`)}
+    gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Hallucination Risk Low') : `${pc.red('⚠ Hallucination Risk High')} ${pc.red('⚠ Security Audit Required')}`}
+${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
+    waste: ${pc.yellow(`⚠ ${cachePct}% of tokens are redundant context reads`)}
+${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`⚠ ${ruleFailures + 1} policy failures`) : pc.green('✓ All clear')}`,
+          `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green('✓ safe surface')} • Local CI`
         );
       }
     } catch (e: any) {

@@ -1,52 +1,46 @@
-# outlier
+<div align="center">
+  <h1>outlier</h1>
+  <p><b>AI Code Governance & Capability Auditing for the Terminal</b></p>
+</div>
 
-A local-first, zero-cloud governance framework for measuring AI adoption, carbon exhaust, and authorship erosion directly on the developer's machine.
-
-> Built for the Global South AIS Challenge 2026
+`outlier` is a local-first, zero-cloud CI/CD tool that audits your repository for AI Code Reliance, Hallucination Risk, and Cache Context Waste. It acts as a strict governance gate for AI-generated code.
 
 ## The Problem
-When a developer generates code using an AI agent, two unmeasured things happen:
-1. **Carbon Exhaust**: A high volume of context tokens (cache reads) are evaluated in energy-heavy data centers.
-2. **Authorship Erosion**: The developer cedes skill-retention to the agent.
+When developers rely heavily on AI agents to write code, two invisible risks enter the codebase:
+1. **Code Durability & Hallucination Risk:** High AI reliance means lower human mastery. Codebases that are >70% AI-generated face severe maintenance and security risks.
+2. **Context Waste:** Over 90% of token usage in agentic workflows is often redundant cache reads. This is pure financial and energy waste.
 
-`outlier` measures both of these directly at the source—your terminal—without sending a single byte of telemetry to a remote server.
+`outlier` measures these risks directly at the source—your terminal—without sending a single byte of telemetry to a remote server.
 
-## Installation
+## Installation & Zero-Config Execution
 
-```bash
-npm install -g @rosh100yx/outlier
-```
-
-## Usage
-
-Run `outlier` interactively:
+You don't need to configure an account, an API key, or a `.env` file. Just run it.
 
 ```bash
-$ outlier
+# Run the interactive UI
+npx @rosh100yx/outlier
+
+# Run the CI/CD audit instantly
+npx @rosh100yx/outlier audit
 ```
 
-Or run specific modules directly:
+## Features
 
-### 1. Cost Intelligence & Status Audit
-Measures Git authorship history, Claude tokenomics (highlighting Cache Bloat), and summarizes the governance status.
-```bash
-$ outlier status
-```
+### 1. The Governance Audit (`npx @rosh100yx/outlier audit`)
+Scans Git history and local agent logs to calculate your **AI Code Reliance**. 
+If a module is 80% AI-generated, `outlier` flags it as a high hallucination/security risk, requiring human code-review before CI. It also exposes **Cache Bloat**, showing exactly what percentage of your API bill is wasted on redundant context.
 
-### 2. Capabilities Map (Surface Area)
-Maps exactly which Model Context Protocol (MCP) servers and Agent Skills are active in the workspace, proving what the AI has access to.
-```bash
-$ outlier capabilities
-```
+### 2. Capabilities Map (`npx @rosh100yx/outlier capabilities`)
+A critical compliance tool. It maps exactly which Model Context Protocol (MCP) servers and Agent Skills are active in the workspace, proving what the AI actually has access to (e.g., preventing unauthorized database or web-search access).
 
-### 3. Policy Enforcement
-Sets a governance tier (Personal, Team, Enterprise, Regulatory) and physically installs a Git pre-commit hook that prevents commits if AI Authorship exceeds the chosen threshold.
-```bash
-$ outlier policy
-```
+### 3. CI/CD Policy Gates (`npx @rosh100yx/outlier policy`)
+Sets a governance tier (Personal, Team, Enterprise) and physically installs a Git pre-commit hook. This hook actively prevents commits if AI Authorship exceeds the chosen threshold, acting as a mandatory human-in-the-loop verification gate.
 
 ## Data Sovereignty
-`outlier` does not have a backend. It parses `git log` and `~/.claude/` local files via standard UNIX buffers. Your code and token usage never leave your machine.
+`outlier` does not have a backend. It parses `git log` and local JSONL token logs via standard UNIX buffers. Your code and token usage never leave your machine.
+
+## Contributing
+We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) to get started. Great first issues include adding new regional grid factors to `data/grid-factors.json` or writing custom CI/CD pipeline integrations.
 
 ## License
 MIT

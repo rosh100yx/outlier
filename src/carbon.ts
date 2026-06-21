@@ -1,6 +1,7 @@
 import { file } from 'bun';
 import { homedir } from 'os';
 import { join } from 'path';
+import gridFactors from '../data/grid-factors.json';
 
 export interface CarbonStats {
   totalTokens: number;
@@ -55,8 +56,8 @@ export async function getCarbonStats(): Promise<CarbonStats> {
     outputTokens,
     cacheReadTokens,
     energyKwh,
-    co2KgVietnam: (energyKwh * VIETNAM_GRID_G_KWH) / 1000,
-    co2KgFrance: (energyKwh * FRANCE_GRID_G_KWH) / 1000,
+    co2KgVietnam: (energyKwh * gridFactors.vietnam) / 1000,
+    co2KgFrance: (energyKwh * gridFactors.france) / 1000,
     sessions: sessions.size
   };
 }
