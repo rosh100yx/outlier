@@ -2,6 +2,7 @@ import { intro, outro, select, spinner, isCancel, cancel, note } from '@clack/pr
 import pc from 'picocolors';
 import { getAuthorshipStats } from './git';
 import { getCarbonStats } from './carbon';
+import { getCapabilitiesStats } from './capabilities';
 
 async function main() {
   console.clear();
@@ -13,6 +14,7 @@ async function main() {
       message: 'What would you like to measure?',
       options: [
         { value: 'status', label: 'Status', hint: 'Run full authorship and session carbon audit' },
+        { value: 'capabilities', label: 'Capabilities Map', hint: 'Audit active MCPs, skills, and orchestrations' },
         { value: 'authorship', label: 'Authorship Only', hint: 'Scan git history for AI co-authors' },
         { value: 'carbon', label: 'Carbon Only', hint: 'Scan local logs for token-based carbon footprint' },
         { value: 'policy', label: 'Policy Profiles', hint: 'Set Personal, Team, or Enterprise guardrails' }
@@ -114,6 +116,30 @@ ${pc.bold('Aggregate:')} Authorship ${authPct} | CO2 ${co2Kg}kg | ${ruleFailures
       console.error(pc.red(e.message));
     }
 
+  } else if (action === 'capabilities') {
+    s.start('Auditing AI surface area (MCPs, Skills, Orchestrators)...');
+    try {
+      const caps = await getCapabilitiesStats();
+      s.stop('Capabilities Scan Complete');
+
+      note(
+        `Orchestration Policy: ${caps.hasOrchestration ? pc.green('Detected (AGENTS.md)') : pc.yellow('None')}
+
+Active Skills (${caps.skills.length}):
+${caps.skills.length > 0 ? pc.cyan(caps.skills.map(s => `  • ${s}`).join('\n')) : '  None'}
+
+Active MCP Servers (${caps.mcps.length}):
+${caps.mcps.length > 0 ? pc.magenta(caps.mcps.map(m => `  • ${m}`).join('\n')) : '  None'}
+
+${pc.bold('Governance Assessment:')}
+This repository provides agents with ${caps.mcps.length} toolsets and ${caps.skills.length} skills. 
+${caps.skills.length > 5 ? pc.red('⚠ High Surface Area: Ensure strict authorship review is enabled.') : pc.green('✓ Low Surface Area: Risk contained.')}`,
+        'AI Capabilities Map'
+      );
+    } catch (e: any) {
+      s.stop('Audit failed');
+      console.error(pc.red(e.message));
+    }
   } else if (action === 'policy') {
     const tier = await select({
       message: 'Select the governance tier to configure:',
