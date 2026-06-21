@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import { intro, outro, select, spinner, isCancel, cancel, note } from '@clack/prompts';
 import pc from 'picocolors';
 import { getAuthorshipStats } from './git';
