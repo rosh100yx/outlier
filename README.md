@@ -105,8 +105,12 @@ If you hold one of these roles, `outlier` was built specifically for you. Please
 - **Principal & Staff Engineers:** Protect the craft. Use the Bouncer hook to enforce architectural standards and prevent your team from deskilling.
 - **Developers & "Vibe Coders":** Prove your mastery. Run the audit, check your vibe, and post your "Artisan" or "Centaur" terminal status to the community.
 
-## Contributing
-We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) to get started. Great first issues include adding new regional grid factors to `data/grid-factors.json` or writing custom CI/CD pipeline integrations.
+## Support the Thesis & Collaborate
+This tool is the technical implementation of an ongoing academic thesis on the thermodynamics of AI code generation, skill atrophy, and digital sovereignty. We are actively looking for collaborators, researchers, and engineers to expand this framework.
+
+**Call for Research Data:** If you use this tool, please consider sharing your terminal screenshot (`outlier audit`) on X.com or with the maintainers. By voluntarily sharing your baseline AI reliance and cache bloat metrics, you help us build a broader empirical dataset on how AI is impacting global engineering teams.
+
+See our [Contributing Guide](CONTRIBUTING.md) to get started. Great first issues include adding new regional grid factors to `data/grid-factors.json` or writing custom CI/CD pipeline integrations.
 
 ## License
 Apache 2.0
