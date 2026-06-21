@@ -3,7 +3,7 @@
   <p><b>AI Code Governance & Capability Auditing for the Terminal</b></p>
 </div>
 
-`outlier` is a local-first, zero-cloud CI/CD tool that audits your repository for AI Code Reliance, Hallucination Risk, and Cache Context Waste. It acts as a strict governance gate for AI-generated code.
+`outlier` is a local-first, zero-cloud CI/CD tool that audits your repository for AI Code Reliance, Hallucination Risk, and Cache Context Waste. It acts as a strict governance gate to prevent developers from becoming "API wrappers."
 
 ```text
 ┌   outlier 
@@ -12,64 +12,90 @@
 │                                                            │
 │  [1] Capability Engine ▰▰▰▰▰▰▱▱▱▱  Active                  │
 │      status: ✓ Configured                                  │
-│  [2] AI Code Reliance ▰▰▰▰▰▰▰▰▱▱  20.0% Reliance           │
-│      gate: ✓ Hallucination Risk Low                        │
+│  (=^･ω･^=) [2] AI Code Reliance ▰▰▰▰▰▰▰▰▱▱  85.0% Reliance │
+│      vibe: Did you write any of this, or are you just the manager now? (ФДФ)
+│      gate: (=ಠᆽಠ=) Deskilling Risk Detected ⚠ Security Audit Required
 │  [3] Tokenomics & Cost ▰▰▰▰▰▰▰▰▰▱ 96.5% Cache Bloat        │
 │      waste: ⚠ 96.5% of tokens are redundant context reads  │
-│  Governance: ✓ All clear                                   │
+│  Governance: (=ಠᆽಠ=) 1 policy failures                     │
 │                                                            │
 ├────────────────────────────────────────────────────────────╯
 ```
 
-## The Problem
-When developers rely heavily on AI agents to write code, two invisible risks enter the codebase:
-1. **Code Durability & Hallucination Risk:** High AI reliance means lower human mastery. Codebases that are >70% AI-generated face severe maintenance and security risks.
-2. **Context Waste:** Over 90% of token usage in agentic workflows is often redundant cache reads. This is pure financial and energy waste.
+## How It Works
+┌───────────┐   ┌────────────┐   ┌───────────┐   ┌─────────────┐
+│ AI CODING │──▸│ GIT COMMIT │──▸│  BOUNCER  │──▸│ AUDIT TRACE │
+└───────────┘   └────────────┘   └───────────┘   └─────────────┘
+                                       │ (Fails)
+                                 ┌───────────┐
+                                 │ MENTORING │
+                                 └───────────┘
+**Step 1:** Developer delegates code generation to an AI agent (Claude Code, Cursor).  
+**Step 2:** Developer attempts to merge code into the main branch.  
+**Step 3:** The `outlier` Bouncer hook triggers. If AI reliance > 70%, the commit is physically blocked.  
+**Step 4:** A "Mentoring Emergency" is triggered, forcing the developer to solve an architectural challenge to prove mastery and prevent deskilling.  
+
+## What Outlier Adds
+`outlier` builds a coordination layer on top of native agent workflows.
+
+| Capability | Ungoverned AI | Outlier Governed |
+|------------|---------------|------------------|
+| **Deskilling** | Silent skill atrophy | JIT Mentoring Triggers on high-reliance |
+| **Commit Gate**| Accepts hallucinated code | Physically blocks code over AI-thresholds |
+| **Context** | Blind token spend | Detects "Cache Bloat" and context waste |
+| **Security** | Opaque MCP access | Maps and audits active skills/capabilities |
+
+## Commands
+| Command | Purpose |
+|---------|---------|
+| `outlier audit` | Run the standard telemetry dashboard (Cats + Vibes + Metrics) |
+| `outlier audit --strict` | Run the dashboard without the Cats/Vibes (Enterprise Dry Mode) |
+| `outlier policy` | Interactively select and install the Git Pre-Commit Hook (Bouncer) |
+| `outlier capabilities` | Audit your workspace for active MCP servers and Open Session Skills |
+
+## Quickstart: Your First Audit
+
+**Prerequisites:** You need Node/Bun installed and to be inside a Git repository.
+
+1. **Set the Trap (Install the Bouncer)**
+   ```bash
+   npx github:rosh100yx/outlier policy
+   ```
+   *Select the "Team (70% Max AI)" tier.*
+
+2. **Trigger the Bouncer**
+   Write a massive feature using 100% AI. Attempt to commit it:
+   ```bash
+   git commit -am "added massive ai feature"
+   ```
+   *Watch the Bouncer block your commit for deskilling risk.*
+
+3. **Measure the Damage**
+   ```bash
+   npx github:rosh100yx/outlier audit
+   ```
+   *See your exact AI Authorship ratio and Token Waste.*
 
 ## Theoretical Foundations
 `outlier` is built on four core empirical literatures:
 - **Disempowerment:** Incremental AI substitution erodes human influence. `outlier` acts as a sovereignty shield against opaque AI platforms.
-- **Carbon at the Point of Delegation:** We meter carbon footprint directly at the developer's machine and weight it by local grid factors (e.g., Vietnam vs. France), rather than relying on global datacenter averages.
+- **Carbon at the Point of Delegation:** We meter carbon footprint directly at the developer's machine and weight it by local grid factors (e.g., Vietnam vs. France).
 - **Authorship:** We track AI reliance per-individual via Git parsing, rather than at the population level.
-- **Deskilling:** Delegating operators lose supervisory skills (Bainbridge, 1983). `outlier` specifically flags high AI-authorship as a "Deskilling Risk" and "Mentoring Emergency."
+- **Deskilling:** Delegating operators lose supervisory skills (Bainbridge, 1983). `outlier` specifically flags high AI-authorship as a "Deskilling Risk".
 
-`outlier` measures these risks directly at the source—your terminal—without sending a single byte of telemetry to a remote server.
+## FAQ
 
-## Installation & Zero-Config Execution
+**Does this send my code or prompts to the cloud?**  
+No. `outlier` is a zero-trust, local-first engine. It parses `git log` and local JSONL token logs. Your code and token usage never leave your machine.
 
-`outlier` requires no environment variables or API keys. It parses existing local telemetry.
+**Do I need to be using a specific IDE?**  
+`outlier` is IDE-agnostic. It works by parsing standard `Co-Authored-By` Git trailers, meaning it supports Claude Code, Cursor, Aider, and manual generation.
 
-```bash
-# Run the interactive UI
-npx github:rosh100yx/outlier
-
-# Run the CI/CD audit instantly
-npx github:rosh100yx/outlier audit
-```
-
-### Strict Mode (Enterprise Compliance)
-If you are running `outlier` for an official compliance audit or prefer a standard terminal UI without the ASCII cats and passive-aggressive "Vibe" checks, use the `--strict` flag. This removes the personality and outputs clean, dry policy statements.
-```bash
-npx github:rosh100yx/outlier audit --strict
-```
-
-## Features
-
-### 1. The Governance Audit (`npx @rosh100yx/outlier audit`)
-Scans Git history and local agent logs to calculate your **AI Code Reliance**. 
-If a module is 80% AI-generated, `outlier` flags it as a high hallucination/security risk, requiring human code-review before CI. It also exposes **Cache Bloat**, showing exactly what percentage of your API bill is wasted on redundant context.
-
-### 2. Capabilities Map (`npx @rosh100yx/outlier capabilities`)
-A critical compliance tool. It maps exactly which Model Context Protocol (MCP) servers and Agent Skills are active in the workspace, proving what the AI actually has access to (e.g., preventing unauthorized database or web-search access).
-
-### 3. CI/CD Policy Gates (`npx @rosh100yx/outlier policy`)
-Sets a governance tier (Personal, Team, Enterprise) and physically installs a Git pre-commit hook. This hook actively prevents commits if AI Authorship exceeds the chosen threshold, acting as a mandatory human-in-the-loop verification gate.
-
-## Data Sovereignty
-`outlier` does not have a backend. It parses `git log` and local JSONL token logs via standard UNIX buffers. Your code and token usage never leave your machine.
+**Can I run this in CI/CD like GitHub Actions?**  
+Yes. Use the `--strict` flag (`npx github:rosh100yx/outlier audit --strict`) to return standard zero-exit-code parsing for headless CI environments.
 
 ## Contributing
 We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) to get started. Great first issues include adding new regional grid factors to `data/grid-factors.json` or writing custom CI/CD pipeline integrations.
 
 ## License
-MIT
+Apache 2.0
