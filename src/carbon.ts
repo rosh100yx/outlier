@@ -1,6 +1,6 @@
-import { file } from 'bun';
 import { homedir } from 'os';
 import { join } from 'path';
+import { readFile, access } from 'fs/promises';
 import gridFactors from '../data/grid-factors.json';
 
 export interface CarbonStats {
@@ -24,10 +24,14 @@ export class ClaudeLogParser implements TokenLogParser {
   }
   async parse() {
     const logPath = join(this.baseDir, '.claude', 'tokenomics-log.jsonl');
-    const logFile = file(logPath);
-    if (!(await logFile.exists())) return { total: 0, output: 0, cache: 0, sessions: 0 };
+    
+    try {
+      await access(logPath);
+    } catch {
+      return { total: 0, output: 0, cache: 0, sessions: 0 };
+    }
 
-    const text = await logFile.text();
+    const text = await readFile(logPath, 'utf-8');
     const lines = text.trim().split('\n').filter(l => l.length > 0);
     
     let total = 0, output = 0, cache = 0;

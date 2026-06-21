@@ -270,7 +270,12 @@ Artifact:     ${pc.cyan('outlier-audit-report.jsonl generated')}`,
       );
     }
 
-  outro(pc.green('Local telemetry run completed. No data left your machine.'));
+  let shareText = 'Local telemetry run completed. No data left your machine.';
+  if (action === 'status') {
+    shareText += `\n\n${pc.dim('└')} ${pc.cyan('Share your audit:')} https://x.com/intent/tweet?text=I%20just%20audited%20my%20codebase%20for%20AI%20reliance%20and%20deskilling%20risk.%20What%20does%20your%20repo%20score%3F%0A%0A%F0%9F%93%8F%20npx%20%40rosh100yx%2Foutlier`;
+  }
+
+  outro(shareText);
 }
 
 main().catch(console.error);
