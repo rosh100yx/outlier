@@ -8,7 +8,7 @@ export interface CapabilitiesStats {
   hasOrchestration: boolean;
 }
 
-export async function getCapabilitiesStats(repoPath: string = process.cwd()): Promise<CapabilitiesStats> {
+export async function getCapabilitiesStats(repoPath: string = process.cwd(), homeDirPath: string = homedir()): Promise<CapabilitiesStats> {
   const stats: CapabilitiesStats = {
     mcps: [],
     skills: [],
@@ -32,7 +32,7 @@ export async function getCapabilitiesStats(repoPath: string = process.cwd()): Pr
   }
 
   // Scan global skills (Gemini / Claude)
-  const geminiSkillsPath = join(homedir(), '.gemini', 'skills');
+  const geminiSkillsPath = join(homeDirPath, '.gemini', 'skills');
   if (existsSync(geminiSkillsPath)) {
     try {
       const skills = readdirSync(geminiSkillsPath, { withFileTypes: true })
@@ -47,7 +47,7 @@ export async function getCapabilitiesStats(repoPath: string = process.cwd()): Pr
   }
 
   // Scan MCPs from gemini config
-  const geminiMcpPath = join(homedir(), '.gemini', 'antigravity-cli', 'mcp');
+  const geminiMcpPath = join(homeDirPath, '.gemini', 'antigravity-cli', 'mcp');
   if (existsSync(geminiMcpPath)) {
     try {
       const mcps = readdirSync(geminiMcpPath, { withFileTypes: true })
@@ -58,7 +58,7 @@ export async function getCapabilitiesStats(repoPath: string = process.cwd()): Pr
   }
 
   // Also check Claude settings for legacy MCPs/Plugins
-  const claudeSettingsPath = join(homedir(), '.claude', 'settings.json');
+  const claudeSettingsPath = join(homeDirPath, '.claude', 'settings.json');
   if (existsSync(claudeSettingsPath)) {
     try {
       const claudeSettings = require(claudeSettingsPath);

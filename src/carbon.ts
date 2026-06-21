@@ -17,9 +17,13 @@ export interface TokenLogParser {
   parse(): Promise<{ total: number, output: number, cache: number, sessions: number }>;
 }
 
-class ClaudeLogParser implements TokenLogParser {
+export class ClaudeLogParser implements TokenLogParser {
+  private baseDir: string;
+  constructor(baseDir = homedir()) {
+    this.baseDir = baseDir;
+  }
   async parse() {
-    const logPath = join(homedir(), '.claude', 'tokenomics-log.jsonl');
+    const logPath = join(this.baseDir, '.claude', 'tokenomics-log.jsonl');
     const logFile = file(logPath);
     if (!(await logFile.exists())) return { total: 0, output: 0, cache: 0, sessions: 0 };
 
