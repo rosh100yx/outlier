@@ -6,6 +6,8 @@
 
 `outlier` is a local-first framework to measure real AI adoption and usage. It acts as a strict orchestration gate to cut token waste, block hallucinated code, and serve as an anti-deskilling engine for when you are building in a room full of agents—all without a single byte leaving your terminal.
 
+> *"In a room full of agents" shifts the perspective. It acknowledges that the developer is no longer a solo coder; they are a manager of bots. The product exists to make sure the human doesn't get lazy while managing them. We all want our time back, but we don't want to lose control of the craft.*
+
 ```text
 ┌   outlier 
 │
