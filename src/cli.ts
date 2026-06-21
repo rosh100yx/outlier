@@ -86,52 +86,64 @@ Authorship Ratio:   ${color(pct + '%')}${warning}
 Non-merge Commits:  ${gitStats.totalNoMerges}
 AI Co-Authored:     ${gitStats.aiNoMerges}
 Conservative Floor: ${color(nmPct + '%')}`,
-          'Git Authorship Breakdown'
-        );
+            'Git Authorship Breakdown'
+          );
       } else if (action === 'status') {
-        // Build the combined status view
+        const isStrict = process.argv.includes('--strict');
+        s.start('Running outlier telemetry audit...');
+        const carbon = await getCarbonStats().catch(() => null);
+        const gitStats = await getAuthorshipStats().catch(() => null);
+        const capabilities = await getCapabilitiesStats().catch(() => null);
+        s.stop('Audit complete');
+        
         let authPct = '0%';
         let ruleFailures = 0;
         let authWarning = '';
-        let wittyRemark = 'No git history (・_・ヾ';
+        let wittyRemark = isStrict ? '' : 'No git history (・_・ヾ';
         let mentorString = '';
         
         if (gitStats) {
           authPct = `${(gitStats.ratio * 100).toFixed(1)}%`;
           
-          if (gitStats.ratio < 0.1) wittyRemark = 'Artisan, hand-crafted code. Very 2019 of you (=^ ◡ ^=)';
-          else if (gitStats.ratio < 0.6) wittyRemark = 'A true centaur. Half human, half matrix (=｀ω´=)';
-          else if (gitStats.ratio < 0.95) wittyRemark = 'Did you write any of this, or are you just the manager now? (ФДФ)';
-          else wittyRemark = 'You are officially a spectator in your own repository (=ಠᆽಠ=)';
+          if (!isStrict) {
+            if (gitStats.ratio < 0.1) wittyRemark = 'Artisan, hand-crafted code. Very 2019 of you (=^ ◡ ^=)';
+            else if (gitStats.ratio < 0.6) wittyRemark = 'A true centaur. Half human, half matrix (=｀ω´=)';
+            else if (gitStats.ratio < 0.95) wittyRemark = 'Did you write any of this, or are you just the manager now? (ФДФ)';
+            else wittyRemark = 'You are officially a spectator in your own repository (=ಠᆽಠ=)';
+          }
 
           if (gitStats.ratio > 0.7) {
-            authWarning = pc.red(`⚠ Mentoring Emergency: ${authPct} AI-generated. High risk of skill atrophy.`);
-            mentorString = `\n    mentor: ${pc.blue('💡 Architecture Challenge Pending (See Git Hook)')}`;
+            authWarning = pc.red(isStrict ? `⚠ High Risk Surface: ${authPct} AI-generated. Human review required.` : `⚠ Mentoring Emergency: ${authPct} AI-generated. High risk of skill atrophy.`);
+            if (!isStrict) {
+              mentorString = `\n    mentor: ${pc.blue('💡 Architecture Challenge Pending (See Git Hook)')}`;
+            }
             ruleFailures++;
           }
         }
         
-        let co2Kg = '0.0';
-        let sessions = 0;
         let cachePct = '0';
         if (carbon) {
-          co2Kg = carbon.co2KgVietnam.toFixed(1);
-          sessions = carbon.sessions;
           if (carbon.totalTokens > 0) {
             cachePct = ((carbon.cacheReadTokens / carbon.totalTokens) * 100).toFixed(1);
           }
         }
 
+        const vibeRow = !isStrict ? `\n    vibe: ${pc.italic(wittyRemark)}` : '';
+        const capIcon = isStrict ? '' : '(Ф∇Ф) ';
+        const authIcon = isStrict ? '' : '(=^･ω･^=) ';
+        const costIcon = isStrict ? '' : '(O_O;) ';
+        const failIcon = isStrict ? '⚠' : '(=ಠᆽಠ=)';
+        const passIcon = isStrict ? '✓' : '(=^ ◡ ^=)';
+
         note(
-          `(Ф∇Ф) ${pc.dim('[1] Capability Engine')} ${pc.cyan('▰▰▰▰▰▰▱▱▱▱')}  ${pc.bold('Active')}
+          `${capIcon}${pc.dim('[1] Capability Engine')} ${pc.cyan('▰▰▰▰▰▰▱▱▱▱')}  ${pc.bold('Active')}
     status: ${pc.green('✓ Configured')}
-(=^･ω･^=) ${pc.dim('[2] AI Code Reliance')} ${pc.yellow('▰▰▰▰▰▰▰▰▱▱')}  ${pc.bold(`${authPct} Reliance`)}
-    vibe: ${pc.italic(wittyRemark)}
-    gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Human Mastery Sustained') : `${pc.red('(=ಠᆽಠ=) Deskilling Risk Detected')} ${pc.red('⚠ Security Audit Required')}`}${mentorString}
-(O_O;) ${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
+${authIcon}${pc.dim('[2] AI Code Reliance')} ${pc.yellow('▰▰▰▰▰▰▰▰▱▱')}  ${pc.bold(`${authPct} Reliance`)}${vibeRow}
+    gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Human Mastery Sustained') : `${pc.red(`${failIcon} Deskilling Risk Detected`)} ${pc.red('⚠ Security Audit Required')}`}${mentorString}
+${costIcon}${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
     waste: ${pc.yellow(`⚠ ${cachePct}% of tokens are redundant context reads`)}
-${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`(=ಠᆽಠ=) ${ruleFailures + 1} policy failures`) : pc.green('(=^ ◡ ^=) All clear')}`,
-          `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green('(=^ ◡ ^=) safe surface')} • Local CI`
+${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`${failIcon} ${ruleFailures + 1} policy failures`) : pc.green(`${passIcon} All clear`)}`,
+          `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green(`${passIcon} safe surface`)} • Local CI`
         );
       }
     } catch (e: any) {
@@ -198,10 +210,22 @@ ${caps.skills.length > 5 ? pc.red('⚠ High Surface Area: Ensure strict authorsh
       s.start(`Applying ${tier} policy guardrails...`);
       
       const gitDir = join(process.cwd(), '.git');
-      if (existsSync(gitDir)) {
-        const hookPath = join(gitDir, 'hooks', 'pre-commit');
-        const hookScript = `#!/bin/sh
-echo "[outlier] Checking governance policy..."
+      const isRepo = existsSync(gitDir);
+      if (!isRepo) {
+        log.error('Must be run inside a git repository');
+        return;
+      }
+
+      const isStrict = process.argv.includes('--strict');
+      const bouncerMsg = isStrict 
+        ? `echo "❌ outlier policy violation: AI authorship ($CURRENT_RATIO%) exceeds threshold ($MAX_RATIO%)"`
+        : `echo "😾 ✋ The Bouncer says no: Your code is $CURRENT_RATIO% AI-generated."\n    echo "A human must review this before it enters the club (main branch)."`;
+
+      const hookPath = join(gitDir, 'hooks', 'pre-commit');
+      const hookScript = `#!/bin/sh
+# outlier Pre-Commit Governance Hook
+
+# Calculate AI Authorship Ratio
 TOTAL=$(git log --oneline | wc -l | tr -d ' ')
 AI=$(git log -i --grep='Co-Authored-By' --oneline | wc -l | tr -d ' ')
 if [ "$TOTAL" -eq 0 ]; then exit 0; fi
@@ -209,8 +233,7 @@ CURRENT_RATIO=$(awk "BEGIN {print ($AI / $TOTAL) * 100}")
 MAX_RATIO=${maxAuthorship}
 
 if [ "$(echo "$CURRENT_RATIO > $MAX_RATIO" | bc -l)" -eq 1 ]; then
-    echo "😾 ✋ The Bouncer says no: Your code is $CURRENT_RATIO% AI-generated."
-    echo "A human must review this before it enters the club (main branch)."
+    ${bouncerMsg}
     exit 1
 fi
 echo "✅ Governance Policy OK"
@@ -242,7 +265,6 @@ Artifact:     ${pc.cyan('outlier-audit-report.jsonl generated')}`,
         'Regulatory Compliance'
       );
     }
-  }
 
   outro(pc.green('Local telemetry run completed. No data left your machine.'));
 }

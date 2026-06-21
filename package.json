@@ -6,9 +6,9 @@
     "outlier": "./bin/outlier"
   },
   "scripts": {
+    "build": "bun build ./src/cli.ts --compile --outfile bin/outlier",
     "test": "bun test",
-    "start": "bun run src/cli.ts",
-    "build": "bun build ./src/cli.ts --compile --outfile outlier"
+    "start": "bun run src/cli.ts"
   },
   "type": "module",
   "private": false,

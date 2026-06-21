@@ -37,14 +37,20 @@ When developers rely heavily on AI agents to write code, two invisible risks ent
 
 ## Installation & Zero-Config Execution
 
-You don't need to configure an account, an API key, or a `.env` file. Just run it.
+`outlier` requires no environment variables or API keys. It parses existing local telemetry.
 
 ```bash
 # Run the interactive UI
-npx @rosh100yx/outlier
+npx github:rosh100yx/outlier
 
 # Run the CI/CD audit instantly
-npx @rosh100yx/outlier audit
+npx github:rosh100yx/outlier audit
+```
+
+### Strict Mode (Enterprise Compliance)
+If you are running `outlier` for an official compliance audit or prefer a standard terminal UI without the ASCII cats and passive-aggressive "Vibe" checks, use the `--strict` flag. This removes the personality and outputs clean, dry policy statements.
+```bash
+npx github:rosh100yx/outlier audit --strict
 ```
 
 ## Features
