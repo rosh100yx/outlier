@@ -93,18 +93,20 @@ Conservative Floor: ${color(nmPct + '%')}`,
         let authPct = '0%';
         let ruleFailures = 0;
         let authWarning = '';
-        let wittyRemark = 'No git history 😿';
+        let wittyRemark = 'No git history (・_・ヾ';
+        let mentorString = '';
         
         if (gitStats) {
           authPct = `${(gitStats.ratio * 100).toFixed(1)}%`;
           
-          if (gitStats.ratio < 0.1) wittyRemark = 'Artisan, hand-crafted code. Very 2019 of you 😸';
-          else if (gitStats.ratio < 0.6) wittyRemark = 'A true centaur. Half human, half matrix 😼';
-          else if (gitStats.ratio < 0.95) wittyRemark = 'Did you write any of this, or are you just the manager now? 🙀';
-          else wittyRemark = 'You are officially a spectator in your own repository 😾';
+          if (gitStats.ratio < 0.1) wittyRemark = 'Artisan, hand-crafted code. Very 2019 of you (=^ ◡ ^=)';
+          else if (gitStats.ratio < 0.6) wittyRemark = 'A true centaur. Half human, half matrix (=｀ω´=)';
+          else if (gitStats.ratio < 0.95) wittyRemark = 'Did you write any of this, or are you just the manager now? (ФДФ)';
+          else wittyRemark = 'You are officially a spectator in your own repository (=ಠᆽಠ=)';
 
           if (gitStats.ratio > 0.7) {
             authWarning = pc.red(`⚠ Mentoring Emergency: ${authPct} AI-generated. High risk of skill atrophy.`);
+            mentorString = `\n    mentor: ${pc.blue('💡 Architecture Challenge Pending (See Git Hook)')}`;
             ruleFailures++;
           }
         }
@@ -121,15 +123,15 @@ Conservative Floor: ${color(nmPct + '%')}`,
         }
 
         note(
-          `🕵️😼 ${pc.dim('[1] Capability Engine')} ${pc.cyan('▰▰▰▰▰▰▱▱▱▱')}  ${pc.bold('Active')}
+          `(Ф∇Ф) ${pc.dim('[1] Capability Engine')} ${pc.cyan('▰▰▰▰▰▰▱▱▱▱')}  ${pc.bold('Active')}
     status: ${pc.green('✓ Configured')}
-🧠😸 ${pc.dim('[2] AI Code Reliance')} ${pc.yellow('▰▰▰▰▰▰▰▰▱▱')}  ${pc.bold(`${authPct} Reliance`)}
+(=^･ω･^=) ${pc.dim('[2] AI Code Reliance')} ${pc.yellow('▰▰▰▰▰▰▰▰▱▱')}  ${pc.bold(`${authPct} Reliance`)}
     vibe: ${pc.italic(wittyRemark)}
-    gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Human Mastery Sustained') : `${pc.red('😾 Deskilling Risk Detected')} ${pc.red('⚠ Security Audit Required')}`}
-💸🙀 ${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
+    gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Human Mastery Sustained') : `${pc.red('(=ಠᆽಠ=) Deskilling Risk Detected')} ${pc.red('⚠ Security Audit Required')}`}${mentorString}
+(O_O;) ${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
     waste: ${pc.yellow(`⚠ ${cachePct}% of tokens are redundant context reads`)}
-${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`😾 ${ruleFailures + 1} policy failures`) : pc.green('😸 All clear')}`,
-          `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green('😸 safe surface')} • Local CI`
+${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`(=ಠᆽಠ=) ${ruleFailures + 1} policy failures`) : pc.green('(=^ ◡ ^=) All clear')}`,
+          `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green('(=^ ◡ ^=) safe surface')} • Local CI`
         );
       }
     } catch (e: any) {
