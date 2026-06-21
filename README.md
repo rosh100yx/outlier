@@ -1,9 +1,10 @@
 <div align="center">
   <h1>outlier</h1>
-  <p><b>AI Code Governance & Capability Auditing for the Terminal</b></p>
+  <p><b>The Anti-Deskilling Engine for AI Engineering</b></p>
+  <p><i>Measure AI adoption. Enforce Zero-Trust. Protect Human Mastery.</i></p>
 </div>
 
-`outlier` is a local-first, zero-cloud CI/CD tool that audits your repository for AI Code Reliance, Hallucination Risk, and Cache Context Waste. It acts as a strict governance gate to prevent developers from becoming "API wrappers."
+`outlier` is a local-first framework to measure real AI adoption and usage. It acts as a strict orchestration gate to cut token waste, block hallucinated code, and serve as an anti-deskilling engine for your engineering team—all without a single byte leaving your terminal.
 
 ```text
 ┌   outlier 
