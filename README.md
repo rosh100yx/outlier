@@ -26,6 +26,13 @@ When developers rely heavily on AI agents to write code, two invisible risks ent
 1. **Code Durability & Hallucination Risk:** High AI reliance means lower human mastery. Codebases that are >70% AI-generated face severe maintenance and security risks.
 2. **Context Waste:** Over 90% of token usage in agentic workflows is often redundant cache reads. This is pure financial and energy waste.
 
+## Theoretical Foundations
+`outlier` is built on four core empirical literatures:
+- **Disempowerment:** Incremental AI substitution erodes human influence. `outlier` acts as a sovereignty shield against opaque AI platforms.
+- **Carbon at the Point of Delegation:** We meter carbon footprint directly at the developer's machine and weight it by local grid factors (e.g., Vietnam vs. France), rather than relying on global datacenter averages.
+- **Authorship:** We track AI reliance per-individual via Git parsing, rather than at the population level.
+- **Deskilling:** Delegating operators lose supervisory skills (Bainbridge, 1983). `outlier` specifically flags high AI-authorship as a "Deskilling Risk" and "Mentoring Emergency."
+
 `outlier` measures these risks directly at the source—your terminal—without sending a single byte of telemetry to a remote server.
 
 ## Installation & Zero-Config Execution

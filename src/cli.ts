@@ -96,7 +96,7 @@ Conservative Floor: ${color(nmPct + '%')}`,
         if (gitStats) {
           authPct = `${(gitStats.ratio * 100).toFixed(1)}%`;
           if (gitStats.ratio > 0.7) {
-            authWarning = pc.red(`⚠ High Risk Surface: ${authPct} AI-generated. Require human code-review before CI.`);
+            authWarning = pc.red(`⚠ Mentoring Emergency: ${authPct} AI-generated. High risk of skill atrophy.`);
             ruleFailures++;
           }
         }
@@ -116,7 +116,7 @@ Conservative Floor: ${color(nmPct + '%')}`,
           `${pc.dim('[1] Capability Engine')} ${pc.cyan('▰▰▰▰▰▰▱▱▱▱')}  ${pc.bold('Active')}
     status: ${pc.green('✓ Configured')}
 ${pc.dim('[2] AI Code Reliance')} ${pc.yellow('▰▰▰▰▰▰▰▰▱▱')}  ${pc.bold(`${authPct} Reliance`)}
-    gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Hallucination Risk Low') : `${pc.red('⚠ Hallucination Risk High')} ${pc.red('⚠ Security Audit Required')}`}
+    gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Human Mastery Sustained') : `${pc.red('⚠ Deskilling Risk Detected')} ${pc.red('⚠ Security Audit Required')}`}
 ${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
     waste: ${pc.yellow(`⚠ ${cachePct}% of tokens are redundant context reads`)}
 ${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`⚠ ${ruleFailures + 1} policy failures`) : pc.green('✓ All clear')}`,
