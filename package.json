@@ -3,7 +3,7 @@
   "version": "0.2.1",
   "description": "AI Code Governance & Capability Auditing for the Terminal. Measures AI reliance, context waste, and enforces local CI/CD policies.",
   "bin": {
-    "outlier": "./src/cli.ts"
+    "outlier": "./bin/outlier"
   },
   "scripts": {
     "build": "bun build ./src/cli.ts --compile --outfile bin/outlier",
