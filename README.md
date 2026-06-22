@@ -18,8 +18,26 @@
   </p>
 
   <br/>
-  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/cli-demo.png" alt="Outlier CLI Demo" width="800" />
-  <br/>
+  
+  ```text
+  ┌────────────────────────────────────────────────────────┐
+  │ █▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█  :: THERMAL AUDIT RECEIPT    │
+  │ █▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄  :: TIMESTAMP: 2026-06-23    │
+  ├────────────────────────────────────────────────────────┤
+  │  [ COGNITIVE BUDGET ]                                  │
+  │  AI Authorship     ................. ▇▇▇▇░░░░░░ 40%    │
+  │  Human Sovereignty ................. ▇▇▇▇▇▇░░░░ 60%    │
+  │                                                        │
+  │  ↳ Verdict: (=^ ◡ ^=) CENTAUR                          │
+  │    Healthy symbiosis. You orchestrate agents           │
+  │    but maintain architectural authority.               │
+  ├────────────────────────────────────────────────────────┤
+  │  [ FINANCIAL & COMPUTE TOLL ]                          │
+  │  Tokens Burnt      ................. 3.12M vs Human    │
+  │  Cache Bloat       ................. ▇▇▇▇▇▇▇▇░░ 80%    │
+  │  Regional Grid     ................. 1.54 kgCO2        │
+  └────────────────────────────────────────────────────────┘
+  ```
 </div>
 
 ## How It Works
@@ -50,13 +68,28 @@
 ## Commands
 | Command | Purpose |
 |---------|---------|
-| `outlier` | Start the interactive Onboarding Wizard (Recommended for first-timers) |
-| `outlier --help` | View the CLI help menu and all available commands |
-| `outlier status` | Run the full AI reliance & capability audit (Generates the Thermal Receipt) |
-| `outlier authorship` | Scan git history for AI co-authorship ratio and Hallucination Risk |
+| `outlier` | Start the interactive Interactive Menu |
+| `outlier status` | Run the full AI reliance & capability audit |
+| `outlier authorship` | Scan git history for AI co-authorship ratio |
 | `outlier carbon` | Scan local logs for context waste & token costs |
+| `outlier capabilities` | Audit active MCPs, skills, and orchestrations |
 | `outlier policy` | Configure Personal, Team, or Enterprise guardrails in CI |
-| `outlier confessional` | Submit qualitative feedback or feature requests directly from the terminal |
+
+### Interactive Menu
+If you run `outlier` directly, you'll be greeted with our frictionless UX:
+```text
+? Select outlier governance module:
+  ── AUDIT ──
+❯ Status         Full audit (reliance + carbon + capabilities)
+  Authorship     Human vs AI, per commit
+  Carbon         Token waste + regional cost
+  Capabilities   What your agents can reach
+  Policy         Set guardrails / install the gate
+  ── LEARN ──
+  Impact         What happens over the next 5-10 years
+  Literature     The academic foundation
+  Participate    Contribute to the research
+```
 
 ## Quickstart: Your First Audit
 
