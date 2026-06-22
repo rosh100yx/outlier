@@ -346,3 +346,26 @@ This research was developed as part of the Global South AI Safety Hackathon. We 
 [24] National Assembly of Vietnam (2025). *Law on AI No. 134/2025/QH15* (in force 1 Mar 2026) + *Decree 142/2026/ND-CP* (1 May 2026): risk tiers, human control over high-risk AI. [A] https://english.luatvietnam.vn/law-no-134-2025-qh15
 [25] ASEAN (2024). *ASEAN Guide on AI Governance and Ethics* (adopted 2 Feb 2024; voluntary; Expanded GenAI ed. Jan 2025). [A] https://asean.org
 [26] Google Research (2026). *Towards a Science of Scaling Agent Systems* (180 configs): multi-agent degrades 39–70% on sequential reasoning. [A] http://research.google.com
+[27] Jasmi.news (2026). *Dictionary: High-Agency vs. NPC.* Explores the psychological shift between developers who shape systems versus those who passively consume AI autocomplete. [C] https://jasmi.news/p/dictionary
+[28] Entire.io (2026). *Introducing User-Defined Redaction & Improving Agentic Search.* Frameworks for giving users explicit control over what local context AI agents can access. [C] https://entire.io/
+[29] ProofEditor.ai (2026). *Proof Auditing and Authorship Verification.* Mechanisms for proving human authorship in the face of generative AI over-reliance. [C] https://www.proofeditor.ai/
+
+---
+
+## Call for Knowledge Sharing & Researcher Contributions
+
+The thermodynamics of AI code generation and the phenomenon of developer deskilling are rapidly evolving fields. We are committed to remaining honest, transparent, and research-backed. 
+
+**We actively invite researchers, engineers, and ethicists to contribute to this living document.** 
+If you have written a paper, published an article, or discovered empirical data regarding:
+- AI context waste and token costs
+- Behavioral shifts in developer productivity
+- Governance frameworks and policy architectures
+- New methodologies for authorship verification
+
+Please submit them! You can contribute in whatever format you are most comfortable with:
+1. **GitHub Pull Requests:** Directly add your citations to this Markdown file.
+2. **The "Confessional" Terminal:** Run `npx @rosh100yx/outlier confessional` and drop a link to your work.
+3. **Open Issues:** Open an issue on our GitHub repository with the `[RESEARCH]` tag.
+
+We strictly ensure that **all contributors receive full credit and attribution** for their knowledge sharing. If your reference or contribution helps us improve the Outlier tool or proves higher value in our delivery, your name and work will be permanently codified in our Acknowledgments and References sections.
