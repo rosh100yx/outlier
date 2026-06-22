@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="assets/cover.jpg" alt="Outlier Cover" width="100%" />
   <h1>outlier</h1>
   <p><b>The Governance & Policy Engine for AI Engineering</b></p>
   <p><i>Measure AI adoption. Enforce Zero-Trust. Protect Human Mastery.</i></p>
