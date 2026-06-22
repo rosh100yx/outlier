@@ -3,6 +3,10 @@
   <h1>outlier</h1>
   <p><b>The Governance & Policy Engine for AI Engineering</b></p>
   <p><i>Measure AI adoption. Enforce Zero-Trust. Protect Human Mastery.</i></p>
+  <br/>
+  <a href="https://github.com/rosh100yx/outlier/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=%5BFEATURE%5D+">
+    <img src="https://img.shields.io/badge/%E2%9C%A8_Feature_Request-Submit_an_idea-blueviolet?style=for-the-badge&logo=github" alt="Feature Request" />
+  </a>
   
   <p>
     <img src="https://img.shields.io/badge/Compliance-Strict-blue?style=for-the-badge" />
