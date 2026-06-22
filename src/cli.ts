@@ -21,7 +21,6 @@ const ASCII_LOGO = `
 let finalReceipt = '';
 
 async function runOnboarding() {
-  console.clear();
   console.log(pc.cyan(ASCII_LOGO));
   intro(pc.inverse(' outlier: Welcome '));
 
@@ -79,7 +78,6 @@ async function main() {
     action = 'status';
   }
 
-  console.clear();
   console.log(pc.cyan(ASCII_LOGO));
   const pkg = require('../package.json');
   console.log(pc.dim(`  Outlier v${pkg.version} · AI Code Reliance & Telemetry Engine\n`));
@@ -278,29 +276,12 @@ Conservative Floor: ${color(nmPct + '%')}`,
     try {
         let authPct = '0%';
         let ruleFailures = 0;
-        let authWarning = '';
-        let wittyRemark = isStrict ? '' : 'No git history (・_・ヾ';
-        let mentorString = '';
-        
+
         if (gitStats) {
           authPct = `${(gitStats.ratio * 100).toFixed(1)}%`;
-          
-          if (!isStrict) {
-            if (gitStats.ratio < 0.1) wittyRemark = 'Artisan, hand-crafted code. Very 2019 of you (=^ ◡ ^=)';
-            else if (gitStats.ratio < 0.6) wittyRemark = 'A true centaur. Half human, half matrix (=｀ω´=)';
-            else if (gitStats.ratio < 0.95) wittyRemark = 'Orchestrating the swarm. You are the manager now (ФДФ)';
-            else wittyRemark = '100% Cybernetic. Codebase goes brrrrr (=ಠᆽಠ=)';
-          }
-
-          if (gitStats.ratio > 0.7) {
-            authWarning = pc.red(isStrict ? `⚠ High Risk Surface: ${authPct} AI-generated. Human review required.` : `⚠ Mentoring Emergency: ${authPct} AI-generated. High risk of skill atrophy.`);
-            if (!isStrict) {
-              mentorString = `\n    mentor: ${pc.blue('💡 Architecture Challenge Pending (See Git Hook)')}`;
-            }
-            ruleFailures++;
-          }
+          if (gitStats.ratio > 0.7) ruleFailures++;
         }
-        
+
         let cachePct = '0';
         let co2Str = '0.0kg';
         let regionStr = 'Global Average';
@@ -312,26 +293,9 @@ Conservative Floor: ${color(nmPct + '%')}`,
           regionStr = carbon.localRegion;
         }
 
-        const vibeRow = !isStrict ? `\n    vibe: ${pc.italic(wittyRemark)}` : '';
-        const capIcon = isStrict ? '' : '(Ф∇Ф) ';
-        const authIcon = isStrict ? '' : '(=^･ω･^=) ';
-        const costIcon = isStrict ? '' : '(O_O;) ';
-        const failIcon = isStrict ? '⚠' : '(=ಠᆽಠ=)';
-        const passIcon = isStrict ? '✓' : '(=^ ◡ ^=)';
-
-        note(
-          `${capIcon}${pc.dim('[1] Capability Engine')} ${pc.cyan('▰▰▰▰▰▰▱▱▱▱')}  ${pc.bold('Active')}
-    status: ${pc.green('✓ Configured')}
-${authIcon}${pc.dim('[2] AI Code Reliance')} ${pc.yellow('▰▰▰▰▰▰▰▰▱▱')}  ${pc.bold(`${authPct} Reliance`)}${vibeRow}
-    gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Human Mastery Sustained') : `${pc.red(`${failIcon} Deskilling Risk Detected`)} ${pc.red('⚠ Security Audit Required')}`}${mentorString}
-${costIcon}${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
-    waste: ${pc.yellow(`⚠ ${cachePct}% of tokens are redundant context reads`)}
-    carbon: ${pc.green(`✓ ${co2Str} (Est. ${regionStr} Grid)`)}
-${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`${failIcon} ${ruleFailures + 1} policy failures`) : pc.green(`${passIcon} All clear`)}`,
-          `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green(`${passIcon} safe surface`)} • ${co2Str}`
-        );
-
-        const timestamp = new Date().toISOString().split('T')[0];
+        // The thermal receipt below is the single canonical output for `status`.
+        // (The old @clack dashboard panel was removed: it duplicated the receipt's
+        // numbers in a second format, doubling the output on every run.)
         const isDanger = gitStats && gitStats.ratio > 0.7;
         const verdictZone = isDanger ? pc.red('DANGER ZONE') : pc.green('SAFE / SOVEREIGN');
         const verdictText = isDanger 
@@ -347,7 +311,12 @@ ${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`${failIcon} ${ruleFailure
         const policyStatus = ruleFailures > 0 ? pc.red('BLOCKED 🛑 (Threshold Exceeded)') : pc.green('PASS ✅ (Within Threshold)');
         const policyAction = ruleFailures > 0 ? 'Triggering Mandatory Mentoring Scenario.' : 'No intervention required.';
 
-        const totalTokensStr = carbon ? (carbon.totalTokens / 1000).toFixed(1) + 'k' : '0';
+        const fmtTokens = (n: number) =>
+          n >= 1_000_000_000 ? (n / 1_000_000_000).toFixed(1) + 'B'
+          : n >= 1_000_000 ? (n / 1_000_000).toFixed(1) + 'M'
+          : n >= 1_000 ? (n / 1_000).toFixed(1) + 'k'
+          : String(n);
+        const totalTokensStr = carbon ? fmtTokens(carbon.totalTokens) : '0';
         const humanSov = gitStats ? ((1 - gitStats.ratio) * 100).toFixed(1) + '%' : '100%';
         const authorshipStr = authPct + (isDanger ? pc.red(' (High Reliance)') : pc.green(' (Healthy)'));
 
