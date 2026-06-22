@@ -13,8 +13,7 @@
 
   <p>
     <b>Get Started Instantly:</b><br/>
-    <code>npm install -g @rosh100yx/outlier</code><br/>
-    <code>outlier status</code>
+    <code>npx @rosh100yx/outlier@latest</code>
   </p>
 
   <br/>
@@ -68,27 +67,26 @@
 ## Commands
 | Command | Purpose |
 |---------|---------|
-| `outlier` | Start the interactive Interactive Menu |
-| `outlier status` | Run the full AI reliance & capability audit |
-| `outlier authorship` | Scan git history for AI co-authorship ratio |
-| `outlier carbon` | Scan local logs for context waste & token costs |
-| `outlier capabilities` | Audit active MCPs, skills, and orchestrations |
-| `outlier policy` | Configure Personal, Team, or Enterprise guardrails in CI |
+| `npx @rosh100yx/outlier` | Run the full AI reliance & capability audit |
+| `npx @rosh100yx/outlier authorship` | Scan git history for AI co-authorship ratio |
+| `npx @rosh100yx/outlier carbon` | Scan local logs for context waste & token costs |
+| `npx @rosh100yx/outlier capabilities` | Audit active MCPs, skills, and orchestrations |
+| `npx @rosh100yx/outlier policy` | Configure Personal, Team, or Enterprise guardrails in CI |
 
-### Interactive Menu
-If you run `outlier` directly, you'll be greeted with our frictionless UX:
+### The UX Flow
+If you run `npx @rosh100yx/outlier` directly, you'll instantly get your Thermal Receipt and a simple list of follow-up commands:
 ```text
-? Select outlier governance module:
-  ── AUDIT ──
-❯ Status         Full audit (reliance + carbon + capabilities)
-  Authorship     Human vs AI, per commit
-  Carbon         Token waste + regional cost
-  Capabilities   What your agents can reach
-  Policy         Set guardrails / install the gate
-  ── LEARN ──
-  Impact         What happens over the next 5-10 years
-  Literature     The academic foundation
-  Participate    Contribute to the research
+  └────────────────────────────────────────────────────────┘
+
+ Explore Outlier:
+ ────────────────────────────────────────────────────────────
+   outlier policy        Configure CI/CD guardrails and thresholds
+   outlier capabilities  Audit active MCPs, skills, and orchestrations
+   outlier impact        See the compounding horizon of AI Deskilling
+   outlier participate   Help build the academic literature
+ ────────────────────────────────────────────────────────────
+
+ └ Prove Your Mastery: https://x.com/intent/tweet?...
 ```
 
 ## Quickstart: Your First Audit
