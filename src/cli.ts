@@ -415,8 +415,30 @@ Artifact:     ${pc.cyan(reportPath)}`,
     await new Promise(resolve => setTimeout(resolve, 600));
     s.stop('Secure connection established.');
 
+    const q1 = await select({
+      message: pc.cyan('What is your current engineering reality today?'),
+      options: [
+        { value: 'artisan', label: 'Solo Artisan (I write 90%+ of the code myself)' },
+        { value: 'manager', label: 'AI Manager (I prompt, the agents write)' },
+        { value: 'reviewer', label: 'Full-time Reviewer (I spend my days reviewing agent PRs)' }
+      ]
+    });
+
+    if (isCancel(q1)) { cancel('Confession aborted.'); process.exit(0); }
+
+    const q2 = await select({
+      message: pc.cyan('Do you feel you are losing your deep architectural mastery? (Deskilling)'),
+      options: [
+        { value: 'yes_heavy', label: 'Yes, heavily. I forget how my own systems work.' },
+        { value: 'yes_slight', label: 'Slightly. I rely on the AI to fix its own bugs.' },
+        { value: 'no', label: 'No. I maintain strict oversight and mastery.' }
+      ]
+    });
+    
+    if (isCancel(q2)) { cancel('Confession aborted.'); process.exit(0); }
+
     const feedback = await text({
-      message: pc.cyan('What is AI actually doing to your codebase? Are you a 10x dev or a 10x reviewer now?\n(Note: This will draft a public GitHub issue)'),
+      message: pc.cyan('In your own words, what is AI actually doing to your codebase or your job?\n(Note: This will draft a public GitHub issue)'),
       placeholder: 'Honestly, I just let the agent write the regex...',
       validate(value) {
         if (!value || value.length === 0) return `C'mon, confess something!`;
@@ -429,11 +451,13 @@ Artifact:     ${pc.cyan(reportPath)}`,
     }
 
     note(
-      `${pc.italic(`"${feedback}"`)}\n\nYour confession is safe with us. But if you want to make it official (and help us build what you need), we've generated a secure transmission link for you.`,
+      `${pc.italic(`"${feedback}"`)}\n\nYour confession is safe with us. But if you want to make it official (and help us build what you need for the literature), we've generated a secure transmission link for you.`,
       'The Confessional'
     );
 
-    const url = `https://github.com/rosh100yx/outlier/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=%5BConfessional%5D+Feedback&body=${encodeURIComponent("Drop a screenshot of your Thermal Receipt here! \n\n" + feedback.toString())}`;
+    const surveyData = `**Engineering Reality:** ${q1}\n**Deskilling Impact:** ${q2}\n**Thoughts:**\n${feedback}`;
+
+    const url = `https://github.com/rosh100yx/outlier/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=%5BConfessional%5D+Feedback&body=${encodeURIComponent("Drop a screenshot of your Thermal Receipt here! \n\n" + surveyData)}`;
     console.log(`\n${pc.bold('Submit here (and drop your screenshot!):')} ${pc.underline(pc.cyan(url))}\n`);
   }
 
