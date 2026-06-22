@@ -232,6 +232,8 @@ Conservative Floor: ${color(nmPct + '%')}`,
     }
     s.stop('Audit complete');
     
+    let finalReceipt = '';
+    
     try {
         let authPct = '0%';
         let ruleFailures = 0;
@@ -323,7 +325,7 @@ ${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`${failIcon} ${ruleFailure
             const timeStr = new Date().toLocaleTimeString('en-US', { hour12: false });
             const repoName = process.cwd().split('/').pop() || 'Unknown';
             
-            console.log(`
+            finalReceipt = `
  ${pc.dim('┌────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.cyan('█▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█')}  ${pc.bold(':: THERMAL AUDIT RECEIPT')}
  ${pc.dim('│')} ${pc.cyan('█▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄')}  ${pc.dim(`:: TIMESTAMP: ${dateStr}`)}
@@ -353,7 +355,7 @@ ${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`${failIcon} ${ruleFailure
  ${pc.dim('│')}  ${pc.italic(pc.dim('human mastery is the only true moat.'))}
  ${pc.dim('│')}
  ${pc.dim('│')}                   ${pc.bold(pc.cyan('***STAY VIGILANT***'))}
- ${pc.dim('└────────────────────────────────────────────────────────')}`);
+ ${pc.dim('└────────────────────────────────────────────────────────')}`;
         } else {
             note(
               `status: ${authPct} AI Reliance | ${cachePct}% Cache Bloat | ${co2Str}`,
@@ -557,6 +559,10 @@ Artifact:     ${pc.cyan(reportPath)}`,
   }
 
   outro('Local telemetry run completed. No data left your machine.');
+
+  if (typeof finalReceipt !== 'undefined' && finalReceipt) {
+    console.log(finalReceipt);
+  }
 
   // (Old artifact storytelling block removed to unify receipt UX)
 
