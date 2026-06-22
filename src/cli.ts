@@ -79,7 +79,7 @@ The results will assign you a "vibe" and evaluate if you are at risk of deskilli
 async function main() {
   console.clear();
   console.log(pc.cyan(ASCII_LOGO));
-  console.log(pc.dim('  Outlier v0.3.2 · AI Code Reliance & Telemetry Engine\n'));
+  console.log(pc.dim('  Outlier v0.4.0 · AI Code Reliance & Telemetry Engine\n'));
   
   let action = process.argv[2] as any;
   
