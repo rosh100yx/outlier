@@ -88,8 +88,25 @@ We are deliberately honest about this:
 | `npx @rosh100yx/outlier` | Run the full AI reliance & capability audit |
 | `npx @rosh100yx/outlier authorship` | Scan git history for AI co-authorship ratio |
 | `npx @rosh100yx/outlier carbon` | Scan local logs for context waste & token costs |
-| `npx @rosh100yx/outlier capabilities` | Audit active MCPs, skills, and orchestrations |
+| `npx @rosh100yx/outlier capabilities` | Map what your agents can reach + blast radius |
 | `npx @rosh100yx/outlier policy` | Configure Personal, Team, or Enterprise guardrails in CI |
+| `npx @rosh100yx/outlier --json` | Machine-readable audit for agents, CI, and swarms |
+
+### For agents, CI & swarms (`--json`)
+
+`outlier --json` emits a clean, ANSI-free JSON audit and nothing else — so an agent (or a supervisor in a swarm) can read its own authorship, cost, carbon, and **blast radius** before it acts, and CI can gate on it. Local-first: it still never leaves the machine.
+
+```jsonc
+{
+  "tool": "outlier",
+  "authorship": { "aiPercent": 7.4, "provenance": "proxy" },
+  "cost": { "totalTokens": 137700000, "estUsd": 63.76, "provenance": "measured" },
+  "carbon": { "co2Kg": 0.10, "region": "Global Average", "provenance": "estimated" },
+  "reach": { "blastRadius": "HIGH", "toolCount": 13, "writeOrDeployCount": 5,
+             "reasons": ["can deploy to production", "can push to your remote repos"] },
+  "policy": { "aiCapPercent": 70, "status": "within" }
+}
+```
 
 ### The UX Flow
 If you run `npx @rosh100yx/outlier` directly, you'll instantly get your Thermal Receipt and a simple list of follow-up commands:
