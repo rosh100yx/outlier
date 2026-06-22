@@ -1,19 +1,21 @@
 {
   "name": "@rosh100yx/outlier",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "AI Code Governance & Capability Auditing for the Terminal. Measures AI reliance, context waste, and enforces local CI/CD policies.",
   "bin": {
     "outlier": "bin/outlier.js"
   },
   "files": [
     "bin/outlier.js",
+    "bin/postinstall.js",
     "src",
     "data"
   ],
   "scripts": {
     "build": "bun build ./src/cli.ts --target=node --outfile bin/outlier.js",
     "test": "bun test",
-    "start": "bun run src/cli.ts"
+    "start": "bun run src/cli.ts",
+    "postinstall": "node bin/postinstall.js"
   },
   "type": "module",
   "private": false,
