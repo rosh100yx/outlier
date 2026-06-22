@@ -9,6 +9,15 @@
     <img src="https://img.shields.io/badge/Zero_Trust-Verified-orange?style=for-the-badge" />
     <img src="https://img.shields.io/badge/Carbon_Footprint-Tracked-lightgrey?style=for-the-badge" />
   </p>
+
+  <p>
+    <b>Get Started Instantly:</b><br/>
+    <code>npx @rosh100yx/outlier status</code>
+  </p>
+
+  <br/>
+  <img src="assets/cli-demo.png" alt="Outlier CLI Demo" width="800" />
+  <br/>
 </div>
 
 `outlier` is an open-source, local-first policy engine and governance framework designed to measure the true cost and risk of AI code generation. As teams accelerate with LLM agents (Cursor, Copilot, Claude Code), `outlier` acts as the definitive **Bouncer**—auditing AI authorship, mitigating deskilling risks, and tracking regional carbon footprints entirely locally. 
@@ -21,22 +30,9 @@
 
 > *"In a room full of agents" shifts the perspective. It acknowledges that the developer is no longer a solo coder; they are a manager of bots. The product exists to make sure the human doesn't get lazy while managing them. We all want our time back, but we don't want to lose control of the craft.*
 
-```text
-┌   outlier 
-│
-◇  [outlier] 4/5 policies • ✓ safe surface • Local CI ───────╮
-│                                                            │
-│  [1] Capability Engine ▰▰▰▰▰▰▱▱▱▱  Active                  │
-│      status: ✓ Configured                                  │
-│  (=^･ω･^=) [2] AI Code Reliance ▰▰▰▰▰▰▰▰▱▱  85.0% Reliance │
-│      vibe: Did you write any of this, or are you just the manager now? (ФДФ)
-│      gate: (=ಠᆽಠ=) Deskilling Risk Detected ⚠ Security Audit Required
-│  [3] Tokenomics & Cost ▰▰▰▰▰▰▰▰▰▱ 96.5% Cache Bloat        │
-│      waste: ⚠ 96.5% of tokens are redundant context reads  │
-│  Governance: (=ಠᆽಠ=) 1 policy failures                     │
-│                                                            │
-├────────────────────────────────────────────────────────────╯
-```
+<div align="center">
+  <img src="assets/codecore.gif" alt="Codecore Aesthetic" width="300" />
+</div>
 
 ## How It Works
 ```text
