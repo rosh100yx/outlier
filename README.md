@@ -50,9 +50,27 @@
                                  └───────────┘
 ```
 **Step 1:** Developer delegates code generation to an AI agent (Claude Code, Cursor).  
-**Step 2:** Developer attempts to merge code into the main branch.  
-**Step 3:** The `outlier` Bouncer hook triggers. If AI reliance > 70%, the commit is physically blocked.  
-**Step 4:** A "Mentoring Emergency" is triggered, forcing the developer to solve an architectural challenge to prove mastery and prevent deskilling.  
+**Step 2:** `outlier` reads the local trace — git history + AI logs — already on the machine.  
+**Step 3:** It reports who wrote the code, what it cost, and your authorship limit.  
+**Step 4:** Optionally, a local git hook *warns* (never silently blocks) when AI authorship exceeds your limit, so you review before you merge.  
+
+### What it reads (and what it doesn't)
+
+`outlier` is local-first. It reads, from your own machine, only:
+
+- **`git log`** of the current repo — to count commits carrying a `Co-Authored-By` trailer (the AI-authorship share).
+- **Your Claude Code session transcripts** at `~/.claude/projects/<this-repo>/*.jsonl` — to sum token usage for the cost / cache / carbon estimate. (Falls back to `~/.claude/tokenomics-log.jsonl` if present.)
+
+It does **not** send anything anywhere — no API calls, no telemetry, no account. Your code and prompts never leave the machine. The only network action in the whole tool is *you* choosing to open a share link or a feedback issue.
+
+### How accurate is it?
+
+We are deliberately honest about this:
+
+- **Authorship** is an exact count of trailer-tagged commits, but it is a *proxy* for real human-vs-AI effort, and it **under-counts** when your agent doesn't write the `Co-Authored-By` trailer. A surprisingly low number usually means missing trailers, not that you wrote everything.
+- **Tokens** are exact when the transcripts are present; otherwise the cost/carbon section reads zero.
+- **Cost ($)** is exact when the log carries a cost field, otherwise a *rough* blended token estimate (labelled as such).
+- **Carbon** is a rough estimate (inference energy varies ~4–20× in the literature) and the per-region figure is a *counterfactual* — cloud inference runs on the provider's grid, not yours. Treat it as an order-of-magnitude signal, not an audit.
 
 ## What Outlier Adds
 `outlier` builds a coordination layer on top of native agent workflows.

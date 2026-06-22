@@ -84,18 +84,24 @@ async function main() {
   
   
   if (action === '--help' || action === '-h' || action === 'help') {
-    console.log(pc.bold('\nCOMMANDS:'));
-    console.log(`  ${pc.cyan('outlier')}              Interactive menu (Onboarding for first-timers)`);
-    console.log(`  ${pc.cyan('outlier status')}       Run full AI reliance & capability audit`);
-    console.log(`  ${pc.cyan('outlier authorship')}   Scan git history for AI co-authorship ratio`);
-    console.log(`  ${pc.cyan('outlier carbon')}       Scan local logs for token waste & carbon cost`);
-    console.log(`  ${pc.cyan('outlier policy')}       Configure CI/CD guardrails and thresholds`);
-    console.log(`  ${pc.cyan('outlier impact')}       See the compounding horizon of AI Deskilling`);
-    console.log(`  ${pc.cyan('outlier knowledge')}    Explore references, graphs, and the core literature`);
-    console.log(`  ${pc.cyan('outlier participate')}  Help build the academic literature on AI deskilling`);
-    console.log(`  ${pc.cyan('outlier init')}         Install the once-per-day shell greeting`);
-    console.log(`  ${pc.cyan('outlier uninit')}       Remove the shell greeting`);
-    console.log('\n' + pc.dim('Run without arguments to start the interactive wizard.'));
+    console.log(pc.bold('\nWHAT OUTLIER DOES'));
+    console.log(pc.dim('  Reads your local git history and AI logs — on your machine — to show'));
+    console.log(pc.dim('  how much of your code AI wrote, what it cost, and how to keep your skill.\n'));
+    console.log(pc.bold('COMMANDS:'));
+    console.log(`  ${pc.cyan('outlier')}              Run the audit (the default — same as 'status')`);
+    console.log(`  ${pc.cyan('outlier status')}       Full audit: who wrote the code, what it cost, your limit`);
+    console.log(`  ${pc.cyan('outlier status --save')} Save the audit to ./outlier-audit.txt`);
+    console.log(`  ${pc.cyan('outlier authorship')}   Just the AI-vs-human commit breakdown`);
+    console.log(`  ${pc.cyan('outlier carbon')}       Just the token spend, cache waste & carbon`);
+    console.log(`  ${pc.cyan('outlier capabilities')} What tools & skills your agents can reach`);
+    console.log(`  ${pc.cyan('outlier policy')}       Set an AI-authorship limit (local git hook / CI)`);
+    console.log(`  ${pc.cyan('outlier impact')}       What AI reliance compounds to over time`);
+    console.log(`  ${pc.cyan('outlier knowledge')}    The research behind the metrics`);
+    console.log(`  ${pc.cyan('outlier participate')}  Share anonymous feedback for the deskilling study`);
+    console.log(`  ${pc.cyan('outlier init')}         Show a once-per-day reliance greeting in new shells`);
+    console.log(`  ${pc.cyan('outlier uninit')}       Remove that greeting`);
+    console.log('\n' + pc.dim('Local-first: nothing ever leaves your machine.'));
+    console.log(pc.dim('How it works → https://github.com/rosh100yx/outlier#how-it-works'));
     process.exit(0);
   }
 
@@ -275,12 +281,22 @@ Conservative Floor: ${color(nmPct + '%')}`,
     
     try {
         let authPct = '0%';
+        let nmFloorStr = '';
         let ruleFailures = 0;
 
         if (gitStats) {
           authPct = `${(gitStats.ratio * 100).toFixed(1)}%`;
+          // Conservative floor: non-merge commits only (merges often lack the trailer).
+          nmFloorStr = ` ${pc.dim(`(${(gitStats.ratioNoMerges * 100).toFixed(0)}% excl. merges)`)}`;
           if (gitStats.ratio > 0.7) ruleFailures++;
         }
+
+        // Honesty: a very low ratio alongside heavy token use usually means the agent
+        // doesn't tag commits, not that the human wrote everything.
+        const lowTrailerWarn =
+          gitStats && gitStats.ratio < 0.1 && carbon && carbon.totalTokens > 1_000_000
+            ? `\n ${pc.dim('│')}   ${pc.dim('Low %? Your agent may not tag commits — outlier counts only')}\n ${pc.dim('│')}   ${pc.dim('commits with a Co-Authored-By trailer.')}`
+            : '';
 
         let cachePct = '0';
         let co2Str = '0.0kg';
@@ -344,10 +360,11 @@ Conservative Floor: ${color(nmPct + '%')}`,
  ${pc.dim('│')} ${pc.cyan('█▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄')}  ${pc.dim(`:: ${repoName} · ${dateStr}`)}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgBlue(' WHO WROTE THE CODE '))}
- ${pc.dim('│')} AI    ${aiBar} ${authorshipStr}
+ ${pc.dim('│')} AI    ${aiBar} ${authorshipStr}${nmFloorStr}
  ${pc.dim('│')} You   ${humanBar} ${pc.bold(humanSov)}
+ ${pc.dim('│')} ${pc.dim('Typical: solo devs 10–40% · AI-framework repos up to ~80%')}
  ${pc.dim('│')}
- ${pc.dim('│')} ${verdictZone} — ${verdictText.split('\n').join('\n ' + pc.dim('│') + '   ')}
+ ${pc.dim('│')} ${verdictZone} — ${verdictText.split('\n').join('\n ' + pc.dim('│') + '   ')}${lowTrailerWarn}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgMagenta(' WHAT IT COST '))}
  ${pc.dim('│')} Tokens used      ${pc.bold(totalTokensStr)}
@@ -361,8 +378,9 @@ Conservative Floor: ${color(nmPct + '%')}`,
  ${pc.dim('│')} AI cap   ${pc.bold('70%')} ${pc.dim('· change with: outlier policy')}
  ${pc.dim('│')} Status   ${policyStatus} ${pc.dim('·')} ${policyAction}
  ${pc.dim('├────────────────────────────────────────────────────────')}
- ${pc.dim('│')} ${pc.dim(pc.italic('Run this before you start. Keep the skill while you'))}
- ${pc.dim('│')} ${pc.dim(pc.italic('use the speed.'))}
+ ${pc.dim('│')} ${pc.dim('Numbers are local estimates — authorship is a proxy and')}
+ ${pc.dim('│')} ${pc.dim('carbon is rough. How it works: outlier --help')}
+ ${pc.dim('│')} ${pc.dim(pc.italic('Run this before you start. Keep the skill while you use the speed.'))}
  ${pc.dim('└────────────────────────────────────────────────────────')}`;
         } else {
             note(
@@ -566,10 +584,20 @@ Artifact:     ${pc.cyan(reportPath)}`,
     console.log(`\nRead the full academic foundation at: ${pc.underline('https://github.com/rosh100yx/outlier')}\n`);
   }
 
-  outro('Local telemetry run completed. No data left your machine.');
+  outro('Done — nothing left your machine. (How it works: outlier --help)');
 
   if (typeof finalReceipt !== 'undefined' && finalReceipt) {
     console.log(finalReceipt);
+
+    // --save: write a plain-text (no color) copy of the receipt next to the repo.
+    if (process.argv.includes('--save')) {
+      const stripAnsi = (s: string) => s.replace(/\x1b\[[0-9;]*m/g, '');
+      const savePath = join(process.cwd(), 'outlier-audit.txt');
+      try {
+        writeFileSync(savePath, stripAnsi(finalReceipt).trimStart() + '\n');
+        console.log(pc.dim(`\n 💾 Saved to ${savePath}`));
+      } catch {}
+    }
   }
 
   if (action === 'status') {
@@ -586,13 +614,20 @@ Artifact:     ${pc.cyan(reportPath)}`,
     }
     console.log('');
     console.log(
-      pc.bold(pc.cyan(' └ Research: ')) + 'Contribute to the AI deskilling study ➔ ' + pc.bold('outlier participate')
+      pc.bold(pc.green(' 📸 Share: ')) + 'Screenshot this receipt, or post your score ➔ ' +
+      pc.underline('https://x.com/intent/tweet?text=I+just+audited+my+codebase+with+%23Outlier')
     );
     console.log(
-      pc.bold(pc.green(' └ Share: ')) + pc.underline('https://x.com/intent/tweet?text=I+just+audited+my+codebase+with+%23Outlier')
+      pc.bold(pc.cyan(' 🔬 Research: ')) + 'Help the AI-deskilling study — type:  ' + pc.bold('outlier participate')
+    );
+    if (!process.argv.includes('--save')) {
+      console.log(pc.dim(' 💾 Save: outlier status --save'));
+    }
+    console.log(
+      pc.dim('\n outlier does more than this audit — see how you adopt AI, what it')
     );
     console.log(
-      pc.dim('\n (To see all local governance modules, run: ') + pc.dim(pc.bold('outlier --help')) + pc.dim(')')
+      pc.dim(' costs, and what is actually working:  ') + pc.bold(pc.cyan('outlier --help'))
     );
   }
 }
