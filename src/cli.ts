@@ -292,14 +292,14 @@ ${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`${failIcon} ${ruleFailure
         const isDanger = gitStats && gitStats.ratio > 0.7;
         const verdictZone = isDanger ? pc.red('DANGER ZONE') : pc.green('SAFE / SOVEREIGN');
         const verdictText = isDanger 
-          ? `You are transitioning from 'Creator' to 'Reviewer'.\n │   At this trajectory, you risk losing architectural \n │   muscle memory on this codebase within 6 months.` 
-          : `You are maintaining strong architectural intimacy.\n │   Your human judgement remains the primary driver\n │   of logic in this system.`;
+          ? `You are transitioning from 'Creator' to 'Reviewer'.\n   At this trajectory, you risk losing architectural \n   muscle memory on this codebase within 6 months.` 
+          : `You are maintaining strong architectural intimacy.\n   Your human judgement remains the primary driver\n   of logic in this system.`;
           
         const isInefficient = parseFloat(cachePct) > 40;
         const cacheVerdict = isInefficient ? pc.yellow('INEFFICIENT') : pc.green('EFFICIENT');
         const cacheText = isInefficient 
-          ? `You are burning paid API tokens and excess compute\n │   on files the agent isn't even touching.` 
-          : `Your token usage and human judgment are tightly\n │   coupled. High signal-to-noise ratio.`;
+          ? `You are burning paid API tokens and excess compute\n   on files the agent isn't even touching.` 
+          : `Your token usage and human judgment are tightly\n   coupled. High signal-to-noise ratio.`;
           
         const policyStatus = ruleFailures > 0 ? pc.red('BLOCKED 🛑 (Threshold Exceeded)') : pc.green('PASS ✅ (Within Threshold)');
         const policyAction = ruleFailures > 0 ? 'Triggering Mandatory Mentoring Scenario.' : 'No intervention required.';
@@ -324,40 +324,36 @@ ${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`${failIcon} ${ruleFailure
             const repoName = process.cwd().split('/').pop() || 'Unknown';
             
             console.log(`
- ┌────────────────────────────────────────────────────────
- │               OUTLIER GOVERNANCE ENGINE                
- │                 *** THERMAL RECEIPT ***                
- ├────────────────────────────────────────────────────────
- │ DATE: ${dateStr.padEnd(41)}
- │ TIME: ${timeStr.padEnd(41)}
- │ REPO: ${repoName.substring(0,20).padEnd(41)}
- ├────────────────────────────────────────────────────────
- │ [ COGNITIVE BUDGET ]
- │ AI Authorship     ................. ${aiBar} ${authorshipStr}
- │ Human Sovereignty ................. ${humanBar} ${humanSov}
- │
- │ ↳ Verdict: ${verdictZone}
- │   ${verdictText}
- ├────────────────────────────────────────────────────────
- │ [ FINANCIAL & COMPUTE TOLL ]
- │ Tokens Burnt      ................. ${totalTokensStr} vs Human Judgment
- │ Cache Bloat       ................. ${cacheBar} ${cachePct}% (Unmodified context)
- │ Regional Grid     ................. ${regionStr}
- │
- │ ↳ Verdict: ${cacheVerdict}
- │   ${cacheText}
- ├────────────────────────────────────────────────────────
- │ [ POLICY ENFORCEMENT ]
- │ Status .................................. ${policyStatus}
- │ Action .................................. ${policyAction}
- ├────────────────────────────────────────────────────────
- │
- │  ${pc.italic('patterns emerge in the commit history,')}
- │  ${pc.italic('code becomes commoditized by algorithms.')}
- │  ${pc.italic('human mastery is the only true moat.')}
- │
- │                   ***STAY VIGILANT***
- └────────────────────────────────────────────────────────`);
+ ${pc.dim('┌────────────────────────────────────────────────────────')}
+ ${pc.dim('│')} ${pc.cyan('█▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█')}  ${pc.bold(':: THERMAL AUDIT RECEIPT')}
+ ${pc.dim('│')} ${pc.cyan('█▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄')}  ${pc.dim(`:: TIMESTAMP: ${dateStr}`)}
+ ${pc.dim('├────────────────────────────────────────────────────────')}
+ ${pc.dim('│')} ${pc.bold(pc.bgBlue(' [ COGNITIVE BUDGET ] '))}
+ ${pc.dim('│')} AI Authorship     ................. ${aiBar} ${authorshipStr}
+ ${pc.dim('│')} Human Sovereignty ................. ${humanBar} ${humanSov}
+ ${pc.dim('│')}
+ ${pc.dim('│')} ↳ Verdict: ${verdictZone}
+ ${pc.dim('│')}   ${verdictText.split('\n').join('\n ' + pc.dim('│') + ' ')}
+ ${pc.dim('├────────────────────────────────────────────────────────')}
+ ${pc.dim('│')} ${pc.bold(pc.bgMagenta(' [ FINANCIAL & COMPUTE TOLL ] '))}
+ ${pc.dim('│')} Tokens Burnt      ................. ${totalTokensStr} vs Human Judgment
+ ${pc.dim('│')} Cache Bloat       ................. ${cacheBar} ${cachePct}% (Unmodified context)
+ ${pc.dim('│')} Regional Grid     ................. ${regionStr}
+ ${pc.dim('│')}
+ ${pc.dim('│')} ↳ Verdict: ${cacheVerdict}
+ ${pc.dim('│')}   ${cacheText.split('\n').join('\n ' + pc.dim('│') + ' ')}
+ ${pc.dim('├────────────────────────────────────────────────────────')}
+ ${pc.dim('│')} ${pc.bold(pc.bgYellow(pc.black(' [ POLICY ENFORCEMENT ] ')))}
+ ${pc.dim('│')} Status .................................. ${policyStatus}
+ ${pc.dim('│')} Action .................................. ${policyAction}
+ ${pc.dim('├────────────────────────────────────────────────────────')}
+ ${pc.dim('│')}
+ ${pc.dim('│')}  ${pc.italic(pc.dim('patterns emerge in the commit history,'))}
+ ${pc.dim('│')}  ${pc.italic(pc.dim('code becomes commoditized by algorithms.'))}
+ ${pc.dim('│')}  ${pc.italic(pc.dim('human mastery is the only true moat.'))}
+ ${pc.dim('│')}
+ ${pc.dim('│')}                   ${pc.bold(pc.cyan('***STAY VIGILANT***'))}
+ ${pc.dim('└────────────────────────────────────────────────────────')}`);
         } else {
             note(
               `status: ${authPct} AI Reliance | ${cachePct}% Cache Bloat | ${co2Str}`,
