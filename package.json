@@ -15,7 +15,8 @@
     "build": "bunx tsc --noEmit && bun build ./src/cli.ts --target=node --outfile bin/outlier.js",
     "test": "bun test",
     "start": "bun run src/cli.ts",
-    "postinstall": "node bin/postinstall.js"
+    "postinstall": "node bin/postinstall.js",
+    "prepublishOnly": "npm run build"
   },
   "type": "module",
   "private": false,
