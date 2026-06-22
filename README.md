@@ -67,10 +67,13 @@
 ## Commands
 | Command | Purpose |
 |---------|---------|
-| `outlier audit` | Run the standard telemetry dashboard (Cats + Vibes + Metrics) |
-| `outlier audit --strict` | Run the dashboard without the Cats/Vibes (Enterprise Dry Mode) |
-| `outlier policy` | Interactively select and install the Git Pre-Commit Hook (Bouncer) |
-| `outlier capabilities` | Audit your workspace for active MCP servers and Open Session Skills |
+| `outlier` | Start the interactive Onboarding Wizard (Recommended for first-timers) |
+| `outlier --help` | View the CLI help menu and all available commands |
+| `outlier status` | Run the full AI reliance & capability audit (Generates the Thermal Receipt) |
+| `outlier authorship` | Scan git history for AI co-authorship ratio and Hallucination Risk |
+| `outlier carbon` | Scan local logs for context waste & token costs |
+| `outlier policy` | Configure Personal, Team, or Enterprise guardrails in CI |
+| `outlier confessional` | Submit qualitative feedback or feature requests directly from the terminal |
 
 ## Quickstart: Your First Audit
 
@@ -104,7 +107,7 @@
 ## FAQ
 
 **Does this send my code or prompts to the cloud?**  
-No. `outlier` is a zero-trust, local-first engine. It parses `git log` and local JSONL token logs. Your code and token usage never leave your machine.
+**Absolutely not.** `outlier` is built on a strict **Zero-Trust, Local-First Architecture**. It runs native parsing commands against your `.git/` history and your local `~/.claude/` session logs. It never calls an API, it never extracts your proprietary data, and it never phones home. Your research, your code, and your prompts stay 100% on your machine. We believe in open-source integrity.
 
 **Do I need to be using a specific IDE?**  
 `outlier` is IDE-agnostic. It works by parsing standard `Co-Authored-By` Git trailers, meaning it supports Claude Code, Cursor, Aider, and manual generation.
