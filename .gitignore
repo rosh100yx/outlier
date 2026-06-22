@@ -7,5 +7,7 @@
 # local scratch
 *.log
 tmp/
+bin/outlier
+*.tgz
 .env*
 node_modules

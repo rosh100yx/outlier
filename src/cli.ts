@@ -318,8 +318,8 @@ ${caps.skills.length > 5 ? pc.red('⚠ High Surface Area: Ensure strict authorsh
 
       const isStrict = process.argv.includes('--strict');
       const bouncerMsg = isStrict 
-        ? `echo "❌ outlier policy violation: AI authorship ($CURRENT_RATIO%) exceeds threshold ($MAX_RATIO%)"`
-        : `echo "😾 ✋ The Bouncer says no: Your code is $CURRENT_RATIO% AI-generated."\n    echo "A human must review this before it enters the club (main branch)."`;
+        ? `echo "⚠️  outlier policy warning: AI authorship ($CURRENT_RATIO%) exceeds threshold ($MAX_RATIO%)"`
+        : `echo "🛡️  Outlier Bouncer: Repository AI-generation ($CURRENT_RATIO%) exceeds your defined mastery threshold ($MAX_RATIO%)."\n    echo "Take a moment to review your recent architectural decisions. Ensure you still understand the system."`;
 
       const hookPath = join(gitDir, 'hooks', 'pre-commit');
       if (existsSync(hookPath)) {
@@ -337,10 +337,11 @@ if [ "$TOTAL" -eq 0 ]; then exit 0; fi
 CURRENT_RATIO=$(awk "BEGIN {print ($AI / $TOTAL) * 100}")
 MAX_RATIO=${maxAuthorship}
 
-OVER_LIMIT=$(awk "BEGIN {if ($CURRENT_RATIO > $MAX_RATIO) print 1; else print 0}")
+OVER_LIMIT=$(awk "BEGIN {print ($CURRENT_RATIO > $MAX_RATIO) ? 1 : 0}")
 if [ "$OVER_LIMIT" -eq 1 ]; then
     ${bouncerMsg}
-    exit 1
+    # Warn instead of hard-blocking the commit, protecting human iterations
+    exit 0
 fi
 echo "✅ Governance Policy OK"
 `;
@@ -362,7 +363,7 @@ Enforcement:  ${pc.cyan('Local pre-commit hook installed (backup created)')}`,
       await new Promise(resolve => setTimeout(resolve, 1200));
       
       const reportPath = join(process.cwd(), 'outlier-audit-report.jsonl');
-      writeFileSync(reportPath, JSON.stringify({ timestamp: new Date().toISOString(), status: 'COMPLIANT', policy: 'Decree 142', humanOversight: true }) + '\\n');
+      writeFileSync(reportPath, JSON.stringify({ timestamp: new Date().toISOString(), status: 'PREVIEW', policy: 'Decree 142', simulatedOversight: true }) + '\n');
       s.stop('Audit Generated');
 
       note(
@@ -379,10 +380,10 @@ Artifact:     ${pc.cyan(reportPath)}`,
     s.stop('Secure connection established.');
 
     const feedback = await text({
-      message: pc.cyan('What is AI actually doing to your codebase? Are you a 10x dev or a 10x reviewer now?\n(Or just tell us what Outlier should measure next)'),
+      message: pc.cyan('What is AI actually doing to your codebase? Are you a 10x dev or a 10x reviewer now?\n(Note: This will draft a public GitHub issue)'),
       placeholder: 'Honestly, I just let the agent write the regex...',
       validate(value) {
-        if (value.length === 0) return `C'mon, confess something!`;
+        if (!value || value.length === 0) return `C'mon, confess something!`;
       },
     });
 
