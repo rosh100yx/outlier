@@ -20,6 +20,74 @@ const ASCII_LOGO = `
 
 let finalReceipt = '';
 
+// Build a stable, machine-readable audit object. This is the contract agents,
+// swarms, and CI parse — everything the human receipt shows, as plain JSON.
+async function emitJson() {
+  const pkg = require('../package.json');
+  const [gitStats, carbon, caps] = await Promise.all([
+    getAuthorshipStats().catch(() => null),
+    getCarbonStats().catch(() => null),
+    getCapabilitiesStats().catch(() => null),
+  ]);
+
+  const aiRatio = gitStats ? gitStats.ratio : 0;
+  const cap = 0.70;
+  const writeOrDeploy = caps
+    ? caps.mcps.filter((m: any) => ['money', 'exec', 'deploy', 'write-remote', 'write-local'].includes(m.reach)).length
+    : 0;
+
+  const out = {
+    tool: 'outlier',
+    version: pkg.version,
+    repo: process.cwd().split('/').pop(),
+    generatedAt: new Date().toISOString(),
+    localFirst: true,
+    authorship: gitStats ? {
+      aiPercent: +(gitStats.ratio * 100).toFixed(1),
+      aiRatio: gitStats.ratio,
+      totalCommits: gitStats.total,
+      aiCommits: gitStats.ai,
+      nonMergePercent: +(gitStats.ratioNoMerges * 100).toFixed(1),
+      provenance: 'proxy',
+      note: 'git Co-Authored-By trailers; under-counts if the agent omits the trailer',
+    } : null,
+    cost: carbon ? {
+      totalTokens: carbon.totalTokens,
+      outputTokens: carbon.outputTokens,
+      cacheReusePercent: carbon.totalTokens ? +((carbon.cacheReadTokens / carbon.totalTokens) * 100).toFixed(1) : 0,
+      estUsd: +carbon.estUsd.toFixed(2),
+      costIsReal: carbon.costIsReal,
+      provenance: carbon.tokenProvenance,
+      source: carbon.sourceLabel,
+    } : null,
+    carbon: carbon ? {
+      energyKwh: +carbon.energyKwh.toFixed(4),
+      co2Kg: +carbon.localCo2Kg.toFixed(4),
+      region: carbon.localRegion,
+      provenance: carbon.carbonProvenance,
+      note: 'counterfactual: cloud inference runs on the provider grid, not yours',
+    } : null,
+    reach: caps ? {
+      blastRadius: caps.blastRadius,
+      reasons: caps.blastReasons,
+      toolCount: caps.mcps.length,
+      writeOrDeployCount: writeOrDeploy,
+      tools: caps.mcps,
+      subagents: caps.subagents,
+      hooks: caps.hooks,
+      skills: caps.skills.length,
+      orchestration: caps.hasOrchestration,
+    } : null,
+    policy: {
+      aiCapPercent: cap * 100,
+      status: aiRatio > cap ? 'over' : 'within',
+    },
+  };
+
+  // Only JSON on stdout — nothing else.
+  process.stdout.write(JSON.stringify(out, null, 2) + '\n');
+}
+
 async function runOnboarding() {
   console.log(pc.cyan(ASCII_LOGO));
   intro(pc.inverse(' outlier: Welcome '));
@@ -78,11 +146,18 @@ async function main() {
     action = 'status';
   }
 
+  // Agent / CI / swarm contract: --json emits a structured audit and nothing else
+  // (no logo, no spinner, no ANSI). This is how an agent perceives outlier.
+  if (process.argv.includes('--json')) {
+    await emitJson();
+    process.exit(0);
+  }
+
   console.log(pc.cyan(ASCII_LOGO));
   const pkg = require('../package.json');
   console.log(pc.dim(`  Outlier v${pkg.version} · AI Code Reliance & Telemetry Engine\n`));
-  
-  
+
+
   if (action === '--help' || action === '-h' || action === 'help') {
     console.log(pc.bold('\nWHAT OUTLIER DOES'));
     console.log(pc.dim('  Reads your local git history and AI logs — on your machine — to show'));
@@ -91,6 +166,7 @@ async function main() {
     console.log(`  ${pc.cyan('outlier')}              Run the audit (the default — same as 'status')`);
     console.log(`  ${pc.cyan('outlier status')}       Full audit: who wrote the code, what it cost, your limit`);
     console.log(`  ${pc.cyan('outlier status --save')} Save the audit to ./outlier-audit.txt`);
+    console.log(`  ${pc.cyan('outlier --json')}       Machine-readable audit (for agents, CI, swarms)`);
     console.log(`  ${pc.cyan('outlier authorship')}   Just the AI-vs-human commit breakdown`);
     console.log(`  ${pc.cyan('outlier carbon')}       Just the token spend, cache waste & carbon`);
     console.log(`  ${pc.cyan('outlier capabilities')} What tools & skills your agents can reach`);
