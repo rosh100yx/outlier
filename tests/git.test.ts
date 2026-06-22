@@ -12,6 +12,8 @@ describe("Git Authorship Parser", () => {
     rmSync(repoPath, { recursive: true, force: true });
     mkdirSync(repoPath, { recursive: true });
     spawnSync(["git", "init"], { cwd: repoPath });
+    spawnSync(["git", "config", "user.email", "test@example.com"], { cwd: repoPath });
+    spawnSync(["git", "config", "user.name", "Test Bot"], { cwd: repoPath });
     writeFileSync(join(repoPath, "file1.txt"), "hello");
     spawnSync(["git", "add", "."], { cwd: repoPath });
     spawnSync(["git", "commit", "-m", "init"], { cwd: repoPath });
