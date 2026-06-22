@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/cover.jpg" alt="Outlier Cover" width="100%" />
+  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/cover.jpg" alt="Outlier Cover" width="100%" />
   <h1>outlier</h1>
   <p><b>The Governance & Policy Engine for AI Engineering</b></p>
   <p><i>Measure AI adoption. Enforce Zero-Trust. Protect Human Mastery.</i></p>
@@ -21,7 +21,7 @@
   </p>
 
   <br/>
-  <img src="assets/cli-demo.png" alt="Outlier CLI Demo" width="800" />
+  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/cli-demo.png" alt="Outlier CLI Demo" width="800" />
   <br/>
 </div>
 
@@ -36,7 +36,7 @@
 > *"In a room full of agents" shifts the perspective. It acknowledges that the developer is no longer a solo coder; they are a manager of bots. The product exists to make sure the human doesn't get lazy while managing them. We all want our time back, but we don't want to lose control of the craft.*
 
 <div align="center">
-  <img src="assets/codecore.gif" alt="Codecore Aesthetic" width="300" />
+  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/codecore.gif" alt="Codecore Aesthetic" width="300" />
 </div>
 
 ## How It Works
