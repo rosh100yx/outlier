@@ -25,12 +25,32 @@ async function runOnboarding() {
   intro(pc.inverse(' outlier: Welcome '));
 
   note(
+    `Outlier is a local-first Policy Engine & Governance Framework for AI Engineering.
+
+As agents write more of our code, we lose visibility into:
+1. Deskilling Risk (Are we becoming spectators in our own codebase?)
+2. Carbon Cost (What is the true regional energy cost of token caching?)
+3. Capability Drift (What hidden skills are our agents using?)`,
+    'The Problem: AI Safety in Development'
+  );
+
+  note(
     `Outlier operates entirely on your machine.
 - Local Only: No API keys. No cloud telemetry. No data leaves your machine.
 - Native Auditing: We read your local \`~/.claude\` logs and \`.git/\` commit history.
 - Actionable Policies: Enforce rules locally via terminal or Git hooks.`,
     'Privacy & Zero-Trust Principles'
   );
+
+  const ready = await confirm({
+    message: 'Are you ready to run your first Governance Audit and generate your Thermal Receipt?',
+    initialValue: true,
+  });
+
+  if (isCancel(ready) || !ready) {
+    cancel('Onboarding paused. Run outlier again when you are ready.');
+    process.exit(0);
+  }
 
   const configPath = join(os.homedir(), '.outlier_config');
   writeFileSync(configPath, JSON.stringify({ onboarded: true, date: new Date().toISOString() }));
