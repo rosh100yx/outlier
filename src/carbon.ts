@@ -1,6 +1,6 @@
 import { homedir } from 'os';
 import { join } from 'path';
-import { readFile, access } from 'fs/promises';
+import { readFile, access, readdir } from 'fs/promises';
 import gridFactors from '../data/grid-factors.json';
 
 export interface CarbonStats {
@@ -23,33 +23,70 @@ export interface TokenLogParser {
 
 export class ClaudeLogParser implements TokenLogParser {
   private baseDir: string;
-  constructor(baseDir = homedir()) {
+  private cwd: string;
+  constructor(baseDir = homedir(), cwd = process.cwd()) {
     this.baseDir = baseDir;
+    this.cwd = cwd;
   }
+
   async parse() {
+    // Primary source: the standard Claude Code session transcripts for THIS repo.
+    // Claude Code stores them at ~/.claude/projects/<cwd-with-slashes-as-dashes>/*.jsonl,
+    // one JSON object per line; assistant turns carry `message.usage`.
+    const slug = this.cwd.replace(/\//g, '-');
+    const projectDir = join(this.baseDir, '.claude', 'projects', slug);
+    try {
+      const files = (await readdir(projectDir)).filter(f => f.endsWith('.jsonl'));
+      if (files.length > 0) {
+        let total = 0, output = 0, cache = 0;
+        const sessions = new Set<string>();
+        for (const file of files) {
+          let text = '';
+          try { text = await readFile(join(projectDir, file), 'utf-8'); } catch { continue; }
+          for (const line of text.split('\n')) {
+            if (!line.trim()) continue;
+            try {
+              const d = JSON.parse(line);
+              const u = (d.message && d.message.usage) || d.usage;
+              if (u) {
+                const inp = u.input_tokens || 0;
+                const out = u.output_tokens || 0;
+                const cr = u.cache_read_input_tokens || 0;
+                const cw = u.cache_creation_input_tokens || 0;
+                total += inp + out + cr + cw;
+                output += out;
+                cache += cr;
+              }
+              if (d.sessionId) sessions.add(d.sessionId);
+            } catch {}
+          }
+        }
+        // Standard transcripts carry no cost field; cost is estimated downstream.
+        return { total, output, cache, sessions: sessions.size, cost: 0 };
+      }
+    } catch {}
+
+    // Fallback: the optional tokenomics-log.jsonl (written by a custom Stop hook;
+    // carries a real cost_usd field when present).
     const logPath = join(this.baseDir, '.claude', 'tokenomics-log.jsonl');
-    
     try {
       await access(logPath);
     } catch {
       return { total: 0, output: 0, cache: 0, sessions: 0, cost: 0 };
     }
-
     const text = await readFile(logPath, 'utf-8');
-    const lines = text.trim().split('\n').filter(l => l.length > 0);
-
     let total = 0, output = 0, cache = 0, cost = 0;
     const sessions = new Set<string>();
-
-    for (const line of lines) {
+    for (const line of text.split('\n')) {
+      if (!line.trim()) continue;
       try {
         const data = JSON.parse(line);
         total += data.total_tokens || 0;
         output += data.output_tokens || 0;
         cache += data.cache_read || 0;
-        cost += data.cost_usd || 0; // present when the log was written with a cost field
+        cost += data.cost_usd || 0;
         if (data.session_id) sessions.add(data.session_id);
-      } catch (e) {}
+      } catch {}
     }
     return { total, output, cache, sessions: sessions.size, cost };
   }
