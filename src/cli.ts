@@ -313,6 +313,15 @@ Conservative Floor: ${color(nmPct + '%')}`,
           sourceLabel = carbon.sourceLabel;
         }
 
+        // One-line agent-reach summary (full detail in `outlier capabilities`).
+        let reachStr = pc.dim('run: outlier capabilities');
+        if (capabilities) {
+          const rc = capabilities.blastRadius;
+          const col = rc === 'CRITICAL' || rc === 'HIGH' ? pc.red : rc === 'MEDIUM' ? pc.yellow : pc.green;
+          const risky = capabilities.mcps.filter((m: any) => ['money','exec','deploy','write-remote','write-local'].includes(m.reach)).length;
+          reachStr = `${col(pc.bold(rc))} · ${capabilities.mcps.length} tools` + (risky ? pc.dim(`, ${risky} can write/deploy`) : '');
+        }
+
         // The thermal receipt below is the single canonical output for `status`.
         // (The old @clack dashboard panel was removed: it duplicated the receipt's
         // numbers in a second format, doubling the output on every run.)
@@ -379,6 +388,10 @@ Conservative Floor: ${color(nmPct + '%')}`,
  ${pc.dim('│')}
  ${pc.dim('│')} ${cacheVerdict} — ${cacheText.split('\n').join('\n ' + pc.dim('│') + '   ')}
  ${pc.dim('├────────────────────────────────────────────────────────')}
+ ${pc.dim('│')} ${pc.bold(pc.bgCyan(pc.black(' WHAT YOUR AGENTS CAN REACH ')))}
+ ${pc.dim('│')} Blast radius   ${reachStr}
+ ${pc.dim('│')} ${pc.dim('Full map (deploy/push/write tools): outlier capabilities')}
+ ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgYellow(pc.black(' YOUR LIMIT ')))}
  ${pc.dim('│')} AI cap   ${pc.bold('70%')} ${pc.dim('· change with: outlier policy')}
  ${pc.dim('│')} Status   ${policyStatus} ${pc.dim('·')} ${policyAction}
@@ -399,24 +412,42 @@ Conservative Floor: ${color(nmPct + '%')}`,
     }
 
   } else if (action === 'capabilities') {
-    s.start('Auditing AI surface area (MCPs, Skills, Orchestrators)...');
+    s.start('Mapping what your agents can reach...');
     try {
       const caps = await getCapabilitiesStats();
-      s.stop('Capabilities Scan Complete');
+      s.stop('Reach map complete');
+
+      const radiusColor = caps.blastRadius === 'CRITICAL' ? pc.red
+        : caps.blastRadius === 'HIGH' ? pc.red
+        : caps.blastRadius === 'MEDIUM' ? pc.yellow : pc.green;
+
+      // Group tools by reach so the risky ones stand out.
+      const order: string[] = ['money', 'exec', 'deploy', 'write-remote', 'write-local', 'data', 'network', 'model', 'read'];
+      const reachLabel: Record<string, string> = {
+        money: 'can move money', exec: 'can run shell', deploy: 'can deploy', 'write-remote': 'can push to repos',
+        'write-local': 'can write files', data: 'data stores', network: 'network', model: 'models', read: 'read-only',
+      };
+      const riskyReaches = new Set(['money', 'exec', 'deploy', 'write-remote', 'write-local']);
+      const toolLines = caps.mcps.length === 0 ? '  None detected'
+        : order.filter(r => caps.mcps.some(m => m.reach === r)).map(r => {
+            const names = caps.mcps.filter(m => m.reach === r).map(m => m.name).join(', ');
+            const tag = riskyReaches.has(r) ? pc.red(`[${reachLabel[r]}]`) : pc.dim(`[${reachLabel[r]}]`);
+            return `  ${tag} ${names}`;
+          }).join('\n');
 
       note(
-        `Orchestration Policy: ${caps.hasOrchestration ? pc.green('Detected (AGENTS.md)') : pc.yellow('None')}
+        `${pc.bold('BLAST RADIUS:')} ${radiusColor(pc.bold(caps.blastRadius))}  ${pc.dim('— if an agent or a prompt injection drives your tools')}
+${caps.blastReasons.length ? caps.blastReasons.map(r => `  ${pc.red('•')} ${r}`).join('\n') : pc.green('  • read-only — limited reach')}
 
-Active Skills (${caps.skills.length}):
-${caps.skills.length > 0 ? pc.cyan(caps.skills.map(s => `  • ${s}`).join('\n')) : '  None'}
+${pc.bold(`What your agents can reach (${caps.mcps.length} MCP tools):`)}
+${toolLines}
 
-Active MCP Servers (${caps.mcps.length}):
-${caps.mcps.length > 0 ? pc.magenta(caps.mcps.map(m => `  • ${m}`).join('\n')) : '  None'}
+${pc.bold('Automation & agents:')}
+  Hooks that fire for you: ${caps.hooks.length ? pc.yellow(caps.hooks.join(', ')) : 'none'}
+  Sub-agents: ${caps.subagents}   Skills: ${caps.skills.length}   Orchestration policy: ${caps.hasOrchestration ? pc.green('yes') : pc.yellow('no')}
 
-${pc.bold('Governance Assessment:')}
-This repository provides agents with ${caps.mcps.length} toolsets and ${caps.skills.length} skills. 
-${caps.skills.length > 5 ? pc.red('⚠ High Surface Area: Ensure strict authorship review is enabled.') : pc.green('✓ Low Surface Area: Risk contained.')}`,
-        'AI Capabilities Map'
+${pc.dim('This is your attack surface. Fewer write/deploy tools per session = smaller blast radius.')}`,
+        'Agent Reach & Blast Radius'
       );
     } catch (e: any) {
       s.stop('Audit failed');
