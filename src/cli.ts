@@ -1,11 +1,12 @@
 #!/usr/bin/env bun
-import { intro, outro, select, spinner, isCancel, cancel, note } from '@clack/prompts';
+import { intro, outro, select, spinner, isCancel, cancel, note, text } from '@clack/prompts';
 import pc from 'picocolors';
 import { getAuthorshipStats } from './git';
 import { getCarbonStats } from './carbon';
 import { getCapabilitiesStats } from './capabilities';
 import { writeFileSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
+import { execSync } from 'child_process';
 
 const ASCII_LOGO = `
    ____  _   _ _____ _     ___ _____ ____  
@@ -78,7 +79,7 @@ The results will assign you a "vibe" and evaluate if you are at risk of deskilli
 async function main() {
   console.clear();
   console.log(pc.cyan(ASCII_LOGO));
-  console.log(pc.dim('  Outlier v0.3.1 · AI Code Reliance & Telemetry Engine\n'));
+  console.log(pc.dim('  Outlier v0.3.2 · AI Code Reliance & Telemetry Engine\n'));
   
   let action = process.argv[2] as any;
   
@@ -99,7 +100,8 @@ async function main() {
           { value: 'capabilities', label: 'Capabilities Map', hint: 'Audit active MCPs, skills, and orchestrations' },
           { value: 'authorship', label: 'Code Durability', hint: 'Scan git history for AI Code Reliance & Hallucination Risk' },
           { value: 'carbon', label: 'Cache Bloat', hint: 'Scan local logs for context waste & token costs' },
-          { value: 'policy', label: 'Policy Profiles', hint: 'Set Personal, Team, or Enterprise guardrails in CI' }
+          { value: 'policy', label: 'Policy Profiles', hint: 'Set Personal, Team, or Enterprise guardrails in CI' },
+          { value: 'confessional', label: 'Confessional', hint: 'Tell us how AI is really affecting your job (Feature Requests)' }
         ],
       });
 
@@ -359,6 +361,37 @@ Artifact:     ${pc.cyan(reportPath)}`,
         'Regulatory Compliance'
       );
     }
+  } else if (action === 'confessional') {
+    s.start('Connecting to the human element...');
+    await new Promise(resolve => setTimeout(resolve, 600));
+    s.stop('Secure connection established.');
+
+    const feedback = await text({
+      message: pc.cyan('What is AI actually doing to your codebase? Are you a 10x dev or a 10x reviewer now?\n(Or just tell us what Outlier should measure next)'),
+      placeholder: 'Honestly, I just let the agent write the regex...',
+      validate(value) {
+        if (value.length === 0) return `C'mon, confess something!`;
+      },
+    });
+
+    if (isCancel(feedback)) {
+      cancel('Confession aborted.');
+      process.exit(0);
+    }
+
+    note(
+      `${pc.italic(`"${feedback}"`)}\n\nYour confession is safe with us. But if you want to make it official (and help us build what you need), we've generated a secure transmission link for you.`,
+      'The Confessional'
+    );
+
+    const url = `https://github.com/rosh100yx/outlier/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=%5BConfessional%5D+Feedback&body=${encodeURIComponent(feedback.toString())}`;
+    console.log(`\n${pc.bold('Submit here:')} ${pc.underline(pc.cyan(url))}\n`);
+    
+    try {
+      if (process.platform === 'darwin') {
+        execSync(`open "${url}"`);
+      }
+    } catch(e) {}
   }
 
   outro('Local telemetry run completed. No data left your machine.');
