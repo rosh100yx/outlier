@@ -13,10 +13,12 @@ export interface CarbonStats {
   localCo2Kg: number;
   localRegion: string;
   sessions: number;
+  estUsd: number;       // estimated spend in USD
+  costIsReal: boolean;  // true if summed from the log's own cost field, false if estimated from tokens
 }
 
 export interface TokenLogParser {
-  parse(): Promise<{ total: number, output: number, cache: number, sessions: number }>;
+  parse(): Promise<{ total: number, output: number, cache: number, sessions: number, cost: number }>;
 }
 
 export class ClaudeLogParser implements TokenLogParser {
@@ -30,13 +32,13 @@ export class ClaudeLogParser implements TokenLogParser {
     try {
       await access(logPath);
     } catch {
-      return { total: 0, output: 0, cache: 0, sessions: 0 };
+      return { total: 0, output: 0, cache: 0, sessions: 0, cost: 0 };
     }
 
     const text = await readFile(logPath, 'utf-8');
     const lines = text.trim().split('\n').filter(l => l.length > 0);
-    
-    let total = 0, output = 0, cache = 0;
+
+    let total = 0, output = 0, cache = 0, cost = 0;
     const sessions = new Set<string>();
 
     for (const line of lines) {
@@ -45,17 +47,25 @@ export class ClaudeLogParser implements TokenLogParser {
         total += data.total_tokens || 0;
         output += data.output_tokens || 0;
         cache += data.cache_read || 0;
+        cost += data.cost_usd || 0; // present when the log was written with a cost field
         if (data.session_id) sessions.add(data.session_id);
       } catch (e) {}
     }
-    return { total, output, cache, sessions: sessions.size };
+    return { total, output, cache, sessions: sessions.size, cost };
   }
 }
 
 class CursorLogParser implements TokenLogParser {
   async parse() {
-    return { total: 0, output: 0, cache: 0, sessions: 0 };
+    return { total: 0, output: 0, cache: 0, sessions: 0, cost: 0 };
   }
+}
+
+// Rough blended token pricing (USD per 1M tokens) for when the log has no cost field.
+// Conservative mid-points across current models; labeled "rough" in the UI.
+function estimateUsd(output: number, cacheRead: number, total: number): number {
+  const otherInput = Math.max(0, total - output - cacheRead);
+  return (output / 1e6) * 9 + (cacheRead / 1e6) * 0.3 + (otherInput / 1e6) * 3;
 }
 
 function getLocalGridFactor(): { region: string, factor: number } {
@@ -73,7 +83,7 @@ function getLocalGridFactor(): { region: string, factor: number } {
 export async function getCarbonStats(): Promise<CarbonStats> {
   const parsers: TokenLogParser[] = [new ClaudeLogParser(), new CursorLogParser()];
   
-  let totalTokens = 0, outputTokens = 0, cacheReadTokens = 0, sessions = 0;
+  let totalTokens = 0, outputTokens = 0, cacheReadTokens = 0, sessions = 0, loggedCost = 0;
 
   for (const parser of parsers) {
     const stats = await parser.parse();
@@ -81,10 +91,15 @@ export async function getCarbonStats(): Promise<CarbonStats> {
     outputTokens += stats.output;
     cacheReadTokens += stats.cache;
     sessions += stats.sessions;
+    loggedCost += stats.cost;
   }
 
   const energyKwh = (outputTokens / 1_000_000) * 0.662;
   const localGrid = getLocalGridFactor();
+
+  // Prefer the log's own cost field (accurate); fall back to a rough token estimate.
+  const costIsReal = loggedCost > 0;
+  const estUsd = costIsReal ? loggedCost : estimateUsd(outputTokens, cacheReadTokens, totalTokens);
 
   return {
     totalTokens,
@@ -95,6 +110,8 @@ export async function getCarbonStats(): Promise<CarbonStats> {
     co2KgFrance: (energyKwh * gridFactors.france) / 1000,
     localCo2Kg: (energyKwh * localGrid.factor) / 1000,
     localRegion: localGrid.region,
-    sessions
+    sessions,
+    estUsd,
+    costIsReal
   };
 }

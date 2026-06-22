@@ -297,19 +297,19 @@ Conservative Floor: ${color(nmPct + '%')}`,
         // (The old @clack dashboard panel was removed: it duplicated the receipt's
         // numbers in a second format, doubling the output on every run.)
         const isDanger = gitStats && gitStats.ratio > 0.7;
-        const verdictZone = isDanger ? pc.red('DANGER ZONE') : pc.green('SAFE / SOVEREIGN');
-        const verdictText = isDanger 
-          ? `You are transitioning from 'Creator' to 'Reviewer'.\n   At this trajectory, you risk losing architectural \n   muscle memory on this codebase within 6 months.` 
-          : `You are maintaining strong architectural intimacy.\n   Your human judgement remains the primary driver\n   of logic in this system.`;
-          
+        const verdictZone = isDanger ? pc.red('Mostly AI') : pc.green('You\'re driving');
+        const verdictText = isDanger
+          ? `AI wrote most of this. Read it through so you can\n   still debug it yourself when the agent isn't around.`
+          : `You're still writing the core of this. Good —\n   that's how you keep the skill.`;
+
         const isInefficient = parseFloat(cachePct) > 40;
-        const cacheVerdict = isInefficient ? pc.yellow('INEFFICIENT') : pc.green('EFFICIENT');
-        const cacheText = isInefficient 
-          ? `You are burning paid API tokens and excess compute\n   on files the agent isn't even touching.` 
-          : `Your token usage and human judgment are tightly\n   coupled. High signal-to-noise ratio.`;
-          
-        const policyStatus = ruleFailures > 0 ? pc.red('BLOCKED 🛑 (Threshold Exceeded)') : pc.green('PASS ✅ (Within Threshold)');
-        const policyAction = ruleFailures > 0 ? 'Triggering Mandatory Mentoring Scenario.' : 'No intervention required.';
+        const cacheVerdict = isInefficient ? pc.yellow('Lots of re-reads') : pc.green('Lean');
+        const cacheText = isInefficient
+          ? `Most of your tokens just re-send old context.\n   It's normal for agents, but it's most of the bill.`
+          : `Little wasted context. Your spend is mostly\n   real work.`;
+
+        const policyStatus = ruleFailures > 0 ? pc.red('Over your limit') : pc.green('Within limit');
+        const policyAction = ruleFailures > 0 ? 'Heads up only — nothing was blocked.' : 'Nothing to do.';
 
         const fmtTokens = (n: number) =>
           n >= 1_000_000_000 ? (n / 1_000_000_000).toFixed(1) + 'B'
@@ -317,8 +317,11 @@ Conservative Floor: ${color(nmPct + '%')}`,
           : n >= 1_000 ? (n / 1_000).toFixed(1) + 'k'
           : String(n);
         const totalTokensStr = carbon ? fmtTokens(carbon.totalTokens) : '0';
-        const humanSov = gitStats ? ((1 - gitStats.ratio) * 100).toFixed(1) + '%' : '100%';
-        const authorshipStr = authPct + (isDanger ? pc.red(' (High Reliance)') : pc.green(' (Healthy)'));
+        const estUsdStr = carbon
+          ? '$' + carbon.estUsd.toFixed(2) + (carbon.costIsReal ? '' : pc.dim(' (rough)'))
+          : pc.dim('n/a');
+        const humanSov = gitStats ? ((1 - gitStats.ratio) * 100).toFixed(0) + '%' : '100%';
+        const authorshipStr = pc.bold(authPct) + (isDanger ? pc.red(' AI-written') : pc.green(' AI-written'));
 
         const getProgressBar = (pct: number, length = 10) => {
           const filled = Math.max(0, Math.min(length, Math.round((pct / 100) * length)));
@@ -337,34 +340,29 @@ Conservative Floor: ${color(nmPct + '%')}`,
             
             finalReceipt = `
  ${pc.dim('┌────────────────────────────────────────────────────────')}
- ${pc.dim('│')} ${pc.cyan('█▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█')}  ${pc.bold(':: THERMAL AUDIT RECEIPT')}
- ${pc.dim('│')} ${pc.cyan('█▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄')}  ${pc.dim(`:: TIMESTAMP: ${dateStr}`)}
+ ${pc.dim('│')} ${pc.cyan('█▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█')}  ${pc.bold(':: CODE AUDIT')}
+ ${pc.dim('│')} ${pc.cyan('█▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄')}  ${pc.dim(`:: ${repoName} · ${dateStr}`)}
  ${pc.dim('├────────────────────────────────────────────────────────')}
- ${pc.dim('│')} ${pc.bold(pc.bgBlue(' [ COGNITIVE BUDGET ] '))}
- ${pc.dim('│')} AI Authorship     ................. ${aiBar} ${authorshipStr}
- ${pc.dim('│')} Human Sovereignty ................. ${humanBar} ${humanSov}
+ ${pc.dim('│')} ${pc.bold(pc.bgBlue(' WHO WROTE THE CODE '))}
+ ${pc.dim('│')} AI    ${aiBar} ${authorshipStr}
+ ${pc.dim('│')} You   ${humanBar} ${pc.bold(humanSov)}
  ${pc.dim('│')}
- ${pc.dim('│')} ↳ Verdict: ${verdictZone}
- ${pc.dim('│')}   ${verdictText.split('\n').join('\n ' + pc.dim('│') + ' ')}
+ ${pc.dim('│')} ${verdictZone} — ${verdictText.split('\n').join('\n ' + pc.dim('│') + '   ')}
  ${pc.dim('├────────────────────────────────────────────────────────')}
- ${pc.dim('│')} ${pc.bold(pc.bgMagenta(' [ FINANCIAL & COMPUTE TOLL ] '))}
- ${pc.dim('│')} Tokens Burnt      ................. ${totalTokensStr} vs Human Judgment
- ${pc.dim('│')} Cache Bloat       ................. ${cacheBar} ${cachePct}% (Unmodified context)
- ${pc.dim('│')} Regional Grid     ................. ${regionStr}
+ ${pc.dim('│')} ${pc.bold(pc.bgMagenta(' WHAT IT COST '))}
+ ${pc.dim('│')} Tokens used      ${pc.bold(totalTokensStr)}
+ ${pc.dim('│')} Est. spend       ${pc.bold(estUsdStr)}
+ ${pc.dim('│')} Re-used context  ${cacheBar} ${pc.bold(cachePct + '%')}
+ ${pc.dim('│')} Energy           ${pc.bold(co2Str)} ${pc.dim(`(${regionStr} grid, rough)`)}
  ${pc.dim('│')}
- ${pc.dim('│')} ↳ Verdict: ${cacheVerdict}
- ${pc.dim('│')}   ${cacheText.split('\n').join('\n ' + pc.dim('│') + ' ')}
+ ${pc.dim('│')} ${cacheVerdict} — ${cacheText.split('\n').join('\n ' + pc.dim('│') + '   ')}
  ${pc.dim('├────────────────────────────────────────────────────────')}
- ${pc.dim('│')} ${pc.bold(pc.bgYellow(pc.black(' [ POLICY ENFORCEMENT ] ')))}
- ${pc.dim('│')} Status .................................. ${policyStatus}
- ${pc.dim('│')} Action .................................. ${policyAction}
+ ${pc.dim('│')} ${pc.bold(pc.bgYellow(pc.black(' YOUR LIMIT ')))}
+ ${pc.dim('│')} AI cap   ${pc.bold('70%')} ${pc.dim('· change with: outlier policy')}
+ ${pc.dim('│')} Status   ${policyStatus} ${pc.dim('·')} ${policyAction}
  ${pc.dim('├────────────────────────────────────────────────────────')}
- ${pc.dim('│')}
- ${pc.dim('│')}  ${pc.italic(pc.dim('patterns emerge in the commit history,'))}
- ${pc.dim('│')}  ${pc.italic(pc.dim('code becomes commoditized by algorithms.'))}
- ${pc.dim('│')}  ${pc.italic(pc.dim('human mastery is the only true moat.'))}
- ${pc.dim('│')}
- ${pc.dim('│')}                   ${pc.bold(pc.cyan('***STAY VIGILANT***'))}
+ ${pc.dim('│')} ${pc.dim(pc.italic('Run this before you start. Keep the skill while you'))}
+ ${pc.dim('│')} ${pc.dim(pc.italic('use the speed.'))}
  ${pc.dim('└────────────────────────────────────────────────────────')}`;
         } else {
             note(
