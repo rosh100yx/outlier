@@ -1,5 +1,5 @@
-#!/usr/bin/env bun
-import { intro, outro, select, spinner, isCancel, cancel, note, text } from '@clack/prompts';
+#!/usr/bin/env node
+import { intro, outro, select, spinner, isCancel, cancel, note, text, confirm } from '@clack/prompts';
 import pc from 'picocolors';
 import { getAuthorshipStats } from './git';
 import { getCarbonStats } from './carbon';
