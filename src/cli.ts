@@ -79,7 +79,8 @@ The results will assign you a "vibe" and evaluate if you are at risk of deskilli
 async function main() {
   console.clear();
   console.log(pc.cyan(ASCII_LOGO));
-  console.log(pc.dim('  Outlier v0.4.1 · AI Code Reliance & Telemetry Engine\n'));
+  const pkg = require('../package.json');
+  console.log(pc.dim(`  Outlier v${pkg.version} · AI Code Reliance & Telemetry Engine\n`));
   
   let action = process.argv[2] as any;
   
@@ -288,6 +289,16 @@ Conservative Floor: ${color(nmPct + '%')}`,
         const humanSov = gitStats ? ((1 - gitStats.ratio) * 100).toFixed(1) + '%' : '100%';
         const authorshipStr = authPct + (isDanger ? pc.red(' (High Reliance)') : pc.green(' (Healthy)'));
 
+        const getProgressBar = (pct: number, length = 10) => {
+          const filled = Math.max(0, Math.min(length, Math.round((pct / 100) * length)));
+          return '▰'.repeat(filled) + '▱'.repeat(length - filled);
+        };
+        
+        const aiPctVal = gitStats ? gitStats.ratio * 100 : 0;
+        const aiBar = pc.yellow(getProgressBar(aiPctVal));
+        const humanBar = pc.cyan(getProgressBar(100 - aiPctVal));
+        const cacheBar = pc.magenta(getProgressBar(parseFloat(cachePct) || 0));
+
         if (!isStrict) {
             const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
             const timeStr = new Date().toLocaleTimeString('en-US', { hour12: false });
@@ -303,16 +314,16 @@ Conservative Floor: ${color(nmPct + '%')}`,
  │ REPO: ${repoName.substring(0,20).padEnd(41)}
  ├────────────────────────────────────────────────────────
  │ [ COGNITIVE BUDGET ]
- │ AI Authorship     ....................... ${authorshipStr}
- │ Human Sovereignty ....................... ${humanSov}
+ │ AI Authorship     ................. ${aiBar} ${authorshipStr}
+ │ Human Sovereignty ................. ${humanBar} ${humanSov}
  │
  │ ↳ Verdict: ${verdictZone}
  │   ${verdictText}
  ├────────────────────────────────────────────────────────
  │ [ FINANCIAL & COMPUTE TOLL ]
- │ Tokens Burnt      ........ ${totalTokensStr} vs Human Judgment
- │ Cache Bloat       ........ ${cachePct}% (Unmodified context)
- │ Regional Grid     ........ ${regionStr}
+ │ Tokens Burnt      ................. ${totalTokensStr} vs Human Judgment
+ │ Cache Bloat       ................. ${cacheBar} ${cachePct}% (Unmodified context)
+ │ Regional Grid     ................. ${regionStr}
  │
  │ ↳ Verdict: ${cacheVerdict}
  │   ${cacheText}
