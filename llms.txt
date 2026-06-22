@@ -1,0 +1,40 @@
+# outlier
+
+**The Governance Framework for AI Engineering**
+
+`outlier` is a local-first, zero-trust CLI instrument designed to measure AI adoption, carbon footprint, and skill atrophy directly at the developer's terminal. It acts as an orchestration gate to cut token waste, block hallucinated code, and serve as an anti-deskilling engine for developers building with AI agents.
+
+## Why it exists
+As software engineering rapidly adopts LLMs, two hidden costs appear:
+1. **Carbon / The Geographic Tax:** AI workloads import massive carbon emissions, disproportionately affecting developers in the Global South with coal-heavy grids.
+2. **Deskilling / Authorship Erosion:** Developers cede understanding and mastery to AI agents, leading to premature deprofessionalization.
+
+`outlier` measures both by parsing local `git` history (looking for `Co-Authored-By` trailers) and local token logs (e.g., from Claude Code or Cursor). No data ever leaves the local machine.
+
+## Quickstart
+Run the audit dashboard in any git repository:
+```bash
+npx @rosh100yx/outlier audit
+```
+
+Run in headless CI/CD mode (Enterprise Dry Mode without cats/UI):
+```bash
+npx @rosh100yx/outlier audit --strict
+```
+
+Install the Bouncer (Git Pre-Commit Hook to physically block high-AI-reliance commits):
+```bash
+npx @rosh100yx/outlier policy
+```
+
+## How it Works
+1. **Authorship:** Scans `git log` for AI-attributed commits to calculate an AI Authorship percentage.
+2. **Carbon:** Parses local session logs to calculate Token Cache Bloat and estimates Session Carbon (kgCO2) weighted by regional grid intensity.
+3. **Bouncer:** Intercepts `git commit`. If AI reliance is too high, it triggers a "Mentoring Emergency" and forces the developer to solve an architectural challenge.
+
+## Academic Context
+This tool is the technical implementation of an ongoing academic thesis on the thermodynamics of AI code generation and digital sovereignty. We encourage users to run the audit and share their metrics to help build an empirical dataset on the global impact of AI adoption.
+
+## Package Info
+- **NPM:** `@rosh100yx/outlier`
+- **Execution:** Requires Node or Bun. Must be run inside a Git repository.

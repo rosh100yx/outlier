@@ -4,7 +4,9 @@
   <p><i>Measure AI adoption. Enforce Zero-Trust. Protect Human Mastery.</i></p>
 </div>
 
-`outlier` is a local-first framework to measure real AI adoption and usage. It acts as a strict orchestration gate to cut token waste, block hallucinated code, and serve as an anti-deskilling engine for when you are building in a room full of agents—all without a single byte leaving your terminal.
+`outlier` is a local-first framework to measure real AI adoption and usage. We built this instrument to measure a blind spot: while dashboards count API costs, no one counts the carbon imported to your local grid, and no one counts the understanding you lose when delegating to an agent. 
+
+`outlier` acts as a strict orchestration gate to cut token waste, block hallucinated code, and serve as an anti-deskilling engine for when you are building in a room full of agents—all without a single byte leaving your terminal.
 
 > *"In a room full of agents" shifts the perspective. It acknowledges that the developer is no longer a solo coder; they are a manager of bots. The product exists to make sure the human doesn't get lazy while managing them. We all want our time back, but we don't want to lose control of the craft.*
 
@@ -62,7 +64,7 @@
 
 1. **Set the Trap (Install the Bouncer)**
    ```bash
-   npx github:rosh100yx/outlier policy
+   npx @rosh100yx/outlier policy
    ```
    *Select the "Team (70% Max AI)" tier.*
 
@@ -75,16 +77,15 @@
 
 3. **Measure the Damage**
    ```bash
-   npx github:rosh100yx/outlier audit
+   npx @rosh100yx/outlier audit
    ```
    *See your exact AI Authorship ratio and Token Waste.*
 
 ## Theoretical Foundations
-`outlier` is built on four core empirical literatures:
+`outlier` is the live, technical implementation of an academic thesis on the thermodynamics of AI code generation and digital sovereignty. 
+- **The Geographic Tax:** Western tech companies ship highly compute-intensive AI tools globally, but local infrastructure in the Global South is forced to absorb the carbon cost. `outlier` proves this by weighting session carbon by regional grid intensity (e.g., proving identical work imports 31x more carbon in Vietnam than France).
 - **Disempowerment:** Incremental AI substitution erodes human influence. `outlier` acts as a sovereignty shield against opaque AI platforms.
-- **Carbon at the Point of Delegation:** We meter carbon footprint directly at the developer's machine and weight it by local grid factors (e.g., Vietnam vs. France).
-- **Authorship:** We track AI reliance per-individual via Git parsing, rather than at the population level.
-- **Deskilling:** Delegating operators lose supervisory skills (Bainbridge, 1983). `outlier` specifically flags high AI-authorship as a "Deskilling Risk".
+- **Deskilling:** Delegating operators lose supervisory skills. By parsing `Co-Authored-By` Git trailers, `outlier` tracks AI reliance per-individual and flags high reliance as a "Deskilling Risk", triggering mandatory mentoring checkpoints.
 
 ## FAQ
 
@@ -95,7 +96,7 @@ No. `outlier` is a zero-trust, local-first engine. It parses `git log` and local
 `outlier` is IDE-agnostic. It works by parsing standard `Co-Authored-By` Git trailers, meaning it supports Claude Code, Cursor, Aider, and manual generation.
 
 **Can I run this in CI/CD like GitHub Actions?**  
-Yes. Use the `--strict` flag (`npx github:rosh100yx/outlier audit --strict`) to return standard zero-exit-code parsing for headless CI environments.
+Yes. Use the `--strict` flag (`npx @rosh100yx/outlier audit --strict`) to return standard zero-exit-code parsing for headless CI environments.
 
 ## Who is this for?
 
@@ -108,7 +109,7 @@ If you hold one of these roles, `outlier` was built specifically for you. Please
 ## Support the Thesis & Collaborate
 This tool is the technical implementation of an ongoing academic thesis on the thermodynamics of AI code generation, skill atrophy, and digital sovereignty. We are actively looking for collaborators, researchers, and engineers to expand this framework.
 
-**Call for Research Data:** If you use this tool, please consider sharing your terminal screenshot (`outlier audit`) on X.com or with the maintainers. By voluntarily sharing your baseline AI reliance and cache bloat metrics, you help us build a broader empirical dataset on how AI is impacting global engineering teams.
+**Call for Research Data:** We are actively collecting metrics to prove the "Geographic Tax" and measure industry-wide skill atrophy for our upcoming paper. If you use this tool, please share your terminal screenshot (`outlier audit`) on X.com (tagging the maintainers). By sharing your baseline **AI reliance %** and **carbon estimate**, you provide the exact empirical data we need to map how AI is impacting global engineering teams.
 
 See our [Contributing Guide](CONTRIBUTING.md) to get started. Great first issues include adding new regional grid factors to `data/grid-factors.json` or writing custom CI/CD pipeline integrations.
 
