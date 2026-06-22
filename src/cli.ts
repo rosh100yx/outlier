@@ -619,10 +619,10 @@ Artifact:     ${pc.cyan(reportPath)}`,
     }
     console.log('');
     console.log(
-      pc.bold(pc.cyan(' └ Participate: ')) + 'Help build the literature on AI deskilling ➔ ' + pc.bold('outlier participate')
+      pc.bold(pc.cyan(' └ Research: ')) + 'Contribute to the AI deskilling study ➔ ' + pc.bold('outlier participate')
     );
     console.log(
-      pc.bold(pc.green(' └ Prove Your Mastery: ')) + pc.underline(`https://x.com/intent/tweet?text=${encodeURIComponent('I just audited my codebase for AI reliance and deskilling risk. What does your repo score?\n\n📏 #Outlier')}`)
+      pc.bold(pc.green(' └ Share: ')) + pc.underline('https://x.com/intent/tweet?text=I+just+audited+my+codebase+with+%23Outlier')
     );
     console.log(
       pc.dim('\n (To see all local governance modules, run: ') + pc.dim(pc.bold('outlier --help')) + pc.dim(')')
