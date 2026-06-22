@@ -151,15 +151,13 @@ Ratio: ~31x carbon penalty on coal-heavy grid`,
       s.stop('Audit failed');
       console.error(pc.red(e.message));
     }
-  } else if (action === 'authorship' || action === 'status') {
-    s.start('Scanning local git history and agent logs...');
-    
+  } else if (action === 'authorship') {
+    s.start('Scanning local git history...');
     try {
       const gitStats = await getAuthorshipStats().catch(() => null);
-      const carbon = await getCarbonStats().catch(() => null);
       s.stop('Audit complete');
       
-      if (action === 'authorship' && gitStats) {
+      if (gitStats) {
         const pct = (gitStats.ratio * 100).toFixed(1);
         const nmPct = (gitStats.ratioNoMerges * 100).toFixed(1);
         
@@ -183,14 +181,53 @@ AI Co-Authored:     ${gitStats.aiNoMerges}
 Conservative Floor: ${color(nmPct + '%')}`,
             'Git Authorship Breakdown'
           );
-      } else if (action === 'status') {
-        const isStrict = process.argv.includes('--strict');
-        s.start('Running outlier telemetry audit...');
-        const carbon = await getCarbonStats().catch(() => null);
-        const gitStats = await getAuthorshipStats().catch(() => null);
-        const capabilities = await getCapabilitiesStats().catch(() => null);
-        s.stop('Audit complete');
-        
+      }
+    } catch (e: any) {
+      s.stop('Audit failed');
+      console.error(pc.red(e.message));
+    }
+  } else if (action === 'status') {
+    const isStrict = process.argv.includes('--strict');
+    
+    let gitStats: any = null;
+    let carbon: any = null;
+    let capabilities: any = null;
+
+    if (!isStrict) {
+      s.start('[SYSTEM] Booting local-first sandbox...');
+      await new Promise(r => setTimeout(r, 800));
+      s.message(`↳ Guarantee: No API calls. Your code and logs never leave this machine.`);
+      await new Promise(r => setTimeout(r, 1200));
+      
+      s.message('[GIT] Scanning your commit history...');
+      gitStats = await getAuthorshipStats().catch(() => null);
+      await new Promise(r => setTimeout(r, 600));
+      s.message(`↳ Check: Are you writing the code, or just reviewing what the AI wrote?`);
+      await new Promise(r => setTimeout(r, 1200));
+      
+      s.message('[TOKENS] Parsing local AI logs (~/.claude/)...');
+      carbon = await getCarbonStats().catch(() => null);
+      await new Promise(r => setTimeout(r, 600));
+      s.message(`↳ Check: How much API waste is your workflow generating locally?`);
+      await new Promise(r => setTimeout(r, 1200));
+      
+      s.message('[ANALYSIS] Calculating your mastery score...');
+      capabilities = await getCapabilitiesStats().catch(() => null);
+      await new Promise(r => setTimeout(r, 600));
+      s.message(`↳ Warning: Heavy AI use creates the 'Illusion of Competence'. Don't lose your edge.`);
+      await new Promise(r => setTimeout(r, 1200));
+      
+      s.message('[PRINT] Generating Thermal Receipt...');
+      await new Promise(r => setTimeout(r, 600));
+    } else {
+      s.start('Running outlier telemetry audit...');
+      gitStats = await getAuthorshipStats().catch(() => null);
+      carbon = await getCarbonStats().catch(() => null);
+      capabilities = await getCapabilitiesStats().catch(() => null);
+    }
+    s.stop('Audit complete');
+    
+    try {
         let authPct = '0%';
         let ruleFailures = 0;
         let authWarning = '';
@@ -245,7 +282,6 @@ ${costIcon}${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰�
 ${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`${failIcon} ${ruleFailures + 1} policy failures`) : pc.green(`${passIcon} All clear`)}`,
           `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green(`${passIcon} safe surface`)} • ${co2Str}`
         );
-      }
     } catch (e: any) {
       s.stop('Audit failed');
       console.error(pc.red(e.message));
