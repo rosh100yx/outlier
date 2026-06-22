@@ -79,10 +79,10 @@ The results will assign you a "vibe" and evaluate if you are at risk of deskilli
 async function main() {
   console.clear();
   console.log(pc.cyan(ASCII_LOGO));
-  const pkg = require('../package.json');
-  console.log(pc.dim(`  Outlier v${pkg.version} · AI Code Reliance & Telemetry Engine\n`));
+  console.log(pc.dim('  Outlier v0.4.1 · AI Code Reliance & Telemetry Engine\n'));
   
   let action = process.argv[2] as any;
+  let thermalReceiptStr = '';
   
   if (action === '--help' || action === '-h' || action === 'help') {
     console.log(pc.bold('\nCOMMANDS:'));
@@ -269,6 +269,25 @@ Conservative Floor: ${color(nmPct + '%')}`,
           regionStr = carbon.localRegion;
         }
 
+        const vibeRow = !isStrict ? `\n    vibe: ${pc.italic(wittyRemark)}` : '';
+        const capIcon = isStrict ? '' : '(Ф∇Ф) ';
+        const authIcon = isStrict ? '' : '(=^･ω･^=) ';
+        const costIcon = isStrict ? '' : '(O_O;) ';
+        const failIcon = isStrict ? '⚠' : '(=ಠᆽಠ=)';
+        const passIcon = isStrict ? '✓' : '(=^ ◡ ^=)';
+
+        note(
+          `${capIcon}${pc.dim('[1] Capability Engine')} ${pc.cyan('▰▰▰▰▰▰▱▱▱▱')}  ${pc.bold('Active')}
+    status: ${pc.green('✓ Configured')}
+${authIcon}${pc.dim('[2] AI Code Reliance')} ${pc.yellow('▰▰▰▰▰▰▰▰▱▱')}  ${pc.bold(`${authPct} Reliance`)}${vibeRow}
+    gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Human Mastery Sustained') : `${pc.red(`${failIcon} Deskilling Risk Detected`)} ${pc.red('⚠ Security Audit Required')}`}${mentorString}
+${costIcon}${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
+    waste: ${pc.yellow(`⚠ ${cachePct}% of tokens are redundant context reads`)}
+    carbon: ${pc.green(`✓ ${co2Str} (Est. ${regionStr} Grid)`)}
+${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`${failIcon} ${ruleFailures + 1} policy failures`) : pc.green(`${passIcon} All clear`)}`,
+          `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green(`${passIcon} safe surface`)} • ${co2Str}`
+        );
+
         const timestamp = new Date().toISOString().split('T')[0];
         const isDanger = gitStats && gitStats.ratio > 0.7;
         const verdictZone = isDanger ? pc.red('DANGER ZONE') : pc.green('SAFE / SOVEREIGN');
@@ -300,18 +319,10 @@ Conservative Floor: ${color(nmPct + '%')}`,
         const cacheBar = pc.magenta(getProgressBar(parseFloat(cachePct) || 0));
 
         if (!isStrict) {
-            const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
-            const timeStr = new Date().toLocaleTimeString('en-US', { hour12: false });
-            const repoName = process.cwd().split('/').pop() || 'Unknown';
-            
-            console.log(`
+            thermalReceiptStr = `
  ┌────────────────────────────────────────────────────────
- │               OUTLIER GOVERNANCE ENGINE                
- │                 *** THERMAL RECEIPT ***                
- ├────────────────────────────────────────────────────────
- │ DATE: ${dateStr.padEnd(41)}
- │ TIME: ${timeStr.padEnd(41)}
- │ REPO: ${repoName.substring(0,20).padEnd(41)}
+ │ █▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█  :: THERMAL AUDIT RECEIPT
+ │ █▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄  :: TIMESTAMP: ${timestamp}
  ├────────────────────────────────────────────────────────
  │ [ COGNITIVE BUDGET ]
  │ AI Authorship     ................. ${aiBar} ${authorshipStr}
@@ -338,12 +349,7 @@ Conservative Floor: ${color(nmPct + '%')}`,
  │  ${pc.italic('human mastery is the only true moat.')}
  │
  │                   ***STAY VIGILANT***
- └────────────────────────────────────────────────────────`);
-        } else {
-            note(
-              `status: ${authPct} AI Reliance | ${cachePct}% Cache Bloat | ${co2Str}`,
-              `${pc.bold('[outlier]')} CI/CD Audit`
-            );
+ └────────────────────────────────────────────────────────`;
         }
     } catch (e: any) {
       s.stop('Audit failed');
@@ -543,7 +549,25 @@ Artifact:     ${pc.cyan(reportPath)}`,
 
   outro('Local telemetry run completed. No data left your machine.');
 
-  // (Old artifact storytelling block removed to unify receipt UX)
+  // Artifact Level Storytelling: Brutalist Thermal Receipt
+  if (action === 'status' && thermalReceiptStr) {
+    console.log(thermalReceiptStr);
+  } else if (action === 'authorship' || action === 'carbon') {
+    const d = new Date();
+    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
+    const timeStr = d.toLocaleTimeString('en-US', { hour12: false });
+    let repoName = process.cwd().split('/').pop() || 'Unknown';
+    
+    console.log(`\n${pc.dim('-------------------------')} ${pc.bold('AUDIT RECEIPT')} ${pc.dim('-------------------------')}`);
+    console.log(`\n Project                                      ${pc.bold(repoName.padEnd(16).substring(0,16))}`);
+    console.log(` Timestamp                                  ${pc.dim(`${dateStr} ${timeStr}`)}\n`);
+    console.log(` 01x Authorship Policy                      ${process.argv.includes('--strict') ? 'Strict Mode' : 'Vibe Check'}`);
+    console.log(` 02x AI Reliance Risk                       ${action === 'carbon' ? 'N/A' : 'Assessed'}`);
+    console.log(` 03x Cache Bloat Tokens                     ${action === 'authorship' ? 'N/A' : 'Audited'}`);
+    console.log(` 04x Regional Grid Check                    ${action === 'authorship' ? 'N/A' : 'Completed'}\n`);
+    console.log('                 Outlier Governance Engine');
+    console.log(pc.bold('\n                   ***AUDIT COMPLETE***'));
+  }
 
   console.log(
     pc.dim(
