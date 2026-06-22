@@ -523,16 +523,14 @@ Artifact:     ${pc.cyan(reportPath)}`,
 
   if (action === 'status') {
     console.log('');
-    console.log(pc.bold(' Explore Outlier:'));
-    console.log(pc.dim(' ────────────────────────────────────────────────────────────'));
-    console.log(`   ${pc.cyan('outlier policy')}        Configure CI/CD guardrails and thresholds`);
-    console.log(`   ${pc.cyan('outlier capabilities')}  Audit active MCPs, skills, and orchestrations`);
-    console.log(`   ${pc.cyan('outlier impact')}        See the compounding horizon of AI Deskilling`);
-    console.log(`   ${pc.cyan('outlier participate')}   Help build the academic literature`);
-    console.log(pc.dim(' ────────────────────────────────────────────────────────────\n'));
-
+    console.log(
+      pc.bold(pc.cyan(' └ Participate: ')) + 'Help build the literature on AI deskilling ➔ ' + pc.bold('outlier participate')
+    );
     console.log(
       pc.bold(pc.green(' └ Prove Your Mastery: ')) + pc.underline(`https://x.com/intent/tweet?text=${encodeURIComponent('I just audited my codebase for AI reliance and deskilling risk. What does your repo score?\n\n📏 #Outlier')}`)
+    );
+    console.log(
+      pc.dim('\n (To see all local governance modules, run: ') + pc.dim(pc.bold('outlier --help')) + pc.dim(')')
     );
   }
 }
