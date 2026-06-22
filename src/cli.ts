@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import os from 'os';
 import { intro, outro, select, spinner, isCancel, cancel, note, text, confirm } from '@clack/prompts';
 import pc from 'picocolors';
 import { getAuthorshipStats } from './git';
@@ -6,7 +7,6 @@ import { getCarbonStats } from './carbon';
 import { getCapabilitiesStats } from './capabilities';
 import { writeFileSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
-import { execSync } from 'child_process';
 
 const ASCII_LOGO = `
    ____  _   _ _____ _     ___ _____ ____  
@@ -17,8 +17,7 @@ const ASCII_LOGO = `
   \\____/|_| |_| |_| |_| |_|___|_____|_|  \\_\\
 `;
 
-import os from 'os';
-import { confirm } from '@clack/prompts';
+let finalReceipt = '';
 
 async function runOnboarding() {
   console.clear();
@@ -231,8 +230,6 @@ Conservative Floor: ${color(nmPct + '%')}`,
       capabilities = await getCapabilitiesStats().catch(() => null);
     }
     s.stop('Audit complete');
-    
-    let finalReceipt = '';
     
     try {
         let authPct = '0%';
