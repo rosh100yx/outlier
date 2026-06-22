@@ -361,12 +361,43 @@ Artifact:     ${pc.cyan(reportPath)}`,
     }
   }
 
-  let shareText = 'Local telemetry run completed. No data left your machine.';
-  if (action === 'status') {
-    shareText += `\n\n${pc.dim('└')} ${pc.cyan('Share your audit:')} https://x.com/intent/tweet?text=I%20just%20audited%20my%20codebase%20for%20AI%20reliance%20and%20deskilling%20risk.%20What%20does%20your%20repo%20score%3F%0A%0A%F0%9F%93%8F%20npx%20%40rosh100yx%2Foutlier`;
+  outro('Local telemetry run completed. No data left your machine.');
+
+  // Artifact Level Storytelling: Dither Garden style thermal receipt
+  if (action === 'status' || action === 'authorship' || action === 'carbon') {
+    const d = new Date();
+    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
+    const timeStr = d.toLocaleTimeString('en-US', { hour12: false });
+    
+    let repoName = process.cwd().split('/').pop() || 'Unknown';
+    
+    console.log(`\n${pc.dim('-------------------------')} ${pc.bold('AUDIT RECEIPT')} ${pc.dim('-------------------------')}`);
+    console.log(`\n Project                                      ${pc.bold(repoName.padEnd(16).substring(0,16))}`);
+    console.log(` Timestamp                                  ${pc.dim(`${dateStr} ${timeStr}`)}\n`);
+    
+    console.log(` 01x Authorship Policy                      ${process.argv.includes('--strict') ? 'Strict Mode' : 'Vibe Check'}`);
+    console.log(` 02x AI Reliance Risk                       ${action === 'carbon' ? 'N/A' : 'Assessed'}`);
+    console.log(` 03x Cache Bloat Tokens                     ${action === 'authorship' ? 'N/A' : 'Audited'}`);
+    console.log(` 04x Regional Grid Check                    ${action === 'authorship' ? 'N/A' : 'Completed'}\n`);
+    
+    console.log(pc.dim(' **********************************************************'));
+    console.log(`\n ${pc.italic('patterns emerge in the commit history,')}`);
+    console.log(` ${pc.italic('code becomes commoditized by algorithms.')}`);
+    console.log(` ${pc.italic('human mastery is the only true moat.')}\n`);
+    console.log(pc.dim(' **********************************************************\n'));
+    
+    console.log('                 Outlier Governance Engine');
+    console.log(pc.bold('\n                   ***AUDIT COMPLETE***'));
+    console.log(pc.bold('                   ***STAY VIGILANT***\n'));
   }
 
-  outro(shareText);
+  console.log(
+    pc.dim(
+      `└ Share your audit: https://x.com/intent/tweet?text=${encodeURIComponent(
+        'I just audited my codebase for AI reliance and deskilling risk. What does your repo score?\n\n📏 npx @rosh100yx/outlier'
+      )}`
+    )
+  );
 }
 
 main().catch(console.error);
