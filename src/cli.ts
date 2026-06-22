@@ -83,6 +83,18 @@ async function main() {
   
   let action = process.argv[2] as any;
   
+  if (action === '--help' || action === '-h' || action === 'help') {
+    console.log(pc.bold('\nCOMMANDS:'));
+    console.log(`  ${pc.cyan('outlier')}              Interactive menu (Onboarding for first-timers)`);
+    console.log(`  ${pc.cyan('outlier status')}       Run full AI reliance & capability audit`);
+    console.log(`  ${pc.cyan('outlier authorship')}   Scan git history for AI co-authorship ratio`);
+    console.log(`  ${pc.cyan('outlier carbon')}       Scan local logs for token waste & carbon cost`);
+    console.log(`  ${pc.cyan('outlier policy')}       Configure CI/CD guardrails and thresholds`);
+    console.log(`  ${pc.cyan('outlier confessional')} Submit qualitative feedback or feature requests`);
+    console.log('\n' + pc.dim('Run without arguments to start the interactive wizard.'));
+    process.exit(0);
+  }
+
   const configPath = join(os.homedir(), '.outlier_config');
   if (!existsSync(configPath) && !action) {
     await runOnboarding();
