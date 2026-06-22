@@ -4,36 +4,37 @@
   <p><b>The Governance & Policy Engine for AI Engineering</b></p>
   <p><i>Measure AI adoption. Enforce Zero-Trust. Protect Human Mastery.</i></p>
   <br/>
-  <a href="https://github.com/rosh100yx/outlier/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=%5BFEATURE%5D+">
-    <img src="https://img.shields.io/badge/%E2%9C%A8_Feature_Request-Submit_an_idea-blueviolet?style=for-the-badge&logo=github" alt="Feature Request" />
-  </a>
   
   <p>
     <img src="https://img.shields.io/badge/Compliance-Strict-blue?style=for-the-badge" />
     <img src="https://img.shields.io/badge/AI_Safety-Enabled-green?style=for-the-badge" />
     <img src="https://img.shields.io/badge/Zero_Trust-Verified-orange?style=for-the-badge" />
-    <img src="https://img.shields.io/badge/Carbon_Footprint-Tracked-lightgrey?style=for-the-badge" />
   </p>
 
   <p>
     <b>Get Started Instantly:</b><br/>
-    <code>npx @rosh100yx/outlier status</code>
+    <code>npm install -g @rosh100yx/outlier</code><br/>
+    <code>outlier status</code>
   </p>
-
-  <br/>
-  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/cli-demo.png" alt="Outlier CLI Demo" width="800" />
-  <br/>
 </div>
 
-`outlier` is an open-source, local-first policy engine and governance framework designed to measure the true cost and risk of AI code generation. As teams accelerate with LLM agents (Cursor, Copilot, Claude Code), `outlier` acts as the definitive **Bouncer**—auditing AI authorship, mitigating deskilling risks, and tracking regional carbon footprints entirely locally. 
+## The Compounding Value of Outlier (Why This Matters)
+Software engineering is undergoing a catastrophic shift in skill acquisition. If you only look at today, AI saves you 30 minutes of writing regex. But if you look at the **compounding horizon of the next 5-10 years**, the value exchange flips.
 
-**Our Moat:**
-1. **Zero-Trust & Local-First:** No API keys, no telemetry sent to the cloud. `outlier` reads your native `~/.claude/` session logs and `.git/` history directly on your machine.
-2. **Actionable Policy Engine:** We don't just build dashboards. `outlier` lives in your terminal and CI/CD pipelines (via pre-commit hooks and GitHub Actions), physically blocking risky or overly AI-reliant commits.
-3. **Counterfactual Carbon Accounting:** The only observability tool mapping token cache waste directly to your local energy grid (e.g., Global South vs EU), proving true environmental impacts.
-4. **Anti-Deskilling Guardrails:** Built to prevent developers from becoming mere spectators in their own codebase.
+<div align="center">
+  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/metr-long-tasks.png" alt="METR Graph" width="800" />
+  <p><i>Source: METR (Measuring AI Ability to Complete Long Tasks)</i></p>
+</div>
 
-> *"In a room full of agents" shifts the perspective. It acknowledges that the developer is no longer a solo coder; they are a manager of bots. The product exists to make sure the human doesn't get lazy while managing them. We all want our time back, but we don't want to lose control of the craft.*
+### What Do We Lose and Gain?
+- **Today (The 5-minute task):** You use AI to scaffold a component. You **gain** velocity. You **lose** syntax recall. 
+- **Tomorrow (The 5-hour task):** Models like Claude Opus 4.5 will autonomously resolve multi-file architectural tickets (as proven by the METR graph). You **gain** massive scale and leverage. You **lose** granular intimacy with your own system architecture. You transition from a *Creator* to a *Reviewer*.
+- **The Next 5-10 Years:** Unchecked AI reliance leads to **Deskilling**. When an agent introduces a fatal state bug in a 1M+ LOC codebase, the human reviewers will lack the muscle memory and "systems thinking" required to debug it. 
+
+### How The Paper and Project Complement Each Other
+`outlier` is the technical circuit breaker that forces developers to remain High-Agency. The **Paper** maps the trajectory of global skill atrophy and the geographic carbon tax of AI. The **Project (CLI)** is the empirical instrument that gathers this data safely, proving the literature while simultaneously protecting the developer's sovereignty. 
+
+We measure the exact cost of AI for humans—not just in API tokens, but in cognitive load and lost mastery.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/codecore.gif" alt="Codecore Aesthetic" width="300" />
