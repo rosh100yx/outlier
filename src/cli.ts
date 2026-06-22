@@ -301,12 +301,16 @@ Conservative Floor: ${color(nmPct + '%')}`,
         let cachePct = '0';
         let co2Str = '0.0kg';
         let regionStr = 'Global Average';
+        let sourceLabel = 'no local AI logs found';
+        let noData = true;
         if (carbon) {
           if (carbon.totalTokens > 0) {
             cachePct = ((carbon.cacheReadTokens / carbon.totalTokens) * 100).toFixed(1);
+            noData = false;
           }
           co2Str = `${carbon.localCo2Kg.toFixed(2)}kg CO2`;
           regionStr = carbon.localRegion;
+          sourceLabel = carbon.sourceLabel;
         }
 
         // The thermal receipt below is the single canonical output for `status`.
@@ -370,7 +374,8 @@ Conservative Floor: ${color(nmPct + '%')}`,
  ${pc.dim('│')} Tokens used      ${pc.bold(totalTokensStr)}
  ${pc.dim('│')} Est. spend       ${pc.bold(estUsdStr)}
  ${pc.dim('│')} Re-used context  ${cacheBar} ${pc.bold(cachePct + '%')}
- ${pc.dim('│')} Energy           ${pc.bold(co2Str)} ${pc.dim(`(${regionStr} grid, rough)`)}
+ ${pc.dim('│')} Energy           ${pc.bold(co2Str)} ${pc.dim(`(${regionStr} grid)`)}
+ ${pc.dim('│')} ${pc.dim(`Source: ${sourceLabel}`)}
  ${pc.dim('│')}
  ${pc.dim('│')} ${cacheVerdict} — ${cacheText.split('\n').join('\n ' + pc.dim('│') + '   ')}
  ${pc.dim('├────────────────────────────────────────────────────────')}
