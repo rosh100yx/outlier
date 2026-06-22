@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/cover.jpg" alt="Outlier Cover" width="100%" />
-  <h1>outlier</h1>
-  <p><b>The Governance & Policy Engine for AI Engineering</b></p>
-  <p><i>Measure AI adoption. Enforce Zero-Trust. Protect Human Mastery.</i></p>
+  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/cover.jpg" alt="Outlier: AI Code Governance and Policy Engine" width="100%" />
+  <h1>Outlier: The Governance & Policy Engine for AI Engineering</h1>
+  <p><b>Measure AI adoption. Enforce Zero-Trust. Protect Human Mastery.</b></p>
+  <p><i>Outlier is an open-source, local-first CLI tool that measures AI code reliance, enforces zero-trust telemetry, and protects developers from deskilling by auditing local agent logs (Claude, Cursor) and Git history.</i></p>
   <br/>
   
   <p>
@@ -104,13 +104,13 @@ If you run `npx @rosh100yx/outlier` directly, you'll instantly get your Thermal 
    ```bash
    git commit -am "added massive ai feature"
    ```
-   *Watch the Bouncer block your commit for deskilling risk.*
+   *Watch the Bouncer physically block your commit for deskilling risk.*
 
 3. **Measure the Damage**
    ```bash
-   npx @rosh100yx/outlier audit
+   npx @rosh100yx/outlier
    ```
-   *See your exact AI Authorship ratio and Token Waste.*
+   *Instantly generate your Thermal Receipt to see your exact AI Authorship ratio and Token Waste.*
 
 ## Theoretical Foundations
 `outlier` is the live, technical implementation of an academic thesis on the thermodynamics of AI code generation and digital sovereignty. 
