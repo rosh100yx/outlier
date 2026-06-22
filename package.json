@@ -6,7 +6,7 @@
     "outlier": "bin/outlier.js"
   },
   "files": [
-    "bin",
+    "bin/outlier.js",
     "src",
     "data"
   ],
