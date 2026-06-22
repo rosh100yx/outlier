@@ -12,7 +12,8 @@ describe("Capabilities Engine", () => {
     expect(stats.hasOrchestration).toBe(true);
     expect(stats.skills).toContain("dummy-skill");
     expect(stats.skills).toContain("global-skill");
-    expect(stats.mcps).toContain("dummy-mcp");
+    // mcps is now a list of { name, reach } — match by name
+    expect(stats.mcps.map(m => m.name)).toContain("dummy-mcp");
   });
 
   it("should handle empty directories gracefully", async () => {
@@ -21,5 +22,6 @@ describe("Capabilities Engine", () => {
     expect(stats.hasOrchestration).toBe(false);
     expect(stats.skills.length).toBe(0);
     expect(stats.mcps.length).toBe(0);
+    expect(stats.blastRadius).toBe("LOW");
   });
 });
