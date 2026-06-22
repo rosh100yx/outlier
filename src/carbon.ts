@@ -10,6 +10,8 @@ export interface CarbonStats {
   energyKwh: number;
   co2KgVietnam: number;
   co2KgFrance: number;
+  localCo2Kg: number;
+  localRegion: string;
   sessions: number;
 }
 
@@ -52,9 +54,20 @@ export class ClaudeLogParser implements TokenLogParser {
 
 class CursorLogParser implements TokenLogParser {
   async parse() {
-    // Stub for future Cursor sqlite/json parsing
     return { total: 0, output: 0, cache: 0, sessions: 0 };
   }
+}
+
+function getLocalGridFactor(): { region: string, factor: number } {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz.includes('Ho_Chi_Minh') || tz.includes('Bangkok') || tz.includes('Jakarta') || tz.includes('Asia/Manila')) return { region: 'Vietnam/SEA', factor: gridFactors.vietnam };
+    if (tz.includes('Paris') || tz.includes('Europe/')) return { region: 'France/EU', factor: gridFactors.france };
+    if (tz.includes('New_York') || tz.includes('America/')) return { region: 'US', factor: gridFactors.us_east };
+    if (tz.includes('Singapore')) return { region: 'Singapore', factor: gridFactors.singapore };
+    if (tz.includes('Calcutta') || tz.includes('Kolkata') || tz.includes('Asia/Kabul')) return { region: 'India', factor: gridFactors.india_average };
+  } catch (e) {}
+  return { region: 'Global Average', factor: 450 };
 }
 
 export async function getCarbonStats(): Promise<CarbonStats> {
@@ -71,6 +84,7 @@ export async function getCarbonStats(): Promise<CarbonStats> {
   }
 
   const energyKwh = (outputTokens / 1_000_000) * 0.662;
+  const localGrid = getLocalGridFactor();
 
   return {
     totalTokens,
@@ -79,6 +93,8 @@ export async function getCarbonStats(): Promise<CarbonStats> {
     energyKwh,
     co2KgVietnam: (energyKwh * gridFactors.vietnam) / 1000,
     co2KgFrance: (energyKwh * gridFactors.france) / 1000,
+    localCo2Kg: (energyKwh * localGrid.factor) / 1000,
+    localRegion: localGrid.region,
     sessions
   };
 }

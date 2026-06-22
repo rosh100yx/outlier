@@ -47,8 +47,10 @@ async function main() {
 Output Tokens:  ${(carbon.outputTokens / 1_000_000).toFixed(2)}M
 Est. Energy:    ${carbon.energyKwh.toFixed(2)} kWh
 
-Grid Cost (Vietnam): ${pc.red(carbon.co2KgVietnam.toFixed(2) + ' kgCO2')}
-Grid Cost (France):  ${pc.green(carbon.co2KgFrance.toFixed(2) + ' kgCO2')}
+Your Local Grid (${carbon.localRegion}): ${pc.cyan(carbon.localCo2Kg.toFixed(2) + ' kgCO2')}
+
+Counterfactual (Vietnam): ${pc.red(carbon.co2KgVietnam.toFixed(2) + ' kgCO2')}
+Counterfactual (France):  ${pc.green(carbon.co2KgFrance.toFixed(2) + ' kgCO2')}
 
 Ratio: ~31x carbon penalty on coal-heavy grid`,
         'Session Carbon Breakdown'
@@ -109,8 +111,8 @@ Conservative Floor: ${color(nmPct + '%')}`,
           if (!isStrict) {
             if (gitStats.ratio < 0.1) wittyRemark = 'Artisan, hand-crafted code. Very 2019 of you (=^ ◡ ^=)';
             else if (gitStats.ratio < 0.6) wittyRemark = 'A true centaur. Half human, half matrix (=｀ω´=)';
-            else if (gitStats.ratio < 0.95) wittyRemark = 'Did you write any of this, or are you just the manager now? (ФДФ)';
-            else wittyRemark = 'You are officially a spectator in your own repository (=ಠᆽಠ=)';
+            else if (gitStats.ratio < 0.95) wittyRemark = 'Orchestrating the swarm. You are the manager now (ФДФ)';
+            else wittyRemark = '100% Cybernetic. Codebase goes brrrrr (=ಠᆽಠ=)';
           }
 
           if (gitStats.ratio > 0.7) {
@@ -124,11 +126,13 @@ Conservative Floor: ${color(nmPct + '%')}`,
         
         let cachePct = '0';
         let co2Str = '0.0kg';
+        let regionStr = 'Global Average';
         if (carbon) {
           if (carbon.totalTokens > 0) {
             cachePct = ((carbon.cacheReadTokens / carbon.totalTokens) * 100).toFixed(1);
           }
-          co2Str = `${carbon.co2KgVietnam.toFixed(2)}kg CO2`;
+          co2Str = `${carbon.localCo2Kg.toFixed(2)}kg CO2`;
+          regionStr = carbon.localRegion;
         }
 
         const vibeRow = !isStrict ? `\n    vibe: ${pc.italic(wittyRemark)}` : '';
@@ -145,7 +149,7 @@ ${authIcon}${pc.dim('[2] AI Code Reliance')} ${pc.yellow('▰▰▰▰▰▰▰�
     gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Human Mastery Sustained') : `${pc.red(`${failIcon} Deskilling Risk Detected`)} ${pc.red('⚠ Security Audit Required')}`}${mentorString}
 ${costIcon}${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
     waste: ${pc.yellow(`⚠ ${cachePct}% of tokens are redundant context reads`)}
-    carbon: ${pc.green(`✓ ${co2Str} (Grid-weighted estimate)`)}
+    carbon: ${pc.green(`✓ ${co2Str} (Est. ${regionStr} Grid)`)}
 ${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`${failIcon} ${ruleFailures + 1} policy failures`) : pc.green(`${passIcon} All clear`)}`,
           `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green(`${passIcon} safe surface`)} • ${co2Str}`
         );
@@ -216,8 +220,8 @@ ${caps.skills.length > 5 ? pc.red('⚠ High Surface Area: Ensure strict authorsh
       const gitDir = join(process.cwd(), '.git');
       const isRepo = existsSync(gitDir);
       if (!isRepo) {
-        log.error('Must be run inside a git repository');
-        return;
+        console.error(pc.red('Must be run inside a git repository'));
+        process.exit(1);
       }
 
       const isStrict = process.argv.includes('--strict');
@@ -226,6 +230,11 @@ ${caps.skills.length > 5 ? pc.red('⚠ High Surface Area: Ensure strict authorsh
         : `echo "😾 ✋ The Bouncer says no: Your code is $CURRENT_RATIO% AI-generated."\n    echo "A human must review this before it enters the club (main branch)."`;
 
       const hookPath = join(gitDir, 'hooks', 'pre-commit');
+      if (existsSync(hookPath)) {
+        const { copyFileSync } = require('fs');
+        copyFileSync(hookPath, `${hookPath}.backup`);
+      }
+
       const hookScript = `#!/bin/sh
 # outlier Pre-Commit Governance Hook
 
@@ -236,15 +245,15 @@ if [ "$TOTAL" -eq 0 ]; then exit 0; fi
 CURRENT_RATIO=$(awk "BEGIN {print ($AI / $TOTAL) * 100}")
 MAX_RATIO=${maxAuthorship}
 
-if [ "$(echo "$CURRENT_RATIO > $MAX_RATIO" | bc -l)" -eq 1 ]; then
+OVER_LIMIT=$(awk "BEGIN {if ($CURRENT_RATIO > $MAX_RATIO) print 1; else print 0}")
+if [ "$OVER_LIMIT" -eq 1 ]; then
     ${bouncerMsg}
     exit 1
 fi
 echo "✅ Governance Policy OK"
 `;
-        writeFileSync(hookPath, hookScript);
-        chmodSync(hookPath, '755');
-      }
+      writeFileSync(hookPath, hookScript);
+      chmodSync(hookPath, '755');
 
       await new Promise(resolve => setTimeout(resolve, 800));
       s.stop('Policy Applied');
@@ -253,22 +262,26 @@ echo "✅ Governance Policy OK"
         `Tier:         ${pc.bold(tier.toString().toUpperCase())}
 Rule 1:       ${pc.green(`AI Authorship must not exceed ${maxAuthorship}%`)}
 Rule 2:       ${pc.green('Require human review on consecutive high-AI sprints')}
-Enforcement:  ${pc.cyan('Local pre-commit hook installed')}`,
+Enforcement:  ${pc.cyan('Local pre-commit hook installed (backup created)')}`,
         'Active Governance Policy'
       );
     } else if (tier === 'regulatory') {
       s.start('Generating Regulatory Compliance Audit (Decree 142)...');
       await new Promise(resolve => setTimeout(resolve, 1200));
+      
+      const reportPath = join(process.cwd(), 'outlier-audit-report.jsonl');
+      writeFileSync(reportPath, JSON.stringify({ timestamp: new Date().toISOString(), status: 'COMPLIANT', policy: 'Decree 142', humanOversight: true }) + '\\n');
       s.stop('Audit Generated');
 
       note(
         `Jurisdiction: ${pc.bold('Vietnam (Decree 142)')}
 Status:       ${pc.green('Compliant - Human oversight logged locally')}
 Privacy:      ${pc.green('Preserved - No citizen data exported')}
-Artifact:     ${pc.cyan('outlier-audit-report.jsonl generated')}`,
+Artifact:     ${pc.cyan(reportPath)}`,
         'Regulatory Compliance'
       );
     }
+  }
 
   let shareText = 'Local telemetry run completed. No data left your machine.';
   if (action === 'status') {

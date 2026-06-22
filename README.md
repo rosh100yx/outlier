@@ -28,6 +28,7 @@
 ```
 
 ## How It Works
+```text
 ┌───────────┐   ┌────────────┐   ┌───────────┐   ┌─────────────┐
 │ AI CODING │──▸│ GIT COMMIT │──▸│  BOUNCER  │──▸│ AUDIT TRACE │
 └───────────┘   └────────────┘   └───────────┘   └─────────────┘
@@ -35,6 +36,7 @@
                                  ┌───────────┐
                                  │ MENTORING │
                                  └───────────┘
+```
 **Step 1:** Developer delegates code generation to an AI agent (Claude Code, Cursor).  
 **Step 2:** Developer attempts to merge code into the main branch.  
 **Step 3:** The `outlier` Bouncer hook triggers. If AI reliance > 70%, the commit is physically blocked.  
@@ -114,4 +116,4 @@ This tool is the technical implementation of an ongoing academic thesis on the t
 See our [Contributing Guide](CONTRIBUTING.md) to get started. Great first issues include adding new regional grid factors to `data/grid-factors.json` or writing custom CI/CD pipeline integrations.
 
 ## License
-Apache 2.0
+MIT License
