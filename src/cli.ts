@@ -90,7 +90,7 @@ async function main() {
     console.log(`  ${pc.cyan('outlier authorship')}   Scan git history for AI co-authorship ratio`);
     console.log(`  ${pc.cyan('outlier carbon')}       Scan local logs for token waste & carbon cost`);
     console.log(`  ${pc.cyan('outlier policy')}       Configure CI/CD guardrails and thresholds`);
-    console.log(`  ${pc.cyan('outlier confessional')} Submit qualitative feedback or feature requests`);
+    console.log(`  ${pc.cyan('outlier participate')}  Help build the academic literature on AI deskilling`);
     console.log('\n' + pc.dim('Run without arguments to start the interactive wizard.'));
     process.exit(0);
   }
@@ -113,7 +113,7 @@ async function main() {
           { value: 'authorship', label: 'Code Durability', hint: 'Scan git history for AI Code Reliance & Hallucination Risk' },
           { value: 'carbon', label: 'Cache Bloat', hint: 'Scan local logs for context waste & token costs' },
           { value: 'policy', label: 'Policy Profiles', hint: 'Set Personal, Team, or Enterprise guardrails in CI' },
-          { value: 'confessional', label: 'Confessional', hint: 'Tell us how AI is really affecting your job (Feature Requests)' }
+          { value: 'participate', label: 'Participate', hint: 'Contribute to the literature on AI deskilling' }
         ],
       });
 
@@ -410,8 +410,8 @@ Artifact:     ${pc.cyan(reportPath)}`,
         'Regulatory Compliance'
       );
     }
-  } else if (action === 'confessional') {
-    s.start('Connecting to the human element...');
+  } else if (action === 'participate') {
+    s.start('Connecting to the Outlier research project...');
     await new Promise(resolve => setTimeout(resolve, 600));
     s.stop('Secure connection established.');
 
@@ -424,7 +424,7 @@ Artifact:     ${pc.cyan(reportPath)}`,
       ]
     });
 
-    if (isCancel(q1)) { cancel('Confession aborted.'); process.exit(0); }
+    if (isCancel(q1)) { cancel('Survey aborted.'); process.exit(0); }
 
     const q2 = await select({
       message: pc.cyan('Do you feel you are losing your deep architectural mastery? (Deskilling)'),
@@ -435,29 +435,29 @@ Artifact:     ${pc.cyan(reportPath)}`,
       ]
     });
     
-    if (isCancel(q2)) { cancel('Confession aborted.'); process.exit(0); }
+    if (isCancel(q2)) { cancel('Survey aborted.'); process.exit(0); }
 
     const feedback = await text({
       message: pc.cyan('In your own words, what is AI actually doing to your codebase or your job?\n(Note: This will draft a public GitHub issue)'),
       placeholder: 'Honestly, I just let the agent write the regex...',
       validate(value) {
-        if (!value || value.length === 0) return `C'mon, confess something!`;
+        if (!value || value.length === 0) return `C'mon, say something!`;
       },
     });
 
     if (isCancel(feedback)) {
-      cancel('Confession aborted.');
+      cancel('Survey aborted.');
       process.exit(0);
     }
 
     note(
-      `${pc.italic(`"${feedback}"`)}\n\nYour confession is safe with us. But if you want to make it official (and help us build what you need for the literature), we've generated a secure transmission link for you.`,
-      'The Confessional'
+      `${pc.italic(`"${feedback}"`)}\n\nYour input is invaluable. To make it official and contribute to the literature, we've generated a secure transmission link for you.`,
+      'Outlier Research'
     );
 
     const surveyData = `**Engineering Reality:** ${q1}\n**Deskilling Impact:** ${q2}\n**Thoughts:**\n${feedback}`;
 
-    const url = `https://github.com/rosh100yx/outlier/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=%5BConfessional%5D+Feedback&body=${encodeURIComponent("Drop a screenshot of your Thermal Receipt here! \n\n" + surveyData)}`;
+    const url = `https://github.com/rosh100yx/outlier/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=%5BOutlier+Research%5D+Feedback&body=${encodeURIComponent("Drop a screenshot of your Thermal Receipt here! \n\n" + surveyData)}`;
     console.log(`\n${pc.bold('Submit here (and drop your screenshot!):')} ${pc.underline(pc.cyan(url))}\n`);
   }
 
@@ -494,18 +494,19 @@ Artifact:     ${pc.cyan(reportPath)}`,
   console.log(
     pc.dim(
       `└ Share your audit: https://x.com/intent/tweet?text=${encodeURIComponent(
-        'I just audited my codebase for AI reliance and deskilling risk. What does your repo score?\n\n📏 npx @rosh100yx/outlier'
+        'I just audited my codebase for AI reliance and deskilling risk. What does your repo score?\n\n📏 #Outlier'
       )}`
     )
   );
-  
-  console.log(
-    pc.dim(`└ Have thoughts on AI deskilling? Tell us: `) + pc.cyan(`npx @rosh100yx/outlier confessional`)
-  );
 
-  console.log(
-    pc.dim(`└ Keep your local policies updated: `) + pc.cyan(`npx @rosh100yx/outlier@latest`)
-  );
+  if (action === 'status') {
+    console.log(
+      pc.dim(`└ Have thoughts on AI deskilling? Tell us: `) + pc.cyan(`outlier participate`)
+    );
+    console.log(
+      pc.dim(`└ Keep your local policies updated: `) + pc.cyan(`outlier update`)
+    );
+  }
 }
 
 main().catch(console.error);
