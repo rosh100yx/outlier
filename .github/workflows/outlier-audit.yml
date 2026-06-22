@@ -1,0 +1,43 @@
+name: Outlier AI Reliance Audit
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  audit:
+    name: Codebase AI Authorship Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Need full history for git log parsing
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Run Outlier Audit
+        run: |
+          echo "Running Outlier in strict CI mode..."
+          npx @rosh100yx/outlier status --strict
+          
+      - name: Check AI Reliance Threshold
+        run: |
+          # Fails the build if AI authorship > 70%
+          TOTAL=$(git log --oneline | wc -l | tr -d ' ')
+          AI=$(git log -i --grep='Co-Authored-By' --oneline | wc -l | tr -d ' ')
+          if [ "$TOTAL" -eq 0 ]; then exit 0; fi
+          CURRENT_RATIO=$(awk "BEGIN {print ($AI / $TOTAL) * 100}")
+          MAX_RATIO=70
+          OVER_LIMIT=$(awk "BEGIN {if ($CURRENT_RATIO > $MAX_RATIO) print 1; else print 0}")
+          
+          echo "Current AI Authorship: $CURRENT_RATIO%"
+          if [ "$OVER_LIMIT" -eq 1 ]; then
+              echo "❌ outlier policy violation: AI authorship ($CURRENT_RATIO%) exceeds threshold ($MAX_RATIO%)"
+              echo "A human must manually review this PR to prevent deskilling."
+              exit 1
+          fi
+          echo "✅ Governance Policy OK"

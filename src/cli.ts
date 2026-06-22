@@ -7,8 +7,20 @@ import { getCapabilitiesStats } from './capabilities';
 import { writeFileSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
 
+const ASCII_LOGO = `
+   ____  _   _ _____ _     ___ _____ ____  
+  / __ \\| | | |_   _| |   |_ _|  ___|  _ \\ 
+ | |  | | | | | | | | |    | || |__ | |_) |
+ | |  | | |_| | | | | |___ | ||  __||  _ < 
+ | |__| |  _  | | | |  _  || || |___| | \\ \\
+  \\____/|_| |_| |_| |_| |_|___|_____|_|  \\_\\
+`;
+
 async function main() {
   console.clear();
+  console.log(pc.cyan(ASCII_LOGO));
+  console.log(pc.dim('  Outlier v0.3.0 · AI Code Reliance & Telemetry Engine\n'));
+  
   intro(pc.inverse(' outlier '));
 
   let action = process.argv[2] as any;

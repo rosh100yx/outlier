@@ -1,6 +1,6 @@
 {
   "name": "@rosh100yx/outlier",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "AI Code Governance & Capability Auditing for the Terminal. Measures AI reliance, context waste, and enforces local CI/CD policies.",
   "bin": {
     "outlier": "bin/outlier.js"
@@ -23,6 +23,13 @@
     "ai",
     "governance",
     "carbon",
+    "compliance",
+    "ai-safety",
+    "policy-engine",
+    "zero-trust",
+    "carbon-footprint",
+    "global-south",
+    "observability",
     "telemetry",
     "authorship",
     "cli"

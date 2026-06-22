@@ -1,12 +1,23 @@
 <div align="center">
   <h1>outlier</h1>
-  <p><b>The Governance Framework for AI Engineering</b></p>
+  <p><b>The Governance & Policy Engine for AI Engineering</b></p>
   <p><i>Measure AI adoption. Enforce Zero-Trust. Protect Human Mastery.</i></p>
+  
+  <p>
+    <img src="https://img.shields.io/badge/Compliance-Strict-blue?style=for-the-badge" />
+    <img src="https://img.shields.io/badge/AI_Safety-Enabled-green?style=for-the-badge" />
+    <img src="https://img.shields.io/badge/Zero_Trust-Verified-orange?style=for-the-badge" />
+    <img src="https://img.shields.io/badge/Carbon_Footprint-Tracked-lightgrey?style=for-the-badge" />
+  </p>
 </div>
 
-`outlier` is a local-first framework to measure real AI adoption and usage. We built this instrument to measure a blind spot: while dashboards count API costs, no one counts the carbon imported to your local grid, and no one counts the understanding you lose when delegating to an agent. 
+`outlier` is an open-source, local-first policy engine and governance framework designed to measure the true cost and risk of AI code generation. As teams accelerate with LLM agents (Cursor, Copilot, Claude Code), `outlier` acts as the definitive **Bouncer**—auditing AI authorship, mitigating deskilling risks, and tracking regional carbon footprints entirely locally. 
 
-`outlier` acts as a strict orchestration gate to cut token waste, block hallucinated code, and serve as an anti-deskilling engine for when you are building in a room full of agents—all without a single byte leaving your terminal.
+**Our Moat:**
+1. **Zero-Trust & Local-First:** No API keys, no telemetry sent to the cloud. `outlier` reads your native `~/.claude/` session logs and `.git/` history directly on your machine.
+2. **Actionable Policy Engine:** We don't just build dashboards. `outlier` lives in your terminal and CI/CD pipelines (via pre-commit hooks and GitHub Actions), physically blocking risky or overly AI-reliant commits.
+3. **Counterfactual Carbon Accounting:** The only observability tool mapping token cache waste directly to your local energy grid (e.g., Global South vs EU), proving true environmental impacts.
+4. **Anti-Deskilling Guardrails:** Built to prevent developers from becoming mere spectators in their own codebase.
 
 > *"In a room full of agents" shifts the perspective. It acknowledges that the developer is no longer a solo coder; they are a manager of bots. The product exists to make sure the human doesn't get lazy while managing them. We all want our time back, but we don't want to lose control of the craft.*
 

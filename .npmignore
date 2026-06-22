@@ -1,6 +1,1 @@
-node_modules
-.git
-.github
-tests
-paper
-scripts
+bin/outlier
