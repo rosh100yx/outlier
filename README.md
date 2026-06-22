@@ -16,32 +16,10 @@
     <code>npm install -g @rosh100yx/outlier</code><br/>
     <code>outlier status</code>
   </p>
-</div>
 
-## The Reality of AI Deskilling (Why This Matters)
-We all feel it. You use an AI agent to skip the boring stuff—writing boilerplate, scaffolding a component, or fixing a tedious regex. It feels amazing. You get your time back.
-
-But suddenly, 6 months later, you realize you don't actually know how your own system's authentication pipes work anymore. You've transitioned from being a **Creator** to a **Reviewer**.
-
-If you only look at today, AI saves you 30 minutes. But if you look at the **compounding horizon of the next 5-10 years**, the reality is stark. 
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/metr-long-tasks.png" alt="METR Graph" width="550" />
-  <p><i>Source: METR (Measuring AI Ability to Complete Long Tasks)</i></p>
-</div>
-
-### What's Actually Happening?
-- **Today (The 5-minute task):** You gain velocity. You lose muscle memory of the low-level code.
-- **Tomorrow (The 5-hour task):** Models like Claude Opus 4.5 will autonomously resolve multi-file architectural tickets. You gain massive scale. But you lose granular intimacy with your own system architecture. 
-- **The 1M+ LOC Crisis:** Unchecked AI reliance leads to **Deskilling**. When an agent introduces a fatal state bug in a massive codebase, human reviewers will lack the deeply-ingrained "systems thinking" required to debug it because they never built the foundation themselves.
-
-### Why This Project Exists
-`outlier` is the technical circuit breaker that forces developers to remain High-Agency. The **Paper** maps the global trajectory of skill atrophy. The **Project (CLI)** is the empirical instrument that gathers this data safely, proving the literature while simultaneously protecting the developer's sovereignty. 
-
-We measure the exact cost of AI for humans—not just in API tokens burnt vs human judgement, but in cognitive load and lost mastery.
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/codecore.gif" alt="Codecore Aesthetic" width="300" />
+  <br/>
+  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/cli-demo.png" alt="Outlier CLI Demo" width="800" />
+  <br/>
 </div>
 
 ## How It Works
@@ -134,6 +112,27 @@ This tool is the technical implementation of an ongoing academic thesis on the t
 **Call for Research Data:** We are actively collecting metrics to prove the "Geographic Tax" and measure industry-wide skill atrophy for our upcoming paper. If you use this tool, please share your terminal screenshot (`outlier audit`) on X.com (tagging the maintainers). By sharing your baseline **AI reliance %** and **carbon estimate**, you provide the exact empirical data we need to map how AI is impacting global engineering teams.
 
 See our [Contributing Guide](CONTRIBUTING.md) to get started. Great first issues include adding new regional grid factors to `data/grid-factors.json` or writing custom CI/CD pipeline integrations.
+
+## The Compounding Horizon of AI Deskilling
+
+When you use an AI agent to skip the boring stuff today, it feels amazing. You get your time back. But what happens over the next 5 to 10 years? 
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/metr-long-tasks.png" alt="METR Graph" width="350" />
+  <p><i>Source: METR (Measuring AI Ability to Complete Long Tasks)</i></p>
+</div>
+
+### What Does This Mean For Developers?
+- **Today (The 5-minute task):** You gain speed. You lose the muscle memory of writing low-level code.
+- **Tomorrow (The 5-hour task):** Agents will solve complex tickets across multiple files. You gain massive scale. You lose the deep, intimate understanding of your own system's architecture.
+- **Next 5-10 Years (The 1M+ LOC Crisis):** When an agent introduces a critical bug in a massive codebase, human reviewers will lack the deeply ingrained "systems thinking" required to debug it. 
+
+### Why This Project Exists
+`outlier` is the technical circuit breaker that forces developers to stay sharp. We measure the exact cost of AI for humans—not just in API tokens burnt, but in cognitive load and lost mastery. 
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/codecore.gif" alt="Codecore Aesthetic" width="300" />
+</div>
 
 ## License
 MIT License
