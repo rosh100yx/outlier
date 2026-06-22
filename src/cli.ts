@@ -25,51 +25,12 @@ async function runOnboarding() {
   intro(pc.inverse(' outlier: Welcome '));
 
   note(
-    `Outlier is a local-first Policy Engine & Governance Framework for AI Engineering.
-
-Our mission is AI Safety for developers:
-As agents (Cursor, Copilot, Claude) write more of our code, we lose visibility into:
-1. Deskilling Risk (Are we becoming spectators in our own codebase?)
-2. Carbon Cost (What is the true regional energy cost of token caching?)
-3. Capability Drift (What hidden skills and external tools are our agents using?)
-
-We built Outlier to enforce Zero-Trust and protect Human Mastery. You are in control.`,
-    'The Problem: AI Safety in Development'
-  );
-
-  note(
     `Outlier operates entirely on your machine.
 - Local Only: No API keys. No cloud telemetry. No data leaves your machine.
-- Native Auditing: We only read your local \`~/.claude\` logs and \`.git/\` commit history.
-- Actionable Policies: We enforce rules locally via terminal or Git pre-commit hooks.`,
+- Native Auditing: We read your local \`~/.claude\` logs and \`.git/\` commit history.
+- Actionable Policies: Enforce rules locally via terminal or Git hooks.`,
     'Privacy & Zero-Trust Principles'
   );
-
-  note(
-    `Available Commands:
-- status: Run a full system audit (Reliance, Carbon, Capabilities)
-- policy: Configure team/enterprise guardrails and CLI blockers
-- carbon: View isolated token caching metrics and regional counterfactuals
-- authorship: View Git authorship ratio (Human vs AI)`,
-    'How it is used'
-  );
-
-  note(
-    `When you start the audit, Outlier will locally parse your Git commits to identify AI co-authorship and cross-reference your agent logs to calculate token waste. 
-
-The results will assign you a "vibe" and evaluate if you are at risk of deskilling.`,
-    'What to Expect'
-  );
-
-  const ready = await confirm({
-    message: 'Are you ready to run your first Governance Audit and measure your AI reliance?',
-    initialValue: true,
-  });
-
-  if (isCancel(ready) || !ready) {
-    cancel('Onboarding paused. Run outlier again when you are ready.');
-    process.exit(0);
-  }
 
   const configPath = join(os.homedir(), '.outlier_config');
   writeFileSync(configPath, JSON.stringify({ onboarded: true, date: new Date().toISOString() }));
@@ -107,23 +68,31 @@ async function main() {
 
   if (!action || action === 'audit') {
     if (action !== 'audit') {
-      action = await select({
-        message: 'Select outlier governance module:',
-        options: [
-          { value: 'status', label: 'Status Report', hint: 'Run full AI reliance and capability audit' },
-          { value: 'capabilities', label: 'Capabilities Map', hint: 'Audit active MCPs, skills, and orchestrations' },
-          { value: 'authorship', label: 'Code Durability', hint: 'Scan git history for AI Code Reliance & Hallucination Risk' },
-          { value: 'carbon', label: 'Cache Bloat', hint: 'Scan local logs for context waste & token costs' },
-          { value: 'policy', label: 'Policy Profiles', hint: 'Set Personal, Team, or Enterprise guardrails in CI' },
-          { value: 'impact', label: 'Impact Horizon', hint: 'What do you lose and gain in the next 5-10 years?' },
-          { value: 'knowledge', label: 'Literature Base', hint: 'Explore references and the core academic foundation' },
-          { value: 'participate', label: 'Participate', hint: 'Contribute to the literature on AI deskilling' }
-        ],
-      });
+      let menuLoop = true;
+      while (menuLoop) {
+        action = await select({
+          message: 'Select outlier governance module:',
+          options: [
+            { value: 'status', label: pc.bold('Status') + pc.dim('         Full audit (reliance + carbon + capabilities)') },
+            { value: 'authorship', label: pc.bold('Authorship') + pc.dim('     Human vs AI, per commit') },
+            { value: 'carbon', label: pc.bold('Carbon') + pc.dim('         Token waste + regional cost') },
+            { value: 'capabilities', label: pc.bold('Capabilities') + pc.dim('   What your agents can reach') },
+            { value: 'policy', label: pc.bold('Policy') + pc.dim('         Set guardrails / install the gate') },
+            { value: '_divider', label: pc.dim('───────────────────────────────────────────────────────') },
+            { value: 'impact', label: 'Impact' + pc.dim('         What happens over the next 5-10 years') },
+            { value: 'knowledge', label: 'Literature' + pc.dim('     The academic foundation') },
+            { value: 'participate', label: 'Participate' + pc.dim('    Contribute to the research') }
+          ],
+        });
 
-      if (isCancel(action)) {
-        cancel('Operation cancelled.');
-        process.exit(0);
+        if (isCancel(action)) {
+          cancel('Operation cancelled.');
+          process.exit(0);
+        }
+        
+        if (action !== '_divider') {
+          menuLoop = false;
+        }
       }
     } else {
       action = 'status'; // Map the 'audit' alias directly to status for CI
