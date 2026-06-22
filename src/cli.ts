@@ -67,36 +67,7 @@ async function main() {
   intro(pc.inverse(' outlier '));
 
   if (!action || action === 'audit') {
-    if (action !== 'audit') {
-      let menuLoop = true;
-      while (menuLoop) {
-        action = await select({
-          message: 'Select outlier governance module:',
-          options: [
-            { value: 'status', label: pc.bold('Status') + pc.dim('         Full audit (reliance + carbon + capabilities)') },
-            { value: 'authorship', label: pc.bold('Authorship') + pc.dim('     Human vs AI, per commit') },
-            { value: 'carbon', label: pc.bold('Carbon') + pc.dim('         Token waste + regional cost') },
-            { value: 'capabilities', label: pc.bold('Capabilities') + pc.dim('   What your agents can reach') },
-            { value: 'policy', label: pc.bold('Policy') + pc.dim('         Set guardrails / install the gate') },
-            { value: '_divider', label: pc.dim('───────────────────────────────────────────────────────') },
-            { value: 'impact', label: 'Impact' + pc.dim('         What happens over the next 5-10 years') },
-            { value: 'knowledge', label: 'Literature' + pc.dim('     The academic foundation') },
-            { value: 'participate', label: 'Participate' + pc.dim('    Contribute to the research') }
-          ],
-        });
-
-        if (isCancel(action)) {
-          cancel('Operation cancelled.');
-          process.exit(0);
-        }
-        
-        if (action !== '_divider') {
-          menuLoop = false;
-        }
-      }
-    } else {
-      action = 'status'; // Map the 'audit' alias directly to status for CI
-    }
+    action = 'status'; // Auto-run the main audit loop for highest TTV
   }
 
   const s = spinner();
@@ -530,22 +501,18 @@ Artifact:     ${pc.cyan(reportPath)}`,
     console.log(finalReceipt);
   }
 
-  // (Old artifact storytelling block removed to unify receipt UX)
-
-  console.log(
-    pc.dim(
-      `└ Share your audit: https://x.com/intent/tweet?text=${encodeURIComponent(
-        'I just audited my codebase for AI reliance and deskilling risk. What does your repo score?\n\n📏 #Outlier'
-      )}`
-    )
-  );
-
   if (action === 'status') {
+    console.log('');
+    console.log(pc.bold(' Explore Outlier:'));
+    console.log(pc.dim(' ────────────────────────────────────────────────────────────'));
+    console.log(`   ${pc.cyan('outlier policy')}        Configure CI/CD guardrails and thresholds`);
+    console.log(`   ${pc.cyan('outlier capabilities')}  Audit active MCPs, skills, and orchestrations`);
+    console.log(`   ${pc.cyan('outlier impact')}        See the compounding horizon of AI Deskilling`);
+    console.log(`   ${pc.cyan('outlier participate')}   Help build the academic literature`);
+    console.log(pc.dim(' ────────────────────────────────────────────────────────────\n'));
+
     console.log(
-      pc.dim(`└ Have thoughts on AI deskilling? Tell us: `) + pc.cyan(`outlier participate`)
-    );
-    console.log(
-      pc.dim(`└ Keep your local policies updated: `) + pc.cyan(`outlier update`)
+      pc.bold(pc.green(' └ Prove Your Mastery: ')) + pc.underline(`https://x.com/intent/tweet?text=${encodeURIComponent('I just audited my codebase for AI reliance and deskilling risk. What does your repo score?\n\n📏 #Outlier')}`)
     );
   }
 }
