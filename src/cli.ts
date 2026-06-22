@@ -433,14 +433,8 @@ Artifact:     ${pc.cyan(reportPath)}`,
       'The Confessional'
     );
 
-    const url = `https://github.com/rosh100yx/outlier/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=%5BConfessional%5D+Feedback&body=${encodeURIComponent(feedback.toString())}`;
-    console.log(`\n${pc.bold('Submit here:')} ${pc.underline(pc.cyan(url))}\n`);
-    
-    try {
-      if (process.platform === 'darwin') {
-        execSync(`open "${url}"`);
-      }
-    } catch(e) {}
+    const url = `https://github.com/rosh100yx/outlier/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=%5BConfessional%5D+Feedback&body=${encodeURIComponent("Drop a screenshot of your Thermal Receipt here! \n\n" + feedback.toString())}`;
+    console.log(`\n${pc.bold('Submit here (and drop your screenshot!):')} ${pc.underline(pc.cyan(url))}\n`);
   }
 
   outro('Local telemetry run completed. No data left your machine.');
