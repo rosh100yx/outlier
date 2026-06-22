@@ -16,14 +16,80 @@ const ASCII_LOGO = `
   \\____/|_| |_| |_| |_| |_|___|_____|_|  \\_\\
 `;
 
+import os from 'os';
+import { confirm } from '@clack/prompts';
+
+async function runOnboarding() {
+  console.clear();
+  console.log(pc.cyan(ASCII_LOGO));
+  intro(pc.inverse(' outlier: Welcome '));
+
+  note(
+    `Outlier is a local-first Policy Engine & Governance Framework for AI Engineering.
+
+Our mission is AI Safety for developers:
+As agents (Cursor, Copilot, Claude) write more of our code, we lose visibility into:
+1. Deskilling Risk (Are we becoming spectators in our own codebase?)
+2. Carbon Cost (What is the true regional energy cost of token caching?)
+3. Capability Drift (What hidden skills and external tools are our agents using?)
+
+We built Outlier to enforce Zero-Trust and protect Human Mastery. You are in control.`,
+    'The Problem: AI Safety in Development'
+  );
+
+  note(
+    `Outlier operates entirely on your machine.
+- Local Only: No API keys. No cloud telemetry. No data leaves your machine.
+- Native Auditing: We only read your local \`~/.claude\` logs and \`.git/\` commit history.
+- Actionable Policies: We enforce rules locally via terminal or Git pre-commit hooks.`,
+    'Privacy & Zero-Trust Principles'
+  );
+
+  note(
+    `Available Commands:
+- status: Run a full system audit (Reliance, Carbon, Capabilities)
+- policy: Configure team/enterprise guardrails and CLI blockers
+- carbon: View isolated token caching metrics and regional counterfactuals
+- authorship: View Git authorship ratio (Human vs AI)`,
+    'How it is used'
+  );
+
+  note(
+    `When you start the audit, Outlier will locally parse your Git commits to identify AI co-authorship and cross-reference your agent logs to calculate token waste. 
+
+The results will assign you a "vibe" and evaluate if you are at risk of deskilling.`,
+    'What to Expect'
+  );
+
+  const ready = await confirm({
+    message: 'Are you ready to run your first Governance Audit and measure your AI reliance?',
+    initialValue: true,
+  });
+
+  if (isCancel(ready) || !ready) {
+    cancel('Onboarding paused. Run outlier again when you are ready.');
+    process.exit(0);
+  }
+
+  const configPath = join(os.homedir(), '.outlier_config');
+  writeFileSync(configPath, JSON.stringify({ onboarded: true, date: new Date().toISOString() }));
+}
+
 async function main() {
   console.clear();
   console.log(pc.cyan(ASCII_LOGO));
   console.log(pc.dim('  Outlier v0.3.0 · AI Code Reliance & Telemetry Engine\n'));
   
+  let action = process.argv[2] as any;
+  
+  const configPath = join(os.homedir(), '.outlier_config');
+  if (!existsSync(configPath) && !action) {
+    await runOnboarding();
+    action = 'status'; // auto-run status after onboarding
+  }
+
   intro(pc.inverse(' outlier '));
 
-  let action = process.argv[2] as any;
   if (!action || action === 'audit') {
     if (action !== 'audit') {
       action = await select({
