@@ -1,40 +1,19 @@
-# outlier
+# Outlier - AI Governance Engine
 
-**The Governance Framework for AI Engineering**
+## Purpose
+`outlier` is a local-first policy engine designed to measure AI reliance, enforce CI/CD guardrails, and mitigate developer deskilling when using LLMs and AI coding agents.
 
-`outlier` is a local-first, zero-trust CLI instrument designed to measure AI adoption, carbon footprint, and skill atrophy directly at the developer's terminal. It acts as an orchestration gate to cut token waste, block hallucinated code, and serve as an anti-deskilling engine for developers building with AI agents.
+## Architecture & Constraints
+- **Zero-Trust**: Do not add any code that sends local telemetry (`~/.claude/` or `.git/`) to an external cloud or API. This tool is built strictly for local privacy.
+- **Node/Bun**: This project uses TypeScript and is bundled via Bun (`bun build --target=node`). Ensure you do not add OS-specific binaries.
+- **Core Files**:
+  - `src/cli.ts`: Interactive wizard and command router (uses `@clack/prompts`).
+  - `src/carbon.ts`: Parses agent logs to calculate token waste ("Cache Bloat") and carbon footprint.
+  - `src/git.ts`: Parses `.git/` history for `Co-Authored-By` trailers to determine human vs. AI authorship ratio.
 
-## Why it exists
-As software engineering rapidly adopts LLMs, two hidden costs appear:
-1. **Carbon / The Geographic Tax:** AI workloads import massive carbon emissions, disproportionately affecting developers in the Global South with coal-heavy grids.
-2. **Deskilling / Authorship Erosion:** Developers cede understanding and mastery to AI agents, leading to premature deprofessionalization.
-
-`outlier` measures both by parsing local `git` history (looking for `Co-Authored-By` trailers) and local token logs (e.g., from Claude Code or Cursor). No data ever leaves the local machine.
-
-## Quickstart
-Run the audit dashboard in any git repository:
-```bash
-npx @rosh100yx/outlier audit
-```
-
-Run in headless CI/CD mode (Enterprise Dry Mode without cats/UI):
-```bash
-npx @rosh100yx/outlier audit --strict
-```
-
-Install the Bouncer (Git Pre-Commit Hook to physically block high-AI-reliance commits):
-```bash
-npx @rosh100yx/outlier policy
-```
-
-## How it Works
-1. **Authorship:** Scans `git log` for AI-attributed commits to calculate an AI Authorship percentage.
-2. **Carbon:** Parses local session logs to calculate Token Cache Bloat and estimates Session Carbon (kgCO2) weighted by regional grid intensity.
-3. **Bouncer:** Intercepts `git commit`. If AI reliance is too high, it triggers a "Mentoring Emergency" and forces the developer to solve an architectural challenge.
-
-## Academic Context
-This tool is the technical implementation of an ongoing academic thesis on the thermodynamics of AI code generation and digital sovereignty. We encourage users to run the audit and share their metrics to help build an empirical dataset on the global impact of AI adoption.
-
-## Package Info
-- **NPM:** `@rosh100yx/outlier`
-- **Execution:** Requires Node or Bun. Must be run inside a Git repository.
+## Instructions for Agents Contributing to this Repo
+If you are an AI agent generating a Pull Request for Outlier:
+1. Always test the CLI build (`npm run build`).
+2. Add new geographic grid factors into `data/grid-factors.json` rather than hardcoding them.
+3. Preserve the "cybernetic / brutalist" aesthetic in any CLI outputs.
+4. Keep the wording "plainer language" when explaining metrics. Use concepts like "Sovereignty", "Deskilling", and "Compounding Value".
