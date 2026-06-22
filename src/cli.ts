@@ -5,8 +5,9 @@ import pc from 'picocolors';
 import { getAuthorshipStats } from './git';
 import { getCarbonStats } from './carbon';
 import { getCapabilitiesStats } from './capabilities';
-import { writeFileSync, chmodSync, existsSync } from 'fs';
+import { writeFileSync, readFileSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
+import { detectAgent } from './agent';
 
 const ASCII_LOGO = `
    ____  _   _ _____ _     ___ _____ ____  
@@ -157,32 +158,49 @@ Conservative Floor: ${color(nmPct + '%')}`,
     let carbon: any = null;
     let capabilities: any = null;
 
+    let skipDelay = false;
+    const configPath = join(os.homedir(), '.outlier_config');
+    if (existsSync(configPath)) {
+       try {
+         const cfg = JSON.parse(readFileSync(configPath, 'utf8'));
+         if (cfg.seenNarration) skipDelay = true;
+       } catch(e) {}
+    }
+
     if (!isStrict) {
       s.start('[SYSTEM] Booting local-first sandbox...');
-      await new Promise(r => setTimeout(r, 800));
+      if (!skipDelay) await new Promise(r => setTimeout(r, 800));
       s.message(`↳ Guarantee: No API calls. Your code and logs never leave this machine.`);
-      await new Promise(r => setTimeout(r, 1200));
+      if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
       
       s.message('[GIT] Scanning your commit history...');
       gitStats = await getAuthorshipStats().catch(() => null);
-      await new Promise(r => setTimeout(r, 600));
+      if (!skipDelay) await new Promise(r => setTimeout(r, 600));
       s.message(`↳ Check: Are you writing the code, or just reviewing what the AI wrote?`);
-      await new Promise(r => setTimeout(r, 1200));
+      if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
       
       s.message('[TOKENS] Parsing local AI logs (~/.claude/)...');
       carbon = await getCarbonStats().catch(() => null);
-      await new Promise(r => setTimeout(r, 600));
+      if (!skipDelay) await new Promise(r => setTimeout(r, 600));
       s.message(`↳ Check: How much API waste is your workflow generating locally?`);
-      await new Promise(r => setTimeout(r, 1200));
+      if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
       
       s.message('[ANALYSIS] Calculating your mastery score...');
       capabilities = await getCapabilitiesStats().catch(() => null);
-      await new Promise(r => setTimeout(r, 600));
+      if (!skipDelay) await new Promise(r => setTimeout(r, 600));
       s.message(`↳ Warning: Heavy AI use creates the 'Illusion of Competence'. Don't lose your edge.`);
-      await new Promise(r => setTimeout(r, 1200));
+      if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
       
       s.message('[PRINT] Generating Thermal Receipt...');
-      await new Promise(r => setTimeout(r, 600));
+      if (!skipDelay) await new Promise(r => setTimeout(r, 600));
+
+      if (!skipDelay) {
+         try {
+           const cfg = existsSync(configPath) ? JSON.parse(readFileSync(configPath, 'utf8')) : {};
+           cfg.seenNarration = true;
+           writeFileSync(configPath, JSON.stringify(cfg));
+         } catch(e) {}
+      }
     } else {
       s.start('Running outlier telemetry audit...');
       gitStats = await getAuthorshipStats().catch(() => null);
@@ -522,6 +540,17 @@ Artifact:     ${pc.cyan(reportPath)}`,
   }
 
   if (action === 'status') {
+    const agent = detectAgent();
+    console.log('');
+    if (agent) {
+       console.log(
+         pc.bold(pc.magenta(' ↳ Ready to code? ')) + 'Start your session:  ' + pc.bold(agent)
+       );
+    } else {
+       console.log(
+         pc.bold(pc.magenta(' ↳ Ready to code? ')) + 'Start your AI agent'
+       );
+    }
     console.log('');
     console.log(
       pc.bold(pc.cyan(' └ Participate: ')) + 'Help build the literature on AI deskilling ➔ ' + pc.bold('outlier participate')
