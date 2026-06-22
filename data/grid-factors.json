@@ -1,7 +1,20 @@
 {
   "vietnam": 681,
-  "france": 21.7,
-  "us_east": 380,
+  "india_average": 715,
+  "indonesia": 650,
+  "china": 581,
   "singapore": 408,
-  "india_average": 715
+  "japan": 470,
+  "south_korea": 415,
+  "australia": 510,
+  "us_east": 380,
+  "us_west": 210,
+  "canada": 120,
+  "brazil": 95,
+  "uk": 210,
+  "germany": 350,
+  "france": 21.7,
+  "norway": 28,
+  "sweden": 41,
+  "global_average": 450
 }
