@@ -58,12 +58,32 @@ As agents write more of our code, we lose visibility into:
 }
 
 async function main() {
+  let action = process.argv[2] as any;
+
+  if (action === 'daily-greeting') {
+    const configPath = join(os.homedir(), '.outlier_config');
+    const today = new Date().toISOString().split('T')[0];
+    let alreadyRun = false;
+    if (existsSync(configPath)) {
+      try {
+        const cfg = JSON.parse(readFileSync(configPath, 'utf8'));
+        if (cfg.lastGreetingDate === today) {
+           alreadyRun = true;
+        } else {
+           cfg.lastGreetingDate = today;
+           writeFileSync(configPath, JSON.stringify(cfg));
+        }
+      } catch (e) {}
+    }
+    if (alreadyRun) process.exit(0);
+    action = 'status';
+  }
+
   console.clear();
   console.log(pc.cyan(ASCII_LOGO));
   const pkg = require('../package.json');
   console.log(pc.dim(`  Outlier v${pkg.version} · AI Code Reliance & Telemetry Engine\n`));
   
-  let action = process.argv[2] as any;
   
   if (action === '--help' || action === '-h' || action === 'help') {
     console.log(pc.bold('\nCOMMANDS:'));
@@ -75,6 +95,8 @@ async function main() {
     console.log(`  ${pc.cyan('outlier impact')}       See the compounding horizon of AI Deskilling`);
     console.log(`  ${pc.cyan('outlier knowledge')}    Explore references, graphs, and the core literature`);
     console.log(`  ${pc.cyan('outlier participate')}  Help build the academic literature on AI deskilling`);
+    console.log(`  ${pc.cyan('outlier init')}         Install the once-per-day shell greeting`);
+    console.log(`  ${pc.cyan('outlier uninit')}       Remove the shell greeting`);
     console.log('\n' + pc.dim('Run without arguments to start the interactive wizard.'));
     process.exit(0);
   }
@@ -89,6 +111,50 @@ async function main() {
 
   if (!action || action === 'audit') {
     action = 'status'; // Auto-run the main audit loop for highest TTV
+  }
+
+  if (action === 'init' || action === 'uninit') {
+     const shell = process.env.SHELL || '';
+     const rcName = shell.includes('zsh') ? '.zshrc' : '.bashrc';
+     const rcPath = join(os.homedir(), rcName);
+     
+     const START_MARKER = '# --- OUTLIER PRE-FLIGHT RITUAL START ---';
+     const END_MARKER = '# --- OUTLIER PRE-FLIGHT RITUAL END ---';
+     const BLOCK = `\n${START_MARKER}\nif command -v outlier >/dev/null 2>&1; then\n  outlier daily-greeting\nfi\n${END_MARKER}\n`;
+
+     if (action === 'init') {
+        const confirmWrite = await confirm({
+           message: `Add a once-per-day Outlier greeting to your ${rcName}? (You can remove it with 'outlier uninit')`,
+           initialValue: true
+        });
+        if (isCancel(confirmWrite) || !confirmWrite) {
+           cancel('Aborted.');
+           process.exit(0);
+        }
+        
+        let content = '';
+        if (existsSync(rcPath)) content = readFileSync(rcPath, 'utf8');
+        if (content.includes(START_MARKER)) {
+           note(`Outlier is already initialized in ${rcName}`);
+        } else {
+           writeFileSync(rcPath, content + BLOCK);
+           note(`Successfully added to ${rcName}. Open a new terminal to see the pre-flight ritual!`);
+        }
+        process.exit(0);
+     } else if (action === 'uninit') {
+        if (existsSync(rcPath)) {
+           let content = readFileSync(rcPath, 'utf8');
+           if (content.includes(START_MARKER)) {
+               const regex = new RegExp(`\\n?${START_MARKER}[\\s\\S]*?${END_MARKER}\\n?`, 'g');
+               content = content.replace(regex, '\n');
+               writeFileSync(rcPath, content);
+               note(`Removed Outlier block from ${rcName}`);
+           } else {
+               note(`No Outlier block found in ${rcName}`);
+           }
+        }
+        process.exit(0);
+     }
   }
 
   const s = spinner();
