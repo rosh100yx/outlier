@@ -480,6 +480,14 @@ Artifact:     ${pc.cyan(reportPath)}`,
       )}`
     )
   );
+  
+  console.log(
+    pc.dim(`└ Have thoughts on AI deskilling? Tell us: `) + pc.cyan(`npx @rosh100yx/outlier confessional`)
+  );
+
+  console.log(
+    pc.dim(`└ Keep your local policies updated: `) + pc.cyan(`npx @rosh100yx/outlier@latest`)
+  );
 }
 
 main().catch(console.error);
