@@ -18,23 +18,27 @@
   </p>
 </div>
 
-## The Compounding Value of Outlier (Why This Matters)
-Software engineering is undergoing a catastrophic shift in skill acquisition. If you only look at today, AI saves you 30 minutes of writing regex. But if you look at the **compounding horizon of the next 5-10 years**, the value exchange flips.
+## The Reality of AI Deskilling (Why This Matters)
+We all feel it. You use an AI agent to skip the boring stuff—writing boilerplate, scaffolding a component, or fixing a tedious regex. It feels amazing. You get your time back.
+
+But suddenly, 6 months later, you realize you don't actually know how your own system's authentication pipes work anymore. You've transitioned from being a **Creator** to a **Reviewer**.
+
+If you only look at today, AI saves you 30 minutes. But if you look at the **compounding horizon of the next 5-10 years**, the reality is stark. 
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/metr-long-tasks.png" alt="METR Graph" width="800" />
+  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/metr-long-tasks.png" alt="METR Graph" width="550" />
   <p><i>Source: METR (Measuring AI Ability to Complete Long Tasks)</i></p>
 </div>
 
-### What Do We Lose and Gain?
-- **Today (The 5-minute task):** You use AI to scaffold a component. You **gain** velocity. You **lose** syntax recall. 
-- **Tomorrow (The 5-hour task):** Models like Claude Opus 4.5 will autonomously resolve multi-file architectural tickets (as proven by the METR graph). You **gain** massive scale and leverage. You **lose** granular intimacy with your own system architecture. You transition from a *Creator* to a *Reviewer*.
-- **The Next 5-10 Years:** Unchecked AI reliance leads to **Deskilling**. When an agent introduces a fatal state bug in a 1M+ LOC codebase, the human reviewers will lack the muscle memory and "systems thinking" required to debug it. 
+### What's Actually Happening?
+- **Today (The 5-minute task):** You gain velocity. You lose muscle memory of the low-level code.
+- **Tomorrow (The 5-hour task):** Models like Claude Opus 4.5 will autonomously resolve multi-file architectural tickets. You gain massive scale. But you lose granular intimacy with your own system architecture. 
+- **The 1M+ LOC Crisis:** Unchecked AI reliance leads to **Deskilling**. When an agent introduces a fatal state bug in a massive codebase, human reviewers will lack the deeply-ingrained "systems thinking" required to debug it because they never built the foundation themselves.
 
-### How The Paper and Project Complement Each Other
-`outlier` is the technical circuit breaker that forces developers to remain High-Agency. The **Paper** maps the trajectory of global skill atrophy and the geographic carbon tax of AI. The **Project (CLI)** is the empirical instrument that gathers this data safely, proving the literature while simultaneously protecting the developer's sovereignty. 
+### Why This Project Exists
+`outlier` is the technical circuit breaker that forces developers to remain High-Agency. The **Paper** maps the global trajectory of skill atrophy. The **Project (CLI)** is the empirical instrument that gathers this data safely, proving the literature while simultaneously protecting the developer's sovereignty. 
 
-We measure the exact cost of AI for humans—not just in API tokens, but in cognitive load and lost mastery.
+We measure the exact cost of AI for humans—not just in API tokens burnt vs human judgement, but in cognitive load and lost mastery.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/codecore.gif" alt="Codecore Aesthetic" width="300" />

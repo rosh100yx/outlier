@@ -1,30 +1,22 @@
 # Security Policy
 
 ## Supported Versions
-
-Currently, only the latest release of `outlier` is supported with security updates. 
+Currently, only the latest minor version of `outlier` is supported with security updates.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| >= 0.3.x| :white_check_mark: |
-| < 0.3.0 | :x:                |
+| 0.4.x   | :white_check_mark: |
+| < 0.4.0 | :x:                |
 
 ## Reporting a Vulnerability
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+Outlier is designed as a **Zero-Trust, Local-First** framework. We consider any unintended external network request, data exfiltration, or telemetry leakage to be a critical P0 security vulnerability.
 
-If you discover a security vulnerability within Outlier, please send an e-mail to our security team at [rosh.100yx@gmail.com]. 
+If you discover a vulnerability, please do NOT open a public issue. Instead, email the maintainers directly. 
 
-We take all security reports seriously and will:
-1. Acknowledge receipt of your vulnerability report within 48 hours.
-2. Provide an estimated timeline for a fix.
-3. Notify you when the vulnerability is patched.
+### What we consider a vulnerability:
+1. Any code that sends `.git` history or `~/.claude` session logs to an external server.
+2. Any code execution vulnerabilities triggered by parsing the `Co-Authored-By` strings in Git history.
+3. Supply chain attacks or malicious dependencies introduced in `package.json`.
 
-We ask that you do not share the vulnerability publicly until a patch is released to ensure the safety of our users.
-
-## Scope of Security Audits
-Please note that `outlier` operates as a **local-first** terminal tool. It does not phone home, nor does it send data to cloud APIs. 
-Security reports should primarily focus on:
-- Local privilege escalation
-- Unsafe file execution or path traversal in log parsing
-- Malicious injection via `.git` commit signatures or configuration files
+We will respond within 48 hours and issue a patch immediately.

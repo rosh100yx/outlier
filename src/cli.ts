@@ -268,24 +268,56 @@ Conservative Floor: ${color(nmPct + '%')}`,
           regionStr = carbon.localRegion;
         }
 
-        const vibeRow = !isStrict ? `\n    vibe: ${pc.italic(wittyRemark)}` : '';
-        const capIcon = isStrict ? '' : '(Ф∇Ф) ';
-        const authIcon = isStrict ? '' : '(=^･ω･^=) ';
-        const costIcon = isStrict ? '' : '(O_O;) ';
-        const failIcon = isStrict ? '⚠' : '(=ಠᆽಠ=)';
-        const passIcon = isStrict ? '✓' : '(=^ ◡ ^=)';
+        const timestamp = new Date().toISOString().split('T')[0];
+        const isDanger = gitStats && gitStats.ratio > 0.7;
+        const verdictZone = isDanger ? pc.red('DANGER ZONE') : pc.green('SAFE / SOVEREIGN');
+        const verdictText = isDanger 
+          ? `You are transitioning from 'Creator' to 'Reviewer'.\n │   At this trajectory, you risk losing architectural \n │   muscle memory on this codebase within 6 months.` 
+          : `You are maintaining strong architectural intimacy.\n │   Your human judgement remains the primary driver\n │   of logic in this system.`;
+          
+        const isInefficient = parseFloat(cachePct) > 40;
+        const cacheVerdict = isInefficient ? pc.yellow('INEFFICIENT') : pc.green('EFFICIENT');
+        const cacheText = isInefficient 
+          ? `You are burning paid API tokens and excess compute\n │   on files the agent isn't even touching.` 
+          : `Your token usage and human judgment are tightly\n │   coupled. High signal-to-noise ratio.`;
+          
+        const policyStatus = ruleFailures > 0 ? pc.red('BLOCKED 🛑 (Threshold Exceeded)') : pc.green('PASS ✅ (Within Threshold)');
+        const policyAction = ruleFailures > 0 ? 'Triggering Mandatory Mentoring Scenario.' : 'No intervention required.';
 
-        note(
-          `${capIcon}${pc.dim('[1] Capability Engine')} ${pc.cyan('▰▰▰▰▰▰▱▱▱▱')}  ${pc.bold('Active')}
-    status: ${pc.green('✓ Configured')}
-${authIcon}${pc.dim('[2] AI Code Reliance')} ${pc.yellow('▰▰▰▰▰▰▰▰▱▱')}  ${pc.bold(`${authPct} Reliance`)}${vibeRow}
-    gate: ${gitStats && gitStats.ratio <= 0.7 ? pc.green('✓ Human Mastery Sustained') : `${pc.red(`${failIcon} Deskilling Risk Detected`)} ${pc.red('⚠ Security Audit Required')}`}${mentorString}
-${costIcon}${pc.dim('[3] Tokenomics & Cost')} ${pc.magenta('▰▰▰▰▰▰▰▰▰▱')} ${pc.bold(`${cachePct}% Cache Bloat`)}
-    waste: ${pc.yellow(`⚠ ${cachePct}% of tokens are redundant context reads`)}
-    carbon: ${pc.green(`✓ ${co2Str} (Est. ${regionStr} Grid)`)}
-${pc.bold('Governance:')} ${ruleFailures > 0 ? pc.red(`${failIcon} ${ruleFailures + 1} policy failures`) : pc.green(`${passIcon} All clear`)}`,
-          `${pc.bold('[outlier]')} ${5 - (ruleFailures+1)}/5 policies • ${authWarning || pc.green(`${passIcon} safe surface`)} • ${co2Str}`
-        );
+        const totalTokensStr = carbon ? (carbon.totalTokens / 1000).toFixed(1) + 'k' : '0';
+        const humanSov = gitStats ? ((1 - gitStats.ratio) * 100).toFixed(1) + '%' : '100%';
+        const authorshipStr = authPct + (isDanger ? pc.red(' (High Reliance)') : pc.green(' (Healthy)'));
+
+        if (!isStrict) {
+            console.log(`
+ ┌────────────────────────────────────────────────────────
+ │ █▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█  :: THERMAL AUDIT RECEIPT
+ │ █▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄  :: TIMESTAMP: ${timestamp}
+ ├────────────────────────────────────────────────────────
+ │ [ COGNITIVE BUDGET ]
+ │ AI Authorship      : ${authorshipStr}
+ │ Human Sovereignty  : ${humanSov}
+ │
+ │ ↳ Verdict: ${verdictZone}
+ │   ${verdictText}
+ ├────────────────────────────────────────────────────────
+ │ [ COMPUTE & FINANCIAL TOLL ]
+ │ Cache Bloat        : ${cachePct}% (Unmodified context)
+ │ Tokens Burnt       : ${totalTokensStr} tokens vs Human Judgment
+ │
+ │ ↳ Verdict: ${cacheVerdict}
+ │   ${cacheText}
+ ├────────────────────────────────────────────────────────
+ │ [ POLICY ENFORCEMENT ]
+ │ Status: ${policyStatus}
+ │ Action: ${policyAction}
+ └────────────────────────────────────────────────────────`);
+        } else {
+            note(
+              `status: ${authPct} AI Reliance | ${cachePct}% Cache Bloat | ${co2Str}`,
+              `${pc.bold('[outlier]')} CI/CD Audit`
+            );
+        }
     } catch (e: any) {
       s.stop('Audit failed');
       console.error(pc.red(e.message));
