@@ -11,6 +11,7 @@ import { homedir } from 'os';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { execSync } from 'child_process';
+import { claudeProjectSlug } from './util';
 
 export type Provenance = 'measured' | 'estimated' | 'proxy' | 'none';
 
@@ -62,7 +63,7 @@ export function detectSources(cwd: string = process.cwd()): DetectedSources {
   if (hasCli('ccusage')) add('ccusage');
 
   // ---- Token / cost source (richest first) ----
-  const slug = cwd.replace(/\//g, '-');
+  const slug = claudeProjectSlug(cwd);
   const claudeProjectDir = join(HOME, '.claude', 'projects', slug);
   const tokenomicsLog = join(HOME, '.claude', 'tokenomics-log.jsonl');
   let tokenSource: DetectedSources['tokenSource'];

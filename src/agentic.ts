@@ -14,6 +14,7 @@ import { homedir } from 'os';
 import { join, basename } from 'path';
 import { readdirSync, readFileSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
+import { claudeProjectSlug } from './util';
 
 // Claude Code stores transcripts under ~/.claude/projects/<cwd-with-slashes-as-dashes>/.
 // The same repo can have sessions under several such dirs (a worktree, a moved checkout,
@@ -23,7 +24,7 @@ export function findRepoTranscriptDirs(cwd: string, baseDir: string): string[] {
   let repoRoot = cwd;
   try { repoRoot = execSync(`git -C "${cwd}" rev-parse --show-toplevel`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() || cwd; } catch {}
   const repoName = basename(repoRoot);
-  const targetSlug = repoRoot.replace(/\//g, '-');           // e.g. -Users-me-work-outlier
+  const targetSlug = claudeProjectSlug(repoRoot);             // e.g. -Users-me-work-outlier
   const projectsRoot = join(baseDir, '.claude', 'projects');
   let names: string[] = [];
   try { names = readdirSync(projectsRoot); } catch { return []; }
