@@ -1,49 +1,56 @@
-// Edit-based authorship — the honest "who wrote the code" signal.
+// Blame-based authorship — the honest "who wrote the code" signal.
 //
-// output_tokens count everything the model emitted: thinking, explanations, tool
-// reasoning, chat. Most of that is not code. Measuring authorship by output tokens
-// over-states AI because it counts the talk, not the artifact.
+// output_tokens count everything the model emitted: thinking, explanations, tool reasoning,
+// chat. Most of that is not code. And a churn count (lines an agent added vs lines git added)
+// never checks that the agent's lines are the lines that SURVIVED — it compares totals, so an
+// agent that wrote 5K lines to file A and a human who wrote 5K to file B read as 50/50 with
+// zero overlap.
 //
-// The artifact that ships is the code in git. Agents write it through Edit/Write tool
-// calls, and those calls are recorded verbatim in the session transcript. So:
+// The honest signal is line-by-line survival, content-matched. For every substantive line that
+// exists in the repo now, we ask: did an agent actually emit this exact line? Agents write code
+// through Edit/Write/MultiEdit tool calls, recorded verbatim in the session transcripts. So:
 //
-//   aiAddedLines  = lines an agent demonstrably wrote to files in THIS repo (transcripts)
-//   gitAddedLines = lines git records as added across history (the shipped churn)
-//   humanResidual = max(0, gitAddedLines - aiAddedLines)
-//                   ^ committed lines no agent is on record for = human (direct IDE
-//                     edits, pastes) OR agent writes from a tool we can't see.
-//   aiPercent     = 100 * (1 - humanResidual / gitAddedLines)
+//   aiLines    = HEAD lines whose content appears in an agent's tool-write output
+//   totalLines = HEAD substantive lines (both sides filtered identically)
+//   aiPercent  = 100 * aiLines / totalLines
 //
-// This is a LOWER bound on AI / conservative toward the human: anything we cannot prove
-// an agent wrote is credited to the human. Edits are counted as net growth only
-// (max(0, new-old)), so in-place rewrites don't inflate the AI share. The number is
-// denominated in the artifact, not in chat volume — that is what makes it defensible.
+// A line counts AI only when it is both substantive AND matches an agent write. Trivial lines
+// (blank, bare brackets, <8 chars) are excluded from BOTH sides so boilerplate can't dominate.
 //
-// Blind spot (stated, not hidden): code pasted from an external chat shows up as a human
-// direct edit. No local signal can see that.
+// Two opposing biases — stated, not hidden — so this is a best estimate, not a strict bound:
+//   toward human: reformatted-on-save lines, externally pasted code, lines an agent wrote
+//     through a tool we can't see, and (on shared repos) teammates' AI all fall to the human.
+//   toward AI: a distinctive line an agent wrote in one place is credited as AI everywhere it
+//     recurs in HEAD; the substantive filter limits this but cannot kill it.
+// The honesty is in the auditable counts (aiLines of totalLines) and these caveats, not in a
+// claim of precision.
 
 import { execSync } from 'child_process';
-import { readdirSync, readFileSync } from 'fs';
+import { readdirSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { findRepoTranscriptDirs } from './agentic';
 
 export interface EditAuthorship {
   found: boolean;
-  aiAddedLines: number;     // lines agents wrote to repo files (transcript tool calls)
-  gitAddedLines: number;    // lines git records as added (whole history, non-merge)
-  humanResidualLines: number;
-  aiPercent: number;        // 0..100, lower-bound AI share of shipped lines
-  filesTouched: number;     // distinct repo files an agent wrote to
+  aiLines: number;       // surviving substantive lines an agent demonstrably wrote
+  totalLines: number;    // surviving substantive lines (the denominator)
+  humanLines: number;    // totalLines - aiLines
+  aiPercent: number;     // 0..100, lower-bound AI share of surviving code
+  filesTouched: number;  // distinct repo files an agent wrote to
 }
 
-const linesOf = (s: string): number => (s ? s.split('\n').length : 0);
+// A line worth attributing: not blank, not pure punctuation/brackets, long enough that a match
+// is meaningful. Short and bracket-only lines (`}`, `});`, `return`, ``) collide across all code
+// and would create false AI matches, so they are excluded from numerator AND denominator.
+function isSubstantive(trimmed: string): boolean {
+  if (trimmed.length < 8) return false;
+  if (!/[A-Za-z0-9]/.test(trimmed)) return false;
+  return true;
+}
 
-// Authorship is about code/prose a person or agent TYPES. Git counts additions in files
-// nobody hand-authored: binaries it misreads as text (PDFs, fonts), lockfiles, minified
-// and generated output, vendored deps. Counting those pollutes the denominator and (since
-// agents don't write them either) silently inflates the "human" residual. Exclude them on
-// BOTH sides so the ratio compares like with like. (linguist-style denylist, not allowlist.)
+// Files nobody hand-authored pollute the denominator: binaries git misreads as text (PDFs,
+// fonts), lockfiles, minified/generated output, vendored deps. Excluded on both sides.
 const EXCLUDE_RE = new RegExp([
   '\\.(pdf|png|jpe?g|gif|webp|svg|ico|bmp|tiff?|woff2?|ttf|otf|eot|mp4|mov|webm|mp3|wav|zip|gz|tar|tgz|rar|7z|wasm|lockb|ipynb)$',
   '(^|/)(node_modules|dist|build|out|vendor|\\.next|\\.nuxt|\\.svelte-kit|coverage|__snapshots__)/',
@@ -52,11 +59,7 @@ const EXCLUDE_RE = new RegExp([
   '\\.(map)$',
 ].join('|'), 'i');
 
-// numstat may show a rename as "old => new" or "{a => b}/c"; test the new-path tail.
-function isCountedPath(raw: string): boolean {
-  const path = raw.includes('=>') ? raw.replace(/\{[^}]*=> ?([^}]*)\}/, '$1').replace(/.*=> ?/, '').trim() : raw;
-  return !EXCLUDE_RE.test(path);
-}
+const isCountedPath = (path: string): boolean => !EXCLUDE_RE.test(path);
 
 function repoRootOf(cwd: string): string {
   try {
@@ -65,55 +68,42 @@ function repoRootOf(cwd: string): string {
   } catch { return cwd; }
 }
 
-// Sum of added lines across the repo's whole non-merge history. numstat emits
-// "<added>\t<deleted>\t<path>" per file; binary files show "-\t-\t<path>" and are skipped.
-function gitAddedLines(repoRoot: string): number {
-  try {
-    const out = execSync(`git -C "${repoRoot}" log --no-merges --numstat --format=`, {
-      stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 256 * 1024 * 1024,
-    }).toString();
-    let added = 0;
-    for (const line of out.split('\n')) {
-      const m = line.match(/^(\d+)\t\d+\t(.+)$/);
-      if (m && m[1] && m[2] && isCountedPath(m[2])) added += parseInt(m[1], 10);
-    }
-    return added;
-  } catch { return 0; }
-}
-
-// Lines an agent wrote to files inside repoRoot, read from the session transcripts.
-function aiWrittenLines(repoRoot: string, baseDir: string, cwd: string): { lines: number; files: Set<string> } {
-  const dirs = findRepoTranscriptDirs(cwd, baseDir);
-  let lines = 0;
+// The set of substantive lines agents wrote to files inside repoRoot, from the transcripts.
+function buildAiLineSet(repoRoot: string, baseDir: string, cwd: string): { lines: Set<string>; files: Set<string> } {
+  const lines = new Set<string>();
   const files = new Set<string>();
   const inRepo = (p: any): p is string => typeof p === 'string' && p.startsWith(repoRoot) && isCountedPath(p);
 
+  const addContent = (s: any, path: string) => {
+    if (typeof s !== 'string') return;
+    files.add(path);
+    for (const raw of s.split('\n')) {
+      const t = raw.trim();
+      if (isSubstantive(t)) lines.add(t);
+    }
+  };
   const countTool = (b: any) => {
     if (!b || b.type !== 'tool_use') return;
     const inp = b.input || {};
     switch (b.name) {
       case 'Write':
-        if (inRepo(inp.file_path)) { lines += linesOf(inp.content); files.add(inp.file_path); }
+        if (inRepo(inp.file_path)) addContent(inp.content, inp.file_path);
         break;
       case 'Edit':
-        if (inRepo(inp.file_path)) {
-          lines += Math.max(0, linesOf(inp.new_string) - linesOf(inp.old_string));
-          files.add(inp.file_path);
-        }
+        if (inRepo(inp.file_path)) addContent(inp.new_string, inp.file_path);
         break;
       case 'MultiEdit':
         if (inRepo(inp.file_path) && Array.isArray(inp.edits)) {
-          for (const e of inp.edits) lines += Math.max(0, linesOf(e.new_string) - linesOf(e.old_string));
-          files.add(inp.file_path);
+          for (const e of inp.edits) addContent(e && e.new_string, inp.file_path);
         }
         break;
       case 'NotebookEdit':
-        if (inRepo(inp.notebook_path)) { lines += linesOf(inp.new_source); files.add(inp.notebook_path); }
+        if (inRepo(inp.notebook_path)) addContent(inp.new_source, inp.notebook_path);
         break;
     }
   };
 
-  for (const dir of dirs) {
+  for (const dir of findRepoTranscriptDirs(cwd, baseDir)) {
     let entries: string[] = [];
     try { entries = readdirSync(dir).filter(f => f.endsWith('.jsonl')); } catch { continue; }
     for (const f of entries) {
@@ -132,24 +122,45 @@ function aiWrittenLines(repoRoot: string, baseDir: string, cwd: string): { lines
   return { lines, files };
 }
 
+// Tracked, counted files in the repo (working tree). Skips huge files (likely data dumps).
+function trackedFiles(repoRoot: string): string[] {
+  try {
+    return execSync(`git -C "${repoRoot}" ls-files -z`, { stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 256 * 1024 * 1024 })
+      .toString().split('\0').filter(p => p && isCountedPath(p));
+  } catch { return []; }
+}
+
 export function getEditAuthorship(cwd: string = process.cwd(), baseDir: string = homedir()): EditAuthorship {
-  const empty: EditAuthorship = { found: false, aiAddedLines: 0, gitAddedLines: 0, humanResidualLines: 0, aiPercent: 0, filesTouched: 0 };
+  const empty: EditAuthorship = { found: false, aiLines: 0, totalLines: 0, humanLines: 0, aiPercent: 0, filesTouched: 0 };
   const repoRoot = repoRootOf(cwd);
-  const gitAdded = gitAddedLines(repoRoot);
-  if (gitAdded === 0) return empty;
 
-  const { lines: aiAdded, files } = aiWrittenLines(repoRoot, baseDir, cwd);
-  // No agent writes captured for this repo → fall back to other signals upstream.
-  if (aiAdded === 0) return empty;
+  const { lines: aiSet, files } = buildAiLineSet(repoRoot, baseDir, cwd);
+  // No agent writes captured for this repo → no edit signal; let upstream fall back.
+  if (aiSet.size === 0) return empty;
 
-  const humanResidual = Math.max(0, gitAdded - aiAdded);
-  const aiPercent = +((1 - humanResidual / gitAdded) * 100).toFixed(1);
+  let aiLines = 0, totalLines = 0;
+  for (const rel of trackedFiles(repoRoot)) {
+    const abs = join(repoRoot, rel);
+    try {
+      if (statSync(abs).size > 2 * 1024 * 1024) continue; // skip >2MB (data, not authored)
+    } catch { continue; }
+    let text = '';
+    try { text = readFileSync(abs, 'utf-8'); } catch { continue; }
+    for (const raw of text.split('\n')) {
+      const t = raw.trim();
+      if (!isSubstantive(t)) continue;
+      totalLines++;
+      if (aiSet.has(t)) aiLines++;
+    }
+  }
+  if (totalLines === 0) return empty;
+
   return {
     found: true,
-    aiAddedLines: aiAdded,
-    gitAddedLines: gitAdded,
-    humanResidualLines: humanResidual,
-    aiPercent,
+    aiLines,
+    totalLines,
+    humanLines: totalLines - aiLines,
+    aiPercent: +((aiLines / totalLines) * 100).toFixed(1),
     filesTouched: files.size,
   };
 }

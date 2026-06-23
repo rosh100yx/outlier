@@ -31,7 +31,7 @@
   │ █▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄  :: my-repo · JUN 23, 2026              │
   ├──────────────────────────────────────────────────────────────────┤
   │  WHO WROTE THE CODE   execution is only one axis                 │
-  │ Execution  62% AI (edits · 5.1K of 8.2K lines)                   │
+  │ Execution  62% AI (blame · 5.1K of 8.2K live lines)              │
   │ Intent     240 prompts · ~180K tokens you typed                  │
   │ Oversight  18% fix/refactor/review commits (29/160)              │
   │                                                                  │
@@ -84,7 +84,7 @@
 
 `outlier` is local-first. It reads, from your own machine, only:
 
-- **`git log --numstat`** of the current repo — for the lines actually added across history (the shipped artifact), and the `Co-Authored-By` trailer as a fallback signal.
+- **`git ls-files`** of the current repo — for the lines that actually survive in HEAD (the living artifact), and the `Co-Authored-By` trailer as a fallback signal.
 - **Your Claude Code session transcripts** at `~/.claude/projects/<this-repo>/*.jsonl` — read three ways: the agent's `Edit`/`Write` tool calls (the lines it actually wrote to your files), your prompts (intent), and token usage (cost / cache / carbon). Worktrees and moved checkouts of the same repo are found too. (Falls back to `~/.claude/tokenomics-log.jsonl` for cost if present.)
 
 It does **not** send anything anywhere — no API calls, no telemetry, no account. Your code and prompts never leave the machine. The only network action in the whole tool is *you* choosing to open a share link or a feedback issue.
@@ -94,7 +94,7 @@ It does **not** send anything anywhere — no API calls, no telemetry, no accoun
 We are deliberately honest about this:
 
 - **"Who wrote the code" is a profile, not a single number.** A single % is a lie — it measures only *execution* (the axis AI is taking over) and ignores where human value moved. Outlier reports three axes:
-  - **Execution** — *who wrote the lines.* Primary signal: outlier reads the agent's `Edit`/`Write` tool calls from the session transcripts (the lines it actually wrote to your files) and measures them against git's added lines: `aiPercent = 1 − max(0, gitAdded − aiAdded) / gitAdded`. This is denominated in the **shipped artifact**, not in chat tokens, and it is a **lower bound** — any committed line we can't prove an agent wrote is credited to you. Binary/lockfile/generated paths are excluded on both sides. When no agent writes are on record (you use Cursor/Copilot/Aider, or the sessions were rotated), outlier does **not** pretend: it marks execution `⚠ Unmeasured`, shows the weak `Co-Authored-By` commit-tag figure only as a labelled *proxy/floor*, and skips the behavioral label rather than assert a character read on a blind signal.
+  - **Execution** — *who wrote the lines.* Primary signal is **blame-based and content-matched**: outlier collects every line the agent emitted through `Edit`/`Write`/`MultiEdit` calls in your session transcripts, then walks every line that **survives in HEAD** and counts how many match an agent write — `aiPercent = aiLines / totalLines`. It measures the **living artifact**, line by line, not chat tokens and not churn totals (a churn count never checks the agent's lines are the lines that survived). Trivial lines (blank, bare brackets, <8 chars) and binary/lockfile/generated paths are excluded on both sides. Two opposing biases are stated rather than hidden — reformatted/pasted/teammate lines fall to the human; a distinctive line the agent wrote in one place is credited as AI everywhere it recurs — so it's a best estimate with **auditable counts** (`39K of 121K live lines`), not a claim of precision. When no agent writes are on record (you use Cursor/Copilot/Aider, or the sessions were rotated), outlier does **not** pretend: it marks execution `⚠ Unmeasured`, shows the weak `Co-Authored-By` commit-tag figure only as a labelled *proxy/floor*, and skips the behavioral label rather than assert a character read on a blind signal.
   - **Intent** — *who decided what to build.* The count and volume of prompts you typed. Hundreds of prompts means you steer, even when execution is mostly AI.
   - **Oversight** — *who reviews.* The share of commits that look like a human iterating on prior output (fix / refactor / revert / review).
   - The three combine into a label — **Artisan / Centaur / Director / Reviewer / Spectator** — so a low execution % with heavy steering reads as *Director* (you direct agents; the rest is hand/imported prose), not falsely as a hand-coding *Artisan*. High AI execution is healthy when intent + oversight are present; it's the deskilling pattern only when they're absent.
@@ -175,7 +175,7 @@ later runs. To replay it: `rm ~/.outlier_config`.
     "aiPercent": 7.4, "provenance": "proxy",
     "contribution": {
       "label": "Director",
-      "execution": { "aiPercent": 62.0, "source": "edits", "aiAddedLines": 5100, "gitAddedLines": 8200 },
+      "execution": { "aiPercent": 62.0, "source": "edits", "confidence": "measured", "aiLines": 5100, "totalLines": 8200 },
       "intent":    { "prompts": 240, "promptTokens": 180000 },
       "oversight": { "iterationRate": 0.18, "iterationCommits": 29, "totalCommits": 160 }
     }
