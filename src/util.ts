@@ -37,6 +37,15 @@ export function isCountedNumstatPath(raw: string): boolean {
   return isCountedPath(path);
 }
 
+// Claude Code stores transcripts under ~/.claude/projects/<slug>/, where <slug> is the
+// project's absolute path with EVERY non-alphanumeric character replaced by '-' (so '_',
+// '.', etc. all become '-' — not just '/'). Replicate that exactly: only matching this
+// encoding finds the real folder, so a path like '/Users/me/qafelah_app' resolves to
+// '-Users-me-qafelah-app' instead of being silently reported as having no AI activity.
+export function claudeProjectSlug(path: string): string {
+  return path.replace(/[^a-zA-Z0-9]/g, '-');
+}
+
 export function repoRootOf(cwd: string): string {
   try {
     return execSync(`git -C "${cwd}" rev-parse --show-toplevel`, { stdio: ['ignore', 'pipe', 'ignore'] })
