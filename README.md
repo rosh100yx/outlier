@@ -161,8 +161,13 @@ later runs. To replay it: `rm ~/.outlier_config`.
 | `npx outlier-audit authorship` | Scan git history for AI co-authorship ratio |
 | `npx outlier-audit carbon` | Scan local logs for context waste & token costs |
 | `npx outlier-audit capabilities` | Map what your agents can reach + blast radius |
+| `npx outlier-audit learn` | Turn a technique the AI used into a skill to learn |
 | `npx outlier-audit policy` | Configure Personal, Team, or Enterprise guardrails in CI |
 | `npx outlier-audit --json` | Machine-readable audit for agents, CI, and swarms |
+
+### Learn loop — coach, not judge (`outlier learn`)
+
+A reliance number can scold ("you're a Spectator") without helping. `outlier learn` flips it: it reads the code your agent actually wrote and surfaces **one technique it used that you can go learn** — the concept, *the exact `file:line` in your own repo*, and a 30-second challenge ("rewrite this from memory"). Mark it learned (`outlier learn --done <id>`) and the next one surfaces. It's a small, curated, local pattern catalog (hashing & tokens, concurrent async, transactions, memoization, streams, rate-limiting, …) matched against the agent's own tool-writes — no network, no LLM call. Especially for "vibe coders": instead of guilt, a path to actually understand what you shipped.
 
 ### For agents, CI & swarms (`--json`)
 
