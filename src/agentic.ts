@@ -11,8 +11,33 @@
 // — but it captures the reality the commit count cannot.
 
 import { homedir } from 'os';
-import { join } from 'path';
+import { join, basename } from 'path';
 import { readdirSync, readFileSync, existsSync } from 'fs';
+import { execSync } from 'child_process';
+
+// Claude Code stores transcripts under ~/.claude/projects/<cwd-with-slashes-as-dashes>/.
+// The same repo can have sessions under several such dirs (a worktree, a moved checkout,
+// a different parent path). Find ALL dirs that belong to this repo — by git root + name —
+// so token authorship isn't blind to logs created from another path.
+export function findRepoTranscriptDirs(cwd: string, baseDir: string): string[] {
+  let repoRoot = cwd;
+  try { repoRoot = execSync(`git -C "${cwd}" rev-parse --show-toplevel`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() || cwd; } catch {}
+  const repoName = basename(repoRoot);
+  const targetSlug = repoRoot.replace(/\//g, '-');           // e.g. -Users-me-work-outlier
+  const projectsRoot = join(baseDir, '.claude', 'projects');
+  let names: string[] = [];
+  try { names = readdirSync(projectsRoot); } catch { return []; }
+
+  const matches = names.filter(n =>
+    n === targetSlug ||                       // exact current path
+    n.startsWith(targetSlug + '-') ||         // a sub-directory of the repo
+    n.endsWith('-' + repoName) ||             // same repo under a different parent path
+    n.includes('-' + repoName + '-')          // a worktree (e.g. …-worktrees-outlier-foo)
+  );
+  // Always include the exact slug dir if it exists, even if filtered above.
+  if (existsSync(join(projectsRoot, targetSlug)) && !matches.includes(targetSlug)) matches.push(targetSlug);
+  return matches.map(n => join(projectsRoot, n));
+}
 
 export interface TokenAuthorship {
   found: boolean;
@@ -46,34 +71,37 @@ function humanTextLen(content: any): number {
 
 export function getTokenAuthorship(cwd: string = process.cwd(), baseDir: string = homedir()): TokenAuthorship {
   const empty: TokenAuthorship = { found: false, aiOutputTokens: 0, humanPromptTokens: 0, aiPercent: 0, sessions: 0 };
-  const slug = cwd.replace(/\//g, '-');
-  const dir = join(baseDir, '.claude', 'projects', slug);
-  if (!existsSync(dir)) return empty;
+  const dirs = findRepoTranscriptDirs(cwd, baseDir);
+  if (dirs.length === 0) return empty;
 
   let aiOut = 0, humanChars = 0;
   const sessions = new Set<string>();
-  let files: string[] = [];
-  try { files = readdirSync(dir).filter(f => f.endsWith('.jsonl')); } catch { return empty; }
-  if (files.length === 0) return empty;
+  let anyFile = false;
 
-  for (const f of files) {
-    let text = '';
-    try { text = readFileSync(join(dir, f), 'utf-8'); } catch { continue; }
-    for (const line of text.split('\n')) {
-      if (!line.trim()) continue;
-      try {
-        const d = JSON.parse(line);
-        const msg = d.message || {};
-        if (d.sessionId) sessions.add(d.sessionId);
-        const role = msg.role;
-        if (role === 'assistant') {
-          aiOut += (msg.usage && msg.usage.output_tokens) || 0;
-        } else if (role === 'user') {
-          humanChars += humanTextLen(msg.content);
-        }
-      } catch {}
+  for (const dir of dirs) {
+    let files: string[] = [];
+    try { files = readdirSync(dir).filter(f => f.endsWith('.jsonl')); } catch { continue; }
+    for (const f of files) {
+      anyFile = true;
+      let text = '';
+      try { text = readFileSync(join(dir, f), 'utf-8'); } catch { continue; }
+      for (const line of text.split('\n')) {
+        if (!line.trim()) continue;
+        try {
+          const d = JSON.parse(line);
+          const msg = d.message || {};
+          if (d.sessionId) sessions.add(d.sessionId);
+          const role = msg.role;
+          if (role === 'assistant') {
+            aiOut += (msg.usage && msg.usage.output_tokens) || 0;
+          } else if (role === 'user') {
+            humanChars += humanTextLen(msg.content);
+          }
+        } catch {}
+      }
     }
   }
+  if (!anyFile) return empty;
 
   const humanTokens = Math.round(humanChars / CHARS_PER_TOKEN);
   const total = aiOut + humanTokens;
