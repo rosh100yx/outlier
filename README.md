@@ -214,22 +214,6 @@ A reliance number can scold ("you're a Spectator") without helping. `outlier lea
 ### First run
 The very first time you run it in a terminal, outlier shows a short welcome: what it stands for (keep the skill while you use the speed; measure honestly; local, not surveillance), the problem it addresses, and its zero-trust principles — then asks you to set your **governance framework**: who the limit is for (Personal / Team / Enterprise) and the maximum AI-authorship share you'll allow before it flags a review (50 / 70 / 85 / 100%). That cap is saved to `~/.outlier_config` and drives the **YOUR LIMIT** line on every audit. Change it anytime with `outlier policy`. In CI / non-interactive shells the welcome is skipped (no hang) and the default 70% cap applies.
 
-### The UX Flow
-If you run `npx outlier-audit` directly, you'll instantly get your audit receipt and a simple list of follow-up commands:
-```text
-  └────────────────────────────────────────────────────────┘
-
- Explore Outlier:
- ────────────────────────────────────────────────────────────
-   outlier policy        Configure CI/CD guardrails and thresholds
-   outlier capabilities  Audit active MCPs, skills, and orchestrations
-   outlier impact        See the compounding horizon of AI Deskilling
-   outlier participate   Help build the academic literature
- ────────────────────────────────────────────────────────────
-
- └ Prove Your Mastery: https://x.com/intent/tweet?...
-```
-
 ## Quickstart: Your First Audit
 
 **Prerequisites:** You need Node/Bun installed and to be inside a Git repository.
@@ -258,11 +242,11 @@ If you run `npx outlier-audit` directly, you'll instantly get your audit receipt
    npx outlier-audit --json     # machine-readable audit for a supervisor agent or pipeline
    ```
 
-## Theoretical Foundations
-`outlier` is the live, technical implementation of an academic thesis on the thermodynamics of AI code generation and digital sovereignty. 
-- **The Geographic Tax:** Western tech companies ship highly compute-intensive AI tools globally, but local infrastructure in the Global South is forced to absorb the carbon cost. `outlier` proves this by weighting session carbon by regional grid intensity (e.g., proving identical work imports 31x more carbon in Vietnam than France).
-- **Disempowerment:** Incremental AI substitution erodes human influence. `outlier` acts as a sovereignty shield against opaque AI platforms.
-- **Deskilling:** Delegating operators lose the skills they need to supervise (Bainbridge, 1983). By parsing `Co-Authored-By` Git trailers, `outlier` tracks AI reliance per-individual and flags high reliance as a "Deskilling Risk" — a prompt to review before you delegate more, not a wall.
+## The ideas behind it
+A few well-grounded signals, measured honestly — not a manifesto:
+- **The automation paradox (Bainbridge, 1983):** when operators delegate the work, they lose the skill they need to supervise it. Outlier surfaces this as a profile (execution / intent / oversight) and answers it with `outlier learn` — a prompt to stay fluent, not a wall.
+- **Regional carbon:** the energy cost of a token is the same anywhere, but the *grid* it runs on is not — identical work weighs far more on a coal-heavy grid than a nuclear one. Outlier weights its (rough, counterfactual) carbon estimate by grid intensity to make that visible. See `data/grid-factors.json`.
+- **Measuring authorship at all:** commit metadata can't see how agentic coding actually happens. Outlier's execution signal is blame-based and content-matched, scoped to your lines, tool-agnostic via `outlier watch`, and it abstains when it genuinely can't tell. The honesty is the point.
 
 ## FAQ
 
@@ -270,7 +254,7 @@ If you run `npx outlier-audit` directly, you'll instantly get your audit receipt
 **Absolutely not.** `outlier` is built on a strict **Zero-Trust, Local-First Architecture**. It runs native parsing commands against your `.git/` history and your local `~/.claude/` session logs. It never calls an API, it never extracts your proprietary data, and it never phones home. Your research, your code, and your prompts stay 100% on your machine. We believe in open-source integrity.
 
 **Do I need to be using a specific IDE?**  
-`outlier` is IDE-agnostic. It works by parsing standard `Co-Authored-By` Git trailers, meaning it supports Claude Code, Cursor, Aider, and manual generation.
+No. The git-based signals work for any tool. The *rich* execution signal reads Claude Code's session transcripts directly; for any other tool (Cursor, Aider, Copilot, …) you bracket the session with `outlier watch` and it's captured by the file changes. When there's no signal at all, outlier abstains rather than guess.
 
 **Can I run this in CI/CD like GitHub Actions?**  
 Yes. Use the `--strict` flag (`npx outlier-audit audit --strict`) to return standard zero-exit-code parsing for headless CI environments.
@@ -281,12 +265,12 @@ If you hold one of these roles, `outlier` was built specifically for you. Please
 
 - **Engineering Managers & CTOs:** Stop flying blind. Measure true AI adoption, enforce zero-trust security on your IP, and cut your API token bloat.
 - **Principal & Staff Engineers:** Protect the craft. See your team's blast radius (what your agents can deploy/push/write) and use the warn-on-commit hook to keep humans in the loop.
-- **Developers & "Vibe Coders":** Prove your mastery. Run the audit, check your vibe, and post your "Artisan" or "Centaur" terminal status to the community.
+- **Developers & "Vibe Coders":** See how much of your code is the agent's, learn one technique it used (`outlier learn`), and — if you want — share your receipt to help the research.
 
-## Support the Thesis & Collaborate
-This tool is the technical implementation of an ongoing academic thesis on the thermodynamics of AI code generation, skill atrophy, and digital sovereignty. We are actively looking for collaborators, researchers, and engineers to expand this framework.
+## Research & collaborate
+There's an ongoing study on how much code AI actually writes, where oversight breaks down, and the regional carbon picture. Real-world receipts make it better.
 
-**Call for Research Data:** We are actively collecting metrics to prove the "Geographic Tax" and measure industry-wide skill atrophy for our upcoming paper. If you use this tool, please share your terminal screenshot (`outlier audit`) on X.com (tagging the maintainers). By sharing your baseline **AI reliance %** and **carbon estimate**, you provide the exact empirical data we need to map how AI is impacting global engineering teams.
+**Contribute a data point:** run `outlier participate` (or share your receipt screenshot via the [issue templates](https://github.com/rosh100yx/outlier/issues/new/choose)). Nothing is sent automatically — you choose what to share.
 
 See our [Contributing Guide](CONTRIBUTING.md) to get started. Great first issues include adding new regional grid factors to `data/grid-factors.json` or writing custom CI/CD pipeline integrations.
 
