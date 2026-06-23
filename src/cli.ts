@@ -505,9 +505,20 @@ ${tokenBlock}`,
         // Show the basis so the % is auditable: edit-attribution gives the line counts it
         // was computed from; commit-tags is the weaker fallback when no agent writes are logged.
         const kL = (n: number) => n >= 1000 ? (n / 1000).toFixed(0) + 'K' : String(n);
-        const execBasis = contrib.execution.source === 'edits'
-          ? `blame · ${kL(contrib.execution.aiLines || 0)} of ${kL(contrib.execution.totalLines || 0)} live lines`
-          : contrib.execution.source === 'commit-tags' ? 'commit tags · weak signal' : 'no signal';
+        let execBasis: string;
+        if (contrib.execution.source === 'edits') {
+          const ex = contrib.execution;
+          const counts = `${kL(ex.aiLines || 0)} of ${kL(ex.totalLines || 0)}`;
+          if (ex.shared && ex.scopedToUser) {
+            execBasis = `blame · your slice · ${counts} · ${ex.contributors} contributors`;
+          } else if (ex.shared) {
+            execBasis = `blame · ⚠ whole repo, ${ex.contributors} authors · slice not computed`;
+          } else {
+            execBasis = `blame · ${counts} live lines`;
+          }
+        } else {
+          execBasis = contrib.execution.source === 'commit-tags' ? 'commit tags · weak signal' : 'no signal';
+        }
         const execMark = measured ? '' : pc.yellow('⚠ ');
         const profileRows =
           ` ${pc.dim('│')} Execution  ${execMark}${execColor(pc.bold(execAi.toFixed(0) + '% AI'))} ${pc.dim('('+execBasis+')')}\n` +

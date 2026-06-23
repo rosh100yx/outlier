@@ -38,7 +38,13 @@ export interface EditAuthorship {
   humanLines: number;    // totalLines - aiLines
   aiPercent: number;     // 0..100, lower-bound AI share of surviving code
   filesTouched: number;  // distinct repo files an agent wrote to
+  contributors: number;  // distinct commit authors in this repo
+  shared: boolean;       // more than one author → a team repo
+  scopedToUser: boolean; // when shared, true if counts were scoped to YOUR lines via blame
 }
+
+// How big a repo we'll `git blame` line-by-line before deciding it's too slow to scope.
+const BLAME_FILE_CAP = 2500;
 
 // A line worth attributing: not blank, not pure punctuation/brackets, long enough that a match
 // is meaningful. Short and bracket-only lines (`}`, `});`, `return`, ``) collide across all code
@@ -130,16 +136,85 @@ function trackedFiles(repoRoot: string): string[] {
   } catch { return []; }
 }
 
+const normEmail = (s: string) => s.trim().toLowerCase().replace(/^<|>$/g, '');
+
+// Distinct commit authors. On a shared repo, naively counting AI lines (only THIS machine's
+// sessions) against the whole codebase (everyone's commits) is incoherent — teammates' code,
+// AI or not, has no transcript here and falls to "human", so your % reads artificially low.
+function repoAuthors(repoRoot: string): string[] {
+  try {
+    const out = execSync(`git -C "${repoRoot}" log --format=%ae`, { stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024 }).toString();
+    return [...new Set(out.split('\n').map(normEmail).filter(Boolean))];
+  } catch { return []; }
+}
+
+function currentUserEmail(repoRoot: string): string {
+  try { return normEmail(execSync(`git -C "${repoRoot}" config user.email`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString()); }
+  catch { return ''; }
+}
+
+// Count substantive surviving lines authored by `me` (via blame), splitting AI vs human by
+// content match. Returns null if blame can't run. Scopes BOTH numerator and denominator to the
+// current user, so teammates are excluded from the ratio entirely — the honest team-safe number.
+function countMineByBlame(repoRoot: string, files: string[], me: string, aiSet: Set<string>): { ai: number; total: number } | null {
+  if (!me) return null;
+  let ai = 0, total = 0;
+  for (const rel of files) {
+    let out = '';
+    try {
+      out = execSync(`git -C "${repoRoot}" blame --line-porcelain HEAD -- "${rel.replace(/"/g, '\\"')}"`, {
+        stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024,
+      }).toString();
+    } catch { continue; } // binary, unmerged, or unreadable → skip
+    let curMail = '';
+    for (const line of out.split('\n')) {
+      if (line.startsWith('author-mail ')) { curMail = normEmail(line.slice('author-mail '.length)); continue; }
+      if (line.startsWith('\t')) {           // the actual source line, tab-prefixed
+        if (curMail !== me) continue;
+        const t = line.slice(1).trim();
+        if (!isSubstantive(t)) continue;
+        total++;
+        if (aiSet.has(t)) ai++;
+      }
+    }
+  }
+  return { ai, total };
+}
+
 export function getEditAuthorship(cwd: string = process.cwd(), baseDir: string = homedir()): EditAuthorship {
-  const empty: EditAuthorship = { found: false, aiLines: 0, totalLines: 0, humanLines: 0, aiPercent: 0, filesTouched: 0 };
+  const empty: EditAuthorship = { found: false, aiLines: 0, totalLines: 0, humanLines: 0, aiPercent: 0, filesTouched: 0, contributors: 0, shared: false, scopedToUser: false };
   const repoRoot = repoRootOf(cwd);
 
   const { lines: aiSet, files } = buildAiLineSet(repoRoot, baseDir, cwd);
   // No agent writes captured for this repo → no edit signal; let upstream fall back.
   if (aiSet.size === 0) return empty;
 
+  const authors = repoAuthors(repoRoot);
+  const contributors = authors.length;
+  const shared = contributors > 1;
+  const tracked = trackedFiles(repoRoot);
+
+  // Shared repo: scope to YOUR lines via blame so teammates aren't counted as "human you".
+  // Only when the repo is small enough to blame quickly; otherwise fall back and flag it.
+  if (shared && tracked.length <= BLAME_FILE_CAP) {
+    const mine = countMineByBlame(repoRoot, tracked, currentUserEmail(repoRoot), aiSet);
+    if (mine && mine.total > 0) {
+      return {
+        found: true,
+        aiLines: mine.ai,
+        totalLines: mine.total,
+        humanLines: mine.total - mine.ai,
+        aiPercent: +((mine.ai / mine.total) * 100).toFixed(1),
+        filesTouched: files.size,
+        contributors, shared, scopedToUser: true,
+      };
+    }
+  }
+
+  // Solo repo (denominator is already all yours), or a shared repo too large to blame
+  // (scopedToUser=false → the caller flags that teammates inflate the denominator).
   let aiLines = 0, totalLines = 0;
-  for (const rel of trackedFiles(repoRoot)) {
+  for (const rel of tracked) {
     const abs = join(repoRoot, rel);
     try {
       if (statSync(abs).size > 2 * 1024 * 1024) continue; // skip >2MB (data, not authored)
@@ -162,5 +237,6 @@ export function getEditAuthorship(cwd: string = process.cwd(), baseDir: string =
     humanLines: totalLines - aiLines,
     aiPercent: +((aiLines / totalLines) * 100).toFixed(1),
     filesTouched: files.size,
+    contributors, shared, scopedToUser: false,
   };
 }
