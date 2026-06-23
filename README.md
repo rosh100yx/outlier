@@ -90,7 +90,10 @@ It does **not** send anything anywhere — no API calls, no telemetry, no accoun
 
 We are deliberately honest about this:
 
-- **Authorship** is an exact count of trailer-tagged commits, but it is a *proxy* for real human-vs-AI effort, and it **under-counts** when your agent doesn't write the `Co-Authored-By` trailer. A surprisingly low number usually means missing trailers, not that you wrote everything.
+- **Authorship has two views, and they disagree on purpose.**
+  - *By commit tags* — counts commits carrying a `Co-Authored-By` trailer. It is a **weak proxy**: it under-counts when your agent doesn't tag commits, it weights a 1-line typo the same as a 500-line AI feature, and every commit wears *your* git identity even when the agent wrote and committed it. On a fully AI-built repo this can read absurdly low.
+  - *By tokens* — when your agent's session logs exist, outlier compares the **AI's output tokens** (the code/text it generated) against **your prompt tokens** (what you typed). In agentic work — you prompt, the agent writes — this is ~90–99% AI, and it is the honest number. (Output tokens include explanations and prompt length is approximate, so treat it as an order-of-magnitude truth, not a line count.)
+  - If the two disagree wildly (e.g. tags say 17%, tokens say 96%), the gap *is* the finding: conventional tooling can't see how little of your own codebase you actually wrote.
 - **Tokens** are exact when the transcripts are present; otherwise the cost/carbon section reads zero.
 - **Cost ($)** is exact when the log carries a cost field, otherwise a *rough* blended token estimate (labelled as such).
 - **Carbon** is a rough estimate (inference energy varies ~4–20× in the literature) and the per-region figure is a *counterfactual* — cloud inference runs on the provider's grid, not yours. Treat it as an order-of-magnitude signal, not an audit.

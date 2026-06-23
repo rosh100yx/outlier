@@ -8,6 +8,7 @@ import { getCapabilitiesStats } from './capabilities';
 import { deriveInsights, type Insight } from './insights';
 import { projectEconomics } from './economics';
 import { aggregateDir } from './aggregate';
+import { getTokenAuthorship } from './agentic';
 import { writeFileSync, readFileSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
 import { detectAgent } from './agent';
@@ -85,13 +86,22 @@ async function emitJson() {
     generatedAt: new Date().toISOString(),
     localFirst: true,
     authorship: gitStats ? {
+      // commit-tag view (what git can see) — a weak proxy: under-counts when commits
+      // aren't tagged, and counts commits equally regardless of code volume.
+      byCommitTags: {
+        aiPercent: +(gitStats.ratio * 100).toFixed(1),
+        totalCommits: gitStats.total,
+        aiCommits: gitStats.ai,
+        nonMergePercent: +(gitStats.ratioNoMerges * 100).toFixed(1),
+      },
+      // token view (the honest signal for agentic work): AI output vs human prompts.
+      byTokens: (() => { const t = getTokenAuthorship(); return t.found ? {
+        aiPercent: t.aiPercent, aiOutputTokens: t.aiOutputTokens, humanPromptTokens: t.humanPromptTokens, sessions: t.sessions,
+      } : null; })(),
+      // legacy top-level fields (commit-tag) for back-compat
       aiPercent: +(gitStats.ratio * 100).toFixed(1),
-      aiRatio: gitStats.ratio,
-      totalCommits: gitStats.total,
-      aiCommits: gitStats.ai,
-      nonMergePercent: +(gitStats.ratioNoMerges * 100).toFixed(1),
       provenance: 'proxy',
-      note: 'git Co-Authored-By trailers; under-counts if the agent omits the trailer',
+      note: 'commit tags are a weak proxy; byTokens reflects real agentic authorship when session logs exist',
     } : null,
     cost: carbon ? {
       totalTokens: carbon.totalTokens,
@@ -374,15 +384,25 @@ Ratio: ~31x carbon penalty on coal-heavy grid`,
           warning = pc.yellow(' ⚠ moderate');
         }
 
-        note(
-          `Total Commits:      ${gitStats.total}
-AI Co-Authored:     ${gitStats.ai}
-Authorship Ratio:   ${color(pct + '%')}${warning}
+        const ta = getTokenAuthorship();
+        const tokenBlock = ta.found
+          ? `\n${pc.bold('By tokens (the real signal):')}
+AI output:          ${pc.bold((ta.aiOutputTokens/1e6).toFixed(1) + 'M tokens')}
+Your prompts:       ~${(ta.humanPromptTokens/1e3).toFixed(0)}K tokens
+AI authorship:      ${pc.red(pc.bold(ta.aiPercent.toFixed(0) + '%'))}  ${pc.dim(`(${ta.sessions} sessions)`)}
+${pc.dim('Commit tags measure tagging, not authorship. In agentic work the')}
+${pc.dim('agent writes the code and commits it under your name — tokens show it.')}`
+          : `\n${pc.dim('No agent session logs for this repo path, so token-based')}
+${pc.dim('authorship is unavailable — the commit-tag % above is a weak proxy.')}`;
 
-Non-merge Commits:  ${gitStats.totalNoMerges}
-AI Co-Authored:     ${gitStats.aiNoMerges}
-Conservative Floor: ${color(nmPct + '%')}`,
-            'Git Authorship Breakdown'
+        note(
+          `${pc.bold('By commit tags (what git sees):')}
+Total Commits:      ${gitStats.total}
+AI Co-Authored:     ${gitStats.ai}
+Tag Ratio:          ${color(pct + '%')}${warning}
+Conservative Floor: ${color(nmPct + '%')}  ${pc.dim('(non-merge)')}
+${tokenBlock}`,
+            'Authorship — commit tags vs tokens'
           );
       }
     } catch (e: any) {
@@ -459,12 +479,20 @@ Conservative Floor: ${color(nmPct + '%')}`,
           if (gitStats.ratio > 0.7) ruleFailures++;
         }
 
-        // Honesty: a very low ratio alongside heavy token use usually means the agent
-        // doesn't tag commits, not that the human wrote everything.
-        const lowTrailerWarn =
-          gitStats && gitStats.ratio < 0.1 && carbon && carbon.totalTokens > 1_000_000
+        // Token-based authorship — the honest signal for agentic work (the human prompts,
+        // the agent writes + commits). Far truer than the commit-tag count.
+        const tokAuth = getTokenAuthorship();
+        const tokenRow = tokAuth.found
+          ? `\n ${pc.dim('│')} ${pc.bold('By tokens')} ${pc.red(pc.bold(tokAuth.aiPercent.toFixed(0) + '% AI'))} ${pc.dim(`— agent generated ${(tokAuth.aiOutputTokens/1e6).toFixed(1)}M tokens vs your ~${(tokAuth.humanPromptTokens/1e3).toFixed(0)}K of prompts`)}\n ${pc.dim('│')} ${pc.dim(`(commit tags caught only ${gitStats ? (gitStats.ratio*100).toFixed(0) : '0'}% — that is tagging, not authorship)`)}`
+          : '';
+
+        // Honesty: a low commit-tag ratio usually means the agent doesn't tag commits,
+        // not that the human wrote everything.
+        const lowTrailerWarn = tokAuth.found
+          ? '' // the token row already tells the real story
+          : (gitStats && gitStats.ratio < 0.1 && carbon && carbon.totalTokens > 1_000_000
             ? `\n ${pc.dim('│')}   ${pc.dim('Low %? Your agent may not tag commits — outlier counts only')}\n ${pc.dim('│')}   ${pc.dim('commits with a Co-Authored-By trailer.')}`
-            : '';
+            : '');
 
         let cachePct = '0';
         let co2Str = '0.0kg';
@@ -551,9 +579,10 @@ Conservative Floor: ${color(nmPct + '%')}`,
  ${pc.dim('│')} ${pc.cyan('█▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄')}  ${pc.dim(`:: ${repoName} · ${dateStr}`)}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgBlue(' WHO WROTE THE CODE '))}
+ ${pc.dim('│')} ${pc.dim('By commit tags:')}
  ${pc.dim('│')} AI    ${aiBar} ${authorshipStr}${nmFloorStr}
  ${pc.dim('│')} You   ${humanBar} ${pc.bold(humanSov)}
- ${pc.dim('│')} ${pc.dim('Typical: solo devs 10–40% · AI-framework repos up to ~80%')}
+ ${pc.dim('│')} ${pc.dim('Typical: solo devs 10–40% · AI-framework repos up to ~80%')}${tokenRow}
  ${pc.dim('│')}
  ${pc.dim('│')} ${verdictZone} — ${verdictText.split('\n').join('\n ' + pc.dim('│') + '   ')}${lowTrailerWarn}
  ${pc.dim('├────────────────────────────────────────────────────────')}
