@@ -255,11 +255,14 @@ async function main() {
     console.log(`  ${pc.cyan(CMD + ' policy')}       Set an AI-authorship limit (local git hook / CI)`);
     console.log(`  ${pc.cyan(CMD + ' impact')}       What AI reliance compounds to over time`);
     console.log(`  ${pc.cyan(CMD + ' knowledge')}    The research behind the metrics`);
-    console.log(`  ${pc.cyan(CMD + ' participate')}  Share anonymous feedback for the deskilling study`);
+    console.log(`  ${pc.cyan(CMD + ' participate')}  Share feedback for the deskilling study (opens a public issue)`);
     console.log(`  ${pc.cyan(CMD + ' init')}         Show a once-per-day reliance greeting in new shells`);
     console.log(`  ${pc.cyan(CMD + ' uninit')}       Remove that greeting`);
     console.log('\n' + pc.dim('Local-first: nothing ever leaves your machine.'));
     console.log(pc.dim('How it works → https://github.com/rosh100yx/outlier#how-it-works'));
+    // In a real terminal, drop into the guided menu so --help is a launchpad, not a wall
+    // of text. Non-interactive (scripts/CI) just prints the list and exits.
+    if (process.stdout.isTTY) { console.log(''); await whatNext(); }
     process.exit(0);
   }
 
@@ -841,15 +844,17 @@ Artifact:     ${pc.cyan(reportPath)}`,
       process.exit(0);
     }
 
+    const surveyData = `**Engineering reality:** ${q1}\n**Deskilling impact:** ${q2}\n**Thoughts:** ${feedback}`;
+
     note(
-      `${pc.italic(`"${feedback}"`)}\n\nYour input is invaluable. To make it official and contribute to the literature, we've generated a secure transmission link for you.`,
+      `${pc.italic(`"${feedback}"`)}\n\nThanks. To share it, open a new issue and paste the lines below (a screenshot of your receipt helps too).`,
       'Outlier Research'
     );
 
-    const surveyData = `**Engineering Reality:** ${q1}\n**Deskilling Impact:** ${q2}\n**Thoughts:**\n${feedback}`;
-
-    const url = `https://github.com/rosh100yx/outlier/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=%5BOutlier+Research%5D+Feedback&body=${encodeURIComponent("Drop a screenshot of your Thermal Receipt here! \n\n" + surveyData)}`;
-    console.log(`\n${pc.bold('Submit here (and drop your screenshot!):')} ${pc.underline(pc.cyan(url))}\n`);
+    // Short, copy-friendly link (no giant pre-filled body in the URL) + the text to paste.
+    console.log(`\n ${pc.bold('Open an issue:')}  ${pc.underline(pc.cyan('https://github.com/rosh100yx/outlier/issues/new'))}`);
+    console.log(`\n ${pc.dim('Paste this in:')}`);
+    console.log(surveyData.split('\n').map(l => '   ' + l).join('\n') + '\n');
   } else if (action === 'impact') {
     console.log('\n' + pc.bold(pc.bgMagenta(' THE COMPOUNDING HORIZON OF DESKILLING ')) + '\n');
     console.log(pc.bold('What Do We Lose and Gain?'));
