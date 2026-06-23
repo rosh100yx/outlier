@@ -112,6 +112,8 @@ async function emitJson() {
     } : null,
     cost: carbon ? {
       totalTokens: carbon.totalTokens,
+      newTokens: Math.max(0, carbon.totalTokens - carbon.cacheReadTokens), // tokens that did new work
+      reReadTokens: carbon.cacheReadTokens,                                 // context re-sent each turn
       outputTokens: carbon.outputTokens,
       cacheReusePercent: carbon.totalTokens ? +((carbon.cacheReadTokens / carbon.totalTokens) * 100).toFixed(1) : 0,
       estUsd: +carbon.estUsd.toFixed(2),
@@ -130,6 +132,8 @@ async function emitJson() {
       blastRadius: caps.blastRadius,
       reasons: caps.blastReasons,
       toolCount: caps.mcps.length,
+      toolsUsed: caps.mcpsObserved,
+      toolsLatent: caps.mcpsLatent,
       writeOrDeployCount: writeOrDeploy,
       tools: caps.mcps,
       subagents: caps.subagents,
@@ -495,8 +499,14 @@ ${tokenBlock}`,
         const ovStr = contrib.oversight.totalCommits > 0
           ? `${pc.bold((contrib.oversight.iterationRate*100).toFixed(0) + '%')} ${pc.dim(`fix/refactor/review commits (${contrib.oversight.iterationCommits}/${contrib.oversight.totalCommits})`)}`
           : pc.dim('—');
+        // Show the basis so the % is auditable: edit-attribution gives the line counts it
+        // was computed from; commit-tags is the weaker fallback when no agent writes are logged.
+        const kL = (n: number) => n >= 1000 ? (n / 1000).toFixed(0) + 'K' : String(n);
+        const execBasis = contrib.execution.source === 'edits'
+          ? `edits · ${kL(contrib.execution.aiAddedLines || 0)} of ${kL(contrib.execution.gitAddedLines || 0)} lines`
+          : contrib.execution.source === 'commit-tags' ? 'commit tags · weak signal' : 'no signal';
         const profileRows =
-          ` ${pc.dim('│')} Execution  ${execColor(pc.bold(execAi.toFixed(0) + '% AI'))} ${pc.dim('('+contrib.execution.source+')')}\n` +
+          ` ${pc.dim('│')} Execution  ${execColor(pc.bold(execAi.toFixed(0) + '% AI'))} ${pc.dim('('+execBasis+')')}\n` +
           ` ${pc.dim('│')} Intent     ${intentStr}\n` +
           ` ${pc.dim('│')} Oversight  ${ovStr}\n` +
           ` ${pc.dim('│')}\n` +
@@ -522,7 +532,10 @@ ${tokenBlock}`,
           const rc = capabilities.blastRadius;
           const col = rc === 'CRITICAL' || rc === 'HIGH' ? pc.red : rc === 'MEDIUM' ? pc.yellow : pc.green;
           const risky = capabilities.mcps.filter((m: any) => ['money','exec','deploy','write-remote','write-local'].includes(m.reach)).length;
-          reachStr = `${col(pc.bold(rc))} · ${capabilities.mcps.length} tools` + (risky ? pc.dim(`, ${risky} can write/deploy`) : '');
+          const latent = capabilities.mcpsLatent;
+          reachStr = `${col(pc.bold(rc))} · ${capabilities.mcps.length} tools` +
+            (risky ? pc.dim(`, ${risky} can write/deploy`) : '') +
+            (latent ? pc.dim(` · ${latent} unused (latent)`) : '');
         }
 
         // Insight engine: turn the numbers into the top thing to actually do.
@@ -552,7 +565,12 @@ ${tokenBlock}`,
           : n >= 1_000_000 ? (n / 1_000_000).toFixed(1) + 'M'
           : n >= 1_000 ? (n / 1_000).toFixed(1) + 'k'
           : String(n);
-        const totalTokensStr = carbon ? fmtTokens(carbon.totalTokens) : '0';
+        // "Tokens used" was the total — but for agentic work that's ~97% cache RE-READS
+        // (context re-sent each turn), not new work. Headline the NEW tokens (total minus
+        // cache reads); show the re-read volume separately so the number isn't a vanity figure.
+        const newTokens = carbon ? Math.max(0, carbon.totalTokens - carbon.cacheReadTokens) : 0;
+        const newTokensStr = carbon ? fmtTokens(newTokens) : '0';
+        const reReadStr = carbon ? fmtTokens(carbon.cacheReadTokens) : '0';
         const estUsdStr = carbon
           ? '$' + carbon.estUsd.toFixed(2) + (carbon.costIsReal ? '' : pc.dim(' (rough)'))
           : pc.dim('n/a');
@@ -575,9 +593,10 @@ ${tokenBlock}`,
 ${profileRows}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgMagenta(' WHAT IT COST '))}
- ${pc.dim('│')} Tokens used      ${pc.bold(totalTokensStr)}
+ ${pc.dim('│')} New tokens       ${pc.bold(newTokensStr)} ${pc.dim('(work done)')}
+ ${pc.dim('│')} Re-read context  ${pc.bold(reReadStr)} ${pc.dim(`(${cachePct}% of all tokens)`)}
  ${pc.dim('│')} Est. spend       ${pc.bold(estUsdStr)}
- ${pc.dim('│')} Re-used context  ${cacheBar} ${pc.bold(cachePct + '%')}
+ ${pc.dim('│')} Re-read ratio    ${cacheBar} ${pc.bold(cachePct + '%')}
  ${pc.dim('│')} Energy           ${pc.bold(co2Str)} ${pc.dim(`(${regionStr} grid)`)}
  ${pc.dim('│')} ${pc.dim(`Source: ${sourceLabel}`)}
  ${pc.dim('│')}
@@ -626,9 +645,12 @@ ${insightLines}
         'write-local': 'can write files', data: 'data stores', network: 'network', model: 'models', read: 'read-only',
       };
       const riskyReaches = new Set(['money', 'exec', 'deploy', 'write-remote', 'write-local']);
+      // Per tool: ✓ = actually called in this repo's sessions; ○ = configured but never
+      // used (reachable by an injection, zero benefit to you = latent attack surface).
+      const mark = (m: any) => m.observed ? pc.green('✓') : (riskyReaches.has(m.reach) ? pc.red('○') : pc.dim('○'));
       const toolLines = caps.mcps.length === 0 ? '  None detected'
         : order.filter(r => caps.mcps.some(m => m.reach === r)).map(r => {
-            const names = caps.mcps.filter(m => m.reach === r).map(m => m.name).join(', ');
+            const names = caps.mcps.filter(m => m.reach === r).map(m => `${mark(m)} ${m.name}`).join('  ');
             const tag = riskyReaches.has(r) ? pc.red(`[${reachLabel[r]}]`) : pc.dim(`[${reachLabel[r]}]`);
             return `  ${tag} ${names}`;
           }).join('\n');
@@ -637,7 +659,7 @@ ${insightLines}
         `${pc.bold('BLAST RADIUS:')} ${radiusColor(pc.bold(caps.blastRadius))}  ${pc.dim('— if an agent or a prompt injection drives your tools')}
 ${caps.blastReasons.length ? caps.blastReasons.map(r => `  ${pc.red('•')} ${r}`).join('\n') : pc.green('  • read-only — limited reach')}
 
-${pc.bold(`What your agents can reach (${caps.mcps.length} MCP tools):`)}
+${pc.bold(`What your agents can reach (${caps.mcps.length} MCP tools):`)}  ${pc.dim(`${pc.green('✓')} ${caps.mcpsObserved} used · ${pc.red('○')} ${caps.mcpsLatent} latent`)}
 ${toolLines}
 
 ${pc.bold('Automation & agents:')}

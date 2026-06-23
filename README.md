@@ -30,21 +30,24 @@
   │ █▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█  :: CODE AUDIT                          │
   │ █▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄  :: my-repo · JUN 23, 2026              │
   ├──────────────────────────────────────────────────────────────────┤
-  │  WHO WROTE THE CODE                                              │
-  │ AI    ▰▰▰▰░░░░░░ 40%   (64 of 160 commits)                       │
-  │ You   ▰▰▰▰▰▰░░░░ 60%                                             │
-  │ Typical: solo devs 10–40% · AI-framework repos up to ~80%        │
-  │ You're driving — you still write the core. Good.                 │
+  │  WHO WROTE THE CODE   execution is only one axis                 │
+  │ Execution  62% AI (edits · 5.1K of 8.2K lines)                   │
+  │ Intent     240 prompts · ~180K tokens you typed                  │
+  │ Oversight  18% fix/refactor/review commits (29/160)              │
+  │                                                                  │
+  │ Centaur — AI writes most of it, but you steer and review.        │
+  │ Blind: copy-paste from chat is invisible; prompt quality unmeas… │
   ├──────────────────────────────────────────────────────────────────┤
   │  WHAT IT COST                                                    │
-  │ Tokens used      3.1M                                            │
+  │ New tokens       3.1M (work done)                                │
+  │ Re-read context  74M (96% of all tokens)                         │
   │ Est. spend       $18.40                                          │
-  │ Re-used context  ▰▰▰▰▰▰▰▰░░ 80%                                  │
+  │ Re-read ratio    ▰▰▰▰▰▰▰▰▰▰ 96%                                  │
   │ Energy           0.12kg CO2 (Global Average grid)                │
   │ Source: estimated · Claude Code transcripts                      │
   ├──────────────────────────────────────────────────────────────────┤
   │  WHAT YOUR AGENTS CAN REACH                                      │
-  │ Blast radius   HIGH · 13 tools, 5 can write/deploy               │
+  │ Blast radius   HIGH · 13 tools, 5 can write/deploy · 6 unused    │
   │ Full map (deploy/push/write tools): outlier capabilities         │
   ├──────────────────────────────────────────────────────────────────┤
   │  YOUR LIMIT                                                      │
@@ -81,8 +84,8 @@
 
 `outlier` is local-first. It reads, from your own machine, only:
 
-- **`git log`** of the current repo — to count commits carrying a `Co-Authored-By` trailer (the AI-authorship share).
-- **Your Claude Code session transcripts** at `~/.claude/projects/<this-repo>/*.jsonl` — to sum token usage for the cost / cache / carbon estimate. (Falls back to `~/.claude/tokenomics-log.jsonl` if present.)
+- **`git log --numstat`** of the current repo — for the lines actually added across history (the shipped artifact), and the `Co-Authored-By` trailer as a fallback signal.
+- **Your Claude Code session transcripts** at `~/.claude/projects/<this-repo>/*.jsonl` — read three ways: the agent's `Edit`/`Write` tool calls (the lines it actually wrote to your files), your prompts (intent), and token usage (cost / cache / carbon). Worktrees and moved checkouts of the same repo are found too. (Falls back to `~/.claude/tokenomics-log.jsonl` for cost if present.)
 
 It does **not** send anything anywhere — no API calls, no telemetry, no account. Your code and prompts never leave the machine. The only network action in the whole tool is *you* choosing to open a share link or a feedback issue.
 
@@ -90,11 +93,12 @@ It does **not** send anything anywhere — no API calls, no telemetry, no accoun
 
 We are deliberately honest about this:
 
-- **Authorship has two views, and they disagree on purpose.**
-  - *By commit tags* — counts commits carrying a `Co-Authored-By` trailer. It is a **weak proxy**: it under-counts when your agent doesn't tag commits, it weights a 1-line typo the same as a 500-line AI feature, and every commit wears *your* git identity even when the agent wrote and committed it. On a fully AI-built repo this can read absurdly low.
-  - *By tokens* — when your agent's session logs exist, outlier compares the **AI's output tokens** (the code/text it generated) against **your prompt tokens** (what you typed). In agentic work — you prompt, the agent writes — this is ~90–99% AI, and it is the honest number. (Output tokens include explanations and prompt length is approximate, so treat it as an order-of-magnitude truth, not a line count.)
-  - If the two disagree wildly (e.g. tags say 17%, tokens say 96%), the gap *is* the finding: conventional tooling can't see how little of your own codebase you actually wrote.
-- **Tokens** are exact when the transcripts are present; otherwise the cost/carbon section reads zero.
+- **"Who wrote the code" is a profile, not a single number.** A single % is a lie — it measures only *execution* (the axis AI is taking over) and ignores where human value moved. Outlier reports three axes:
+  - **Execution** — *who wrote the lines.* Primary signal: outlier reads the agent's `Edit`/`Write` tool calls from the session transcripts (the lines it actually wrote to your files) and measures them against git's added lines: `aiPercent = 1 − max(0, gitAdded − aiAdded) / gitAdded`. This is denominated in the **shipped artifact**, not in chat tokens, and it is a **lower bound** — any committed line we can't prove an agent wrote is credited to you. Binary/lockfile/generated paths are excluded on both sides. When no agent writes are on record, it falls back to the weak `Co-Authored-By` commit-tag proxy.
+  - **Intent** — *who decided what to build.* The count and volume of prompts you typed. Hundreds of prompts means you steer, even when execution is mostly AI.
+  - **Oversight** — *who reviews.* The share of commits that look like a human iterating on prior output (fix / refactor / revert / review).
+  - The three combine into a label — **Artisan / Centaur / Director / Reviewer / Spectator** — so a low execution % with heavy steering reads as *Director* (you direct agents; the rest is hand/imported prose), not falsely as a hand-coding *Artisan*. High AI execution is healthy when intent + oversight are present; it's the deskilling pattern only when they're absent.
+- **Tokens, split honestly.** The headline "new tokens" is `total − cache_read`: the work actually done. For agentic sessions ~95%+ of raw tokens are cache **re-reads** (context re-sent each turn), shown separately so the cost number isn't a vanity figure. Energy is computed from output tokens only; cost discounts cache reads.
 - **Cost ($)** is exact when the log carries a cost field, otherwise a *rough* blended token estimate (labelled as such).
 - **Carbon** is a rough estimate (inference energy varies ~4–20× in the literature) and the per-region figure is a *counterfactual* — cloud inference runs on the provider's grid, not yours. Treat it as an order-of-magnitude signal, not an audit.
 
@@ -167,11 +171,19 @@ later runs. To replay it: `rm ~/.outlier_config`.
 ```jsonc
 {
   "tool": "outlier",
-  "authorship": { "aiPercent": 7.4, "provenance": "proxy" },
-  "cost": { "totalTokens": 137700000, "estUsd": 63.76, "provenance": "measured" },
+  "authorship": {
+    "aiPercent": 7.4, "provenance": "proxy",
+    "contribution": {
+      "label": "Director",
+      "execution": { "aiPercent": 62.0, "source": "edits", "aiAddedLines": 5100, "gitAddedLines": 8200 },
+      "intent":    { "prompts": 240, "promptTokens": 180000 },
+      "oversight": { "iterationRate": 0.18, "iterationCommits": 29, "totalCommits": 160 }
+    }
+  },
+  "cost": { "totalTokens": 137700000, "newTokens": 5500000, "reReadTokens": 132200000, "estUsd": 63.76, "provenance": "measured" },
   "carbon": { "co2Kg": 0.10, "region": "Global Average", "provenance": "estimated" },
-  "reach": { "blastRadius": "HIGH", "toolCount": 13, "writeOrDeployCount": 5,
-             "reasons": ["can deploy to production", "can push to your remote repos"] },
+  "reach": { "blastRadius": "HIGH", "toolCount": 13, "toolsUsed": 7, "toolsLatent": 6, "writeOrDeployCount": 5,
+             "reasons": ["can deploy to production", "6 write/deploy/money tools reachable but never used"] },
   "policy": { "aiCapPercent": 70, "status": "within" }
 }
 ```
