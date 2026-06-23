@@ -491,8 +491,11 @@ ${tokenBlock}`,
         // intent (you steer) and oversight (you review/iterate) are where human value moved.
         const contrib = buildContribution(gitStats);
         const execAi = contrib.execution.aiPercent;
-        const execColor = execAi > 70 ? pc.red : execAi > 40 ? pc.yellow : pc.green;
-        const labelColor = contrib.label === 'Spectator' ? pc.red : contrib.label === 'Artisan' || contrib.label === 'Centaur' ? pc.green : pc.yellow;
+        const measured = contrib.execution.confidence === 'measured';
+        // A proxy number must not look authoritative: render it dim with a ⚠, never colored.
+        const execColor = !measured ? pc.dim : execAi > 70 ? pc.red : execAi > 40 ? pc.yellow : pc.green;
+        const labelColor = contrib.label === 'Spectator' || contrib.label === 'Unmeasured' ? pc.yellow
+          : contrib.label === 'Artisan' || contrib.label === 'Centaur' ? pc.green : pc.yellow;
         const intentStr = contrib.intent.prompts !== null
           ? `${pc.bold(String(contrib.intent.prompts))} prompts ${pc.dim(`· ~${((contrib.intent.promptTokens||0)/1e3).toFixed(0)}K tokens you typed`)}`
           : pc.dim('no session logs for this repo');
@@ -505,8 +508,9 @@ ${tokenBlock}`,
         const execBasis = contrib.execution.source === 'edits'
           ? `edits · ${kL(contrib.execution.aiAddedLines || 0)} of ${kL(contrib.execution.gitAddedLines || 0)} lines`
           : contrib.execution.source === 'commit-tags' ? 'commit tags · weak signal' : 'no signal';
+        const execMark = measured ? '' : pc.yellow('⚠ ');
         const profileRows =
-          ` ${pc.dim('│')} Execution  ${execColor(pc.bold(execAi.toFixed(0) + '% AI'))} ${pc.dim('('+execBasis+')')}\n` +
+          ` ${pc.dim('│')} Execution  ${execMark}${execColor(pc.bold(execAi.toFixed(0) + '% AI'))} ${pc.dim('('+execBasis+')')}\n` +
           ` ${pc.dim('│')} Intent     ${intentStr}\n` +
           ` ${pc.dim('│')} Oversight  ${ovStr}\n` +
           ` ${pc.dim('│')}\n` +

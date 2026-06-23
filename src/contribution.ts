@@ -18,6 +18,10 @@ export interface Contribution {
   execution: {
     aiPercent: number;
     source: 'edits' | 'commit-tags' | 'none';
+    // 'measured'  = edit-attribution from this repo's sessions (honest)
+    // 'proxy'     = commit-tags only; the editor was NOT observed (weak, can mislead)
+    // 'none'      = no signal at all
+    confidence: 'measured' | 'proxy' | 'none';
     // raw line counts when source==='edits', so the % is auditable
     aiAddedLines?: number;
     gitAddedLines?: number;
@@ -56,13 +60,17 @@ export function buildContribution(gitStats: AuthorshipStats | null, cwd: string 
     execution = {
       aiPercent: edits.aiPercent,
       source: 'edits',
+      confidence: 'measured',
       aiAddedLines: edits.aiAddedLines,
       gitAddedLines: edits.gitAddedLines,
     };
   } else if (gitStats) {
-    execution = { aiPercent: +(gitStats.ratio * 100).toFixed(1), source: 'commit-tags' };
+    // No Claude Code sessions for this repo → the editor was NOT observed. This number is
+    // only the commit-tag proxy: it can read absurdly low (agents rarely tag) and we cannot
+    // see edits made in Cursor/Copilot/Aider/etc. Mark it loudly as a proxy, not a measurement.
+    execution = { aiPercent: +(gitStats.ratio * 100).toFixed(1), source: 'commit-tags', confidence: 'proxy' };
   } else {
-    execution = { aiPercent: 0, source: 'none' };
+    execution = { aiPercent: 0, source: 'none', confidence: 'none' };
   }
 
   const intent = tok.found
@@ -82,6 +90,23 @@ export function buildContribution(gitStats: AuthorshipStats | null, cwd: string 
   const reviews = oversight.iterationRate >= 0.15;
   const steers = (intent.prompts ?? 0) >= STEER_MIN;
   let label: string, judgment: string;
+  // #1 Honesty gap: without edit-attribution we are blind to who actually wrote the code.
+  // Do NOT assert a behavioral label (Artisan/Director/…) off the weak commit-tag proxy —
+  // abstain and say so. A confident character read on a blind signal is the dishonest part.
+  if (execution.confidence !== 'measured') {
+    label = 'Unmeasured';
+    judgment = execution.confidence === 'none'
+      ? 'No git history or sessions to read here. Run inside the repo where you code.'
+      : `No Claude Code sessions for this repo — your editor wasn't observed. The ${ai}% below is only a commit-tag proxy (agents rarely tag; Cursor/Copilot/Aider edits are invisible). Treat it as a floor, not a measurement.`;
+    return {
+      execution, intent, oversight, label, judgment,
+      blindSpots: [
+        'Execution is a commit-tag proxy here — the real editor signal (agent Edit/Write calls) was not found for this repo.',
+        'Copy-paste from a chat is invisible — pasted AI code looks 100% human.',
+        'Whether you understood the AI code cannot be measured here.',
+      ],
+    };
+  }
   if (ai < 30 && !steers) {
     label = 'Artisan';
     judgment = 'Little agent code, little agent direction — you hand-write this. Low deskilling risk.';

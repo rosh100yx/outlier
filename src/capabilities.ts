@@ -48,9 +48,20 @@ function observedMcpServers(repoPath: string, homeDirPath: string): Set<string> 
 }
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+// Match a configured server to an observed tool-call segment. This feeds a SECURITY signal
+// (latent = reachable-but-unused attack surface), so it must err toward over-warning: a false
+// "latent" is a harmless nudge, a false "used" hides real surface. So NO loose substring match
+// (which made `git` match `github`, `mem` match `supermemory` → falsely "used"). Require exact
+// normalized equality, or the observed segment to END WITH the server name (covers connector
+// prefixes like mcp__claude_ai_Airtable__… for a server keyed `Airtable`). Nothing shorter.
 function wasObserved(serverName: string, observed: Set<string>): boolean {
   const n = norm(serverName);
-  for (const o of observed) { const no = norm(o); if (no === n || no.includes(n) || n.includes(no)) return true; }
+  if (!n) return false;
+  for (const o of observed) {
+    const no = norm(o);
+    if (no === n) return true;
+    if (n.length >= 3 && no.endsWith(n)) return true;
+  }
   return false;
 }
 
