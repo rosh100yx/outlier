@@ -25,6 +25,11 @@ export interface Contribution {
     // surviving line counts when source==='edits', so the % is auditable
     aiLines?: number;
     totalLines?: number;
+    // team context: on a shared repo the % is scoped to YOUR lines via blame (scopedToUser),
+    // unless the repo was too large to blame (then it spans everyone — flagged downstream).
+    contributors?: number;
+    shared?: boolean;
+    scopedToUser?: boolean;
   };
   intent:    { prompts: number | null; promptTokens: number | null };
   oversight: { iterationRate: number; iterationCommits: number; totalCommits: number };
@@ -63,6 +68,9 @@ export function buildContribution(gitStats: AuthorshipStats | null, cwd: string 
       confidence: 'measured',
       aiLines: edits.aiLines,
       totalLines: edits.totalLines,
+      contributors: edits.contributors,
+      shared: edits.shared,
+      scopedToUser: edits.scopedToUser,
     };
   } else if (gitStats) {
     // No Claude Code sessions for this repo → the editor was NOT observed. This number is
