@@ -10,9 +10,13 @@
 // literature). We expose the method so the UI can label provenance honestly. We never
 // claim precision we don't have.
 
-// Energy per 1M OUTPUT tokens, by model class (kWh). Anchor: the paper measured ~10 kWh
-// across 15.1M output tokens on Opus-class (~0.66). Smaller/faster models use materially
-// less. These are order-of-magnitude class estimates, not vendor figures.
+// Energy per 1M OUTPUT tokens, by model class (kWh).
+// Grounded in: the paper's measured ~10 kWh / 15.1M output on Opus-class (~0.66);
+// EcoLogits (genai-impact) per-call energy methodology; and the Hugging Face AI Energy
+// Score (which ranks small/mid/large model inference energy). Larger models = more
+// active parameters per token = more energy. These remain order-of-magnitude class
+// estimates (the literature spread is ~4-20x), labelled "estimate" in the UI — not vendor
+// figures. CodeCarbon, when present, overrides these with measured hardware energy.
 const MODEL_ENERGY_KWH_PER_M_OUTPUT: Record<string, number> = {
   'opus':    0.66,  // large frontier (Claude Opus, GPT-4 class)
   'sonnet':  0.30,  // mid (Claude Sonnet, GPT-4o)

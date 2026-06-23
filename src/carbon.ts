@@ -117,6 +117,33 @@ function estimateUsd(output: number, cacheRead: number, total: number): number {
   return (output / 1e6) * 9 + (cacheRead / 1e6) * 0.3 + (otherInput / 1e6) * 3;
 }
 
+// #6 CodeCarbon: if the developer runs CodeCarbon, it writes a real MEASURED
+// emissions.csv (hardware energy, not a token estimate). Read the latest run.
+// Columns (codecarbon >=2): timestamp,project_name,...,duration,emissions,...,energy_consumed,...
+function readCodeCarbon(cwd: string, home: string): { energyKwh: number; co2Kg: number } | null {
+  const { readFileSync, existsSync } = require('fs');
+  const { join } = require('path');
+  for (const p of [join(cwd, 'emissions.csv'), join(home, '.codecarbon', 'emissions.csv')]) {
+    try {
+      if (!existsSync(p)) continue;
+      const lines = readFileSync(p, 'utf-8').trim().split('\n');
+      if (lines.length < 2) continue;
+      const header = lines[0].split(',');
+      const iEm = header.indexOf('emissions');           // kg CO2eq
+      const iEn = header.indexOf('energy_consumed');      // kWh
+      if (iEm === -1 && iEn === -1) continue;
+      let co2 = 0, kwh = 0;
+      for (const row of lines.slice(1)) {
+        const cols = row.split(',');
+        co2 += parseFloat(cols[iEm]) || 0;
+        kwh += parseFloat(cols[iEn]) || 0;
+      }
+      return { energyKwh: kwh, co2Kg: co2 };
+    } catch {}
+  }
+  return null;
+}
+
 function getLocalGridFactor(): { region: string, factor: number } {
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -147,9 +174,11 @@ export async function getCarbonStats(): Promise<CarbonStats> {
     }
   }
 
-  // Model-aware energy (replaces the single flat 0.662 coefficient).
-  const energyKwh = energyKwhByModel(outputByModel);
+  // Carbon: prefer CodeCarbon's measured hardware data; else model-aware estimate.
   const localGrid = getLocalGridFactor();
+  const measured = readCodeCarbon(process.cwd(), homedir());
+  const energyKwh = measured ? measured.energyKwh : energyKwhByModel(outputByModel);
+  const measuredCo2 = measured ? measured.co2Kg : null;
 
   // Source provenance for honest labelling in the UI.
   const sources = detectSources();
@@ -165,8 +194,8 @@ export async function getCarbonStats(): Promise<CarbonStats> {
     energyKwh,
     co2KgVietnam: (energyKwh * gridFactors.vietnam) / 1000,
     co2KgFrance: (energyKwh * gridFactors.france) / 1000,
-    localCo2Kg: (energyKwh * localGrid.factor) / 1000,
-    localRegion: localGrid.region,
+    localCo2Kg: measuredCo2 !== null ? measuredCo2 : (energyKwh * localGrid.factor) / 1000,
+    localRegion: measured ? 'CodeCarbon (measured)' : localGrid.region,
     sessions,
     estUsd,
     costIsReal,

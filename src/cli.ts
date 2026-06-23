@@ -7,6 +7,7 @@ import { getCarbonStats } from './carbon';
 import { getCapabilitiesStats } from './capabilities';
 import { deriveInsights, type Insight } from './insights';
 import { projectEconomics } from './economics';
+import { aggregateDir } from './aggregate';
 import { writeFileSync, readFileSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
 import { detectAgent } from './agent';
@@ -147,7 +148,15 @@ async function main() {
       } catch (e) {}
     }
     if (alreadyRun) process.exit(0);
-    action = 'status';
+    // Compact once-per-day greeting (for the Claude Code plugin SessionStart hook) —
+    // a single line, fast, no full receipt.
+    const g = await getAuthorshipStats().catch(() => null);
+    const cp = await getCapabilitiesStats().catch(() => null);
+    const aiP = g ? (g.ratio * 100).toFixed(0) + '%' : '—';
+    const br = cp ? cp.blastRadius : '—';
+    const brc = br === 'HIGH' || br === 'CRITICAL' ? pc.red : br === 'MEDIUM' ? pc.yellow : pc.green;
+    console.log(`${pc.dim('[outlier]')} AI authorship ${pc.bold(aiP)} · agent reach ${brc(pc.bold(br))} ${pc.dim('· before you delegate, run: outlier preflight')}`);
+    process.exit(0);
   }
 
   // Agent / CI / swarm contract: --json emits a structured audit and nothing else
@@ -547,6 +556,24 @@ ${pc.dim('This is your attack surface. Fewer write/deploy tools per session = sm
       s.stop('Audit failed');
       console.error(pc.red(e.message));
     }
+  } else if (action === 'aggregate') {
+    // Team/fleet rollup from a folder of `outlier --json` files. Local-first, no export.
+    const dir = process.argv[3];
+    if (!dir || !existsSync(dir)) {
+      console.error(pc.red('Usage: outlier aggregate <folder-of-json-audits>'));
+      console.log(pc.dim('  Each dev: outlier --json > team/<name>.json   then: outlier aggregate team/'));
+      process.exit(1);
+    }
+    const r = aggregateDir(dir);
+    note(
+      `Developers:        ${pc.bold(String(r.developers))}
+Avg AI authorship: ${pc.bold(r.avgAiPercent !== null ? r.avgAiPercent + '%' : '—')}   Max: ${r.maxAiPercent !== null ? r.maxAiPercent + '%' : '—'}
+Over their limit:  ${r.overLimit > 0 ? pc.red(String(r.overLimit)) : pc.green('0')}
+Team spend (est):  ${pc.bold('$' + r.totalEstUsd)}
+Worst blast radius:${' '}${r.worstBlastRadius === 'HIGH' || r.worstBlastRadius === 'CRITICAL' ? pc.red(r.worstBlastRadius) : pc.yellow(r.worstBlastRadius)}   (${r.reachWriteDeploy} write/deploy tools across the team)
+${r.notes.length ? '\n' + r.notes.map(n => `${pc.yellow('•')} ${n}`).join('\n') : ''}`,
+      'Team Rollup (local-first — nothing was exported)'
+    );
   } else if (action === 'preflight') {
     // Forward-looking briefing — the reason to run outlier BEFORE you start an agent.
     // Same engine as status, framed for the session you are about to begin: reach,

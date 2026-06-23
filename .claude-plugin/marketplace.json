@@ -1,0 +1,12 @@
+{
+  "name": "outlier",
+  "owner": { "name": "Roshan Abraham", "url": "https://github.com/rosh100yx" },
+  "plugins": [
+    {
+      "name": "outlier",
+      "source": "./",
+      "description": "Point-of-use AI governance: a once-per-day pre-flight greeting showing your AI reliance and what your agents can reach, before you start a session. Local-first.",
+      "version": "0.10.0"
+    }
+  ]
+}

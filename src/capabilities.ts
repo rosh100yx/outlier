@@ -72,10 +72,15 @@ export async function getCapabilitiesStats(repoPath: string = process.cwd(), hom
   const mcpNames = new Set<string>();
 
   // MCP servers — the agent's actual tool reach. Read from every place they live.
+  // Read MCP servers from every place agents declare them (Claude, Cursor, Gemini, project).
   for (const cfg of [
     join(homeDirPath, '.claude.json'),
     join(homeDirPath, '.claude', 'settings.json'),
+    join(homeDirPath, '.cursor', 'mcp.json'),
+    join(homeDirPath, '.gemini', 'config', 'mcp_config.json'),
+    join(homeDirPath, '.gemini', 'settings.json'),
     join(repoPath, '.mcp.json'),
+    join(repoPath, '.cursor', 'mcp.json'),
     join(repoPath, '.claude', 'settings.json'),
   ]) {
     const j = readJson(cfg);
