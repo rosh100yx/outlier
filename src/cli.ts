@@ -499,9 +499,16 @@ ${tokenBlock}`,
         const intentStr = contrib.intent.prompts !== null
           ? `${pc.bold(String(contrib.intent.prompts))} prompts ${pc.dim(`· ~${((contrib.intent.promptTokens||0)/1e3).toFixed(0)}K tokens you typed`)}`
           : pc.dim('no session logs for this repo');
-        const ovStr = contrib.oversight.totalCommits > 0
-          ? `${pc.bold((contrib.oversight.iterationRate*100).toFixed(0) + '%')} ${pc.dim(`fix/refactor/review commits (${contrib.oversight.iterationCommits}/${contrib.oversight.totalCommits})`)}`
-          : pc.dim('—');
+        const ov = contrib.oversight;
+        let ovStr: string;
+        if (ov.totalCommits > 0 || ov.sessionEdits > 0) {
+          const parts: string[] = [];
+          if (ov.totalCommits > 0) parts.push(`${ov.iterationCommits}/${ov.totalCommits} rework commits`);
+          if (ov.sessionEdits > 0) parts.push(`${ov.sessionRevisions}/${ov.sessionEdits} in-session revisions`);
+          ovStr = `${pc.bold((ov.iterationRate * 100).toFixed(0) + '%')} ${pc.dim(parts.join(' · '))}`;
+        } else {
+          ovStr = pc.dim('—');
+        }
         // Show the basis so the % is auditable: edit-attribution gives the line counts it
         // was computed from; commit-tags is the weaker fallback when no agent writes are logged.
         const kL = (n: number) => n >= 1000 ? (n / 1000).toFixed(0) + 'K' : String(n);

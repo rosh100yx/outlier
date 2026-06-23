@@ -32,25 +32,51 @@ export interface Contribution {
     scopedToUser?: boolean;
   };
   intent:    { prompts: number | null; promptTokens: number | null };
-  oversight: { iterationRate: number; iterationCommits: number; totalCommits: number };
+  oversight: {
+    iterationRate: number;       // headline 0..1 — max of the commit and session signals
+    iterationCommits: number;    // commits whose subject reads as rework (fix/refactor/revert/…)
+    totalCommits: number;
+    sessionRevisions: number;    // in-session edits beyond first write (squash-proof)
+    sessionEdits: number;
+    basis: 'commits' | 'commits+session';
+  };
   label: string;
   judgment: string;
   blindSpots: string[];
 }
 
-// Oversight proxy from local git: commits that look like a human reviewing/iterating on
-// prior (often AI) output — fixes, refactors, reverts, review follow-ups. Rough, labelled.
-function getOversight(cwd: string): { iterationRate: number; iterationCommits: number; total: number } {
+// Oversight = sign that a human reviews/iterates on (often AI) output, not blindly accepts it.
+// Two local signals, because each alone is flawed:
+//   - commit subjects (fix/refactor/revert/…): direct, but brittle (vocabulary) and squash-
+//     merge collapses a PR's review commits into one subject → reads ~0 falsely.
+//   - session revisions: edits an agent made to a file BEYOND its first write = back-and-forth
+//     refinement. Squash-proof (it's in the transcripts, not the commit graph) and harder to
+//     game. Blind spot: an agent's own multi-step/self-correction also counts as iteration.
+// Headline rate is the MAX of the two — engagement shown by either is engagement.
+function getOversight(
+  cwd: string,
+  sessionEdits: number,
+  sessionRevisions: number,
+): { iterationRate: number; iterationCommits: number; total: number; basis: 'commits' | 'commits+session' } {
+  let total = 0, iter = 0;
   try {
     const subjects = execSync(`git -C "${cwd}" log --no-merges --format=%s`, { stdio: ['ignore', 'pipe', 'ignore'] })
       .toString().trim().split('\n').filter(Boolean);
-    const total = subjects.length;
+    total = subjects.length;
     const re = /^(fix|revert|refactor|hotfix|review|address|cleanup|polish|tweak|adjust|correct|amend)\b/i;
-    const iter = subjects.filter(s => re.test(s)).length;
-    return { iterationRate: total ? +(iter / total).toFixed(2) : 0, iterationCommits: iter, total };
-  } catch {
-    return { iterationRate: 0, iterationCommits: 0, total: 0 };
-  }
+    iter = subjects.filter(s => re.test(s)).length;
+  } catch {}
+
+  const commitRate = total ? iter / total : 0;
+  const sessionRate = sessionEdits > 0 ? sessionRevisions / sessionEdits : 0;
+  const haveSession = sessionEdits > 0;
+  const rate = haveSession ? Math.max(commitRate, sessionRate) : commitRate;
+  return {
+    iterationRate: +rate.toFixed(2),
+    iterationCommits: iter,
+    total,
+    basis: haveSession ? 'commits+session' : 'commits',
+  };
 }
 
 export function buildContribution(gitStats: AuthorshipStats | null, cwd: string = process.cwd()): Contribution {
@@ -85,8 +111,15 @@ export function buildContribution(gitStats: AuthorshipStats | null, cwd: string 
     ? { prompts: tok.prompts, promptTokens: tok.humanPromptTokens }
     : { prompts: null, promptTokens: null };
 
-  const ov = getOversight(cwd);
-  const oversight = { iterationRate: ov.iterationRate, iterationCommits: ov.iterationCommits, totalCommits: ov.total };
+  const ov = getOversight(cwd, edits.sessionEdits, edits.sessionRevisions);
+  const oversight = {
+    iterationRate: ov.iterationRate,
+    iterationCommits: ov.iterationCommits,
+    totalCommits: ov.total,
+    sessionRevisions: edits.sessionRevisions,
+    sessionEdits: edits.sessionEdits,
+    basis: ov.basis,
+  };
 
   // Judgment — combine the axes. execution.aiPercent is a LOWER bound: a low number can
   // mean "you hand-wrote it" OR "most shipped lines are imported/pasted prose, not agent
@@ -142,6 +175,7 @@ export function buildContribution(gitStats: AuthorshipStats | null, cwd: string 
       'Copy-paste from a chat is invisible — pasted AI code looks 100% human.',
       'Prompt quality is not measured, only volume.',
       'Whether you understood the AI code cannot be measured here.',
+      "Oversight counts in-session revisions; an agent's own multi-step edits also count as iteration.",
     ],
   };
 }
