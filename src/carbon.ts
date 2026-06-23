@@ -4,6 +4,7 @@ import { readFile, access, readdir } from 'fs/promises';
 import gridFactors from '../data/grid-factors.json';
 import { energyKwhByModel } from './emissions';
 import { detectSources, provLabel, type Provenance } from './sources';
+import { claudeProjectSlug } from './util';
 
 export interface CarbonStats {
   totalTokens: number;
@@ -38,7 +39,7 @@ export class ClaudeLogParser implements TokenLogParser {
     // Primary source: the standard Claude Code session transcripts for THIS repo.
     // Claude Code stores them at ~/.claude/projects/<cwd-with-slashes-as-dashes>/*.jsonl,
     // one JSON object per line; assistant turns carry `message.usage`.
-    const slug = this.cwd.replace(/\//g, '-');
+    const slug = claudeProjectSlug(this.cwd);
     const projectDir = join(this.baseDir, '.claude', 'projects', slug);
     try {
       const files = (await readdir(projectDir)).filter(f => f.endsWith('.jsonl'));
