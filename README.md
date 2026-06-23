@@ -19,31 +19,35 @@
   <br/>
   
   ```text
-  ┌────────────────────────────────────────────────────────
-  │ █▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█  :: CODE AUDIT
-  │ █▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄  :: my-repo · JUN 23, 2026
-  ├────────────────────────────────────────────────────────
-  │  WHO WROTE THE CODE
-  │ AI    ▰▰▰▰░░░░░░ 40%   (64 of 160 commits)
-  │ You   ▰▰▰▰▰▰░░░░ 60%
-  │ Typical: solo devs 10–40% · AI-framework repos up to ~80%
-  │ You're driving — you still write the core. That's how you keep the skill.
-  ├────────────────────────────────────────────────────────
-  │  WHAT IT COST
-  │ Tokens used      3.1M
-  │ Est. spend       $18.40
-  │ Re-used context  ▰▰▰▰▰▰▰▰░░ 80%
-  │ Energy           0.12kg CO2 (Global Average grid)
-  │ Source: estimated · Claude Code transcripts
-  ├────────────────────────────────────────────────────────
-  │  WHAT YOUR AGENTS CAN REACH
-  │ Blast radius   HIGH · 13 tools, 5 can write/deploy
-  │ Full map (deploy/push/write tools): outlier capabilities
-  ├────────────────────────────────────────────────────────
-  │  YOUR LIMIT
-  │ AI cap   70% · change with: outlier policy
-  │ Status   Within limit · Nothing to do.
-  └────────────────────────────────────────────────────────
+  ┌──────────────────────────────────────────────────────────────────┐
+  │ █▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█  :: CODE AUDIT                          │
+  │ █▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄  :: my-repo · JUN 23, 2026              │
+  ├──────────────────────────────────────────────────────────────────┤
+  │  WHO WROTE THE CODE                                              │
+  │ AI    ▰▰▰▰░░░░░░ 40%   (64 of 160 commits)                       │
+  │ You   ▰▰▰▰▰▰░░░░ 60%                                             │
+  │ Typical: solo devs 10–40% · AI-framework repos up to ~80%        │
+  │ You're driving — you still write the core. Good.                 │
+  ├──────────────────────────────────────────────────────────────────┤
+  │  WHAT IT COST                                                    │
+  │ Tokens used      3.1M                                            │
+  │ Est. spend       $18.40                                          │
+  │ Re-used context  ▰▰▰▰▰▰▰▰░░ 80%                                  │
+  │ Energy           0.12kg CO2 (Global Average grid)                │
+  │ Source: estimated · Claude Code transcripts                      │
+  ├──────────────────────────────────────────────────────────────────┤
+  │  WHAT YOUR AGENTS CAN REACH                                      │
+  │ Blast radius   HIGH · 13 tools, 5 can write/deploy               │
+  │ Full map (deploy/push/write tools): outlier capabilities         │
+  ├──────────────────────────────────────────────────────────────────┤
+  │  YOUR LIMIT                                                      │
+  │ AI cap   70% · change with: outlier policy                       │
+  │ Status   Within limit · Nothing to do.                           │
+  ├──────────────────────────────────────────────────────────────────┤
+  │  WHAT TO DO                                                      │
+  │ ⚠ Blast radius HIGH                                              │
+  │   → Disable the write/deploy MCP tools you don't need now.       │
+  └──────────────────────────────────────────────────────────────────┘
   ```
 </div>
 
