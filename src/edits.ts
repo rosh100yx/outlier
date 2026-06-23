@@ -185,6 +185,12 @@ function countMineByBlame(repoRoot: string, files: string[], me: string, aiSet: 
   return { ai, total };
 }
 
+// The set of substantive lines an agent wrote to this repo's files — exposed for the
+// learning loop, which detects which techniques the AI used on your behalf.
+export function getAiLines(cwd: string = process.cwd(), baseDir: string = homedir()): Set<string> {
+  return buildAiLineSet(repoRootOf(cwd), baseDir, cwd).lines;
+}
+
 export function getEditAuthorship(cwd: string = process.cwd(), baseDir: string = homedir()): EditAuthorship {
   const empty: EditAuthorship = { found: false, aiLines: 0, totalLines: 0, humanLines: 0, aiPercent: 0, filesTouched: 0, contributors: 0, shared: false, scopedToUser: false, sessionEdits: 0, sessionRevisions: 0 };
   const repoRoot = repoRootOf(cwd);

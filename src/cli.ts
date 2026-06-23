@@ -10,6 +10,7 @@ import { projectEconomics } from './economics';
 import { aggregateDir } from './aggregate';
 import { getTokenAuthorship } from './agentic';
 import { buildContribution } from './contribution';
+import { getLearning } from './learn';
 import { writeFileSync, readFileSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
 import { detectAgent } from './agent';
@@ -254,6 +255,7 @@ async function whatNext() {
     const choice = await select({
       message: 'What next?',
       options: [
+        { value: 'learn',        label: 'Learn a skill',               hint: 'turn what the AI wrote into something you understand' },
         { value: 'participate',  label: 'Participate',                 hint: 'screenshot your receipt + send feedback — it shapes the study' },
         { value: 'preflight',    label: 'Pre-flight briefing',        hint: 'before you start an agent' },
         { value: 'capabilities', label: 'Agent reach / blast radius',  hint: 'what your agents can touch' },
@@ -330,6 +332,7 @@ async function main() {
     console.log(`  ${pc.cyan(CMD + ' authorship')}   Just the AI-vs-human commit breakdown`);
     console.log(`  ${pc.cyan(CMD + ' carbon')}       Just the token spend, cache waste & carbon`);
     console.log(`  ${pc.cyan(CMD + ' capabilities')} What tools & skills your agents can reach`);
+    console.log(`  ${pc.cyan(CMD + ' learn')}        Turn what the AI wrote into a skill you can learn`);
     console.log(`  ${pc.cyan(CMD + ' policy')}       Set an AI-authorship limit (local git hook / CI)`);
     console.log(`  ${pc.cyan(CMD + ' impact')}       What AI reliance compounds to over time`);
     console.log(`  ${pc.cyan(CMD + ' knowledge')}    The research behind the metrics`);
@@ -692,6 +695,8 @@ ${profileRows}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgGreen(pc.black(' WHAT TO DO ')))}
 ${insightLines}
+ ${pc.dim('│')}
+ ${pc.dim('│')} ${pc.cyan('→')} Learn what the AI wrote: ${pc.bold(CMD + ' learn')} ${pc.dim('— one skill to unlock')}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.dim('Numbers are local estimates — authorship is a proxy and')}
  ${pc.dim('│')} ${pc.dim('carbon is rough. How it works: ' + CMD + ' --help')}
@@ -922,6 +927,62 @@ Privacy:      ${pc.green('preserved — nothing exported')}
 Artifact:     ${pc.cyan(reportPath)}`,
         'Human-Oversight Audit Record'
       );
+    }
+  } else if (action === 'learn') {
+    // Coach, not judge: surface one technique the agent used in your code, with the proof
+    // and a 30-second challenge. Progress is tracked locally in ~/.outlier_config.
+    const cfg = readConfig();
+    const learned: string[] = (cfg.learning && Array.isArray(cfg.learning.learned)) ? cfg.learning.learned : [];
+
+    // `outlier learn --done <id>` marks a skill learned (also offered interactively below).
+    const doneIdx = process.argv.indexOf('--done');
+    if (doneIdx !== -1 && process.argv[doneIdx + 1]) {
+      const id = process.argv[doneIdx + 1] as string;
+      const next = learned.includes(id) ? learned : [...learned, id];
+      writeConfig({ learning: { learned: next } });
+      console.log(pc.green(`\n  ✓ Marked "${id}" learned. ${next.length} skill${next.length === 1 ? '' : 's'} banked.\n`));
+      return;
+    }
+
+    s.start('Reading what your agent wrote...');
+    const learning = getLearning(process.cwd(), learned);
+    s.stop('Done.');
+
+    if (!learning.found) {
+      note(
+        `No agent sessions found for this repo, so there's nothing to learn from yet.\nRun this inside a repo where you've worked with Claude Code.`,
+        'Learn a skill',
+      );
+    } else if (!learning.next) {
+      const allCaught = learning.detected.length > 0;
+      note(
+        allCaught
+          ? `You've marked every detected skill learned (${learning.learnedCount}). Nice — keep building, new ones surface as your agent uses new techniques.`
+          : `No catalog techniques detected in the agent's code here yet. The catalog is small and growing; check back as you build more.`,
+        'Learn a skill',
+      );
+    } else {
+      const n = learning.next;
+      note(
+        `${pc.bold(pc.cyan('▸ ' + n.name))}\n` +
+        `${pc.dim('Why:')} ${n.why}\n\n` +
+        `${pc.dim('In your code:')} ${pc.underline(n.file + ':' + n.line)}\n` +
+        `   ${pc.dim(n.snippet)}\n\n` +
+        `${pc.dim('Challenge:')} ${n.challenge}\n\n` +
+        `${pc.dim(`Skill ${learning.learnedCount + 1} · ${learning.detected.length} surfaced in this repo · catalog of ${learning.totalCatalog}`)}`,
+        'Skill to unlock',
+      );
+      if (process.stdout.isTTY && process.stdin.isTTY) {
+        const got = await confirm({ message: `Mark "${n.name}" as learned?`, initialValue: false });
+        if (!isCancel(got) && got) {
+          writeConfig({ learning: { learned: [...learned, n.id] } });
+          console.log(pc.green(`\n  ✓ Banked. Next: ${CMD} learn\n`));
+        } else {
+          console.log(pc.dim(`\n  Come back when you've got it:  ${CMD} learn  ·  mark done: ${CMD} learn --done ${n.id}\n`));
+        }
+      } else {
+        console.log(pc.dim(`\n  Mark learned:  ${CMD} learn --done ${n.id}\n`));
+      }
     }
   } else if (action === 'participate') {
     s.start('Connecting to the Outlier research project...');
