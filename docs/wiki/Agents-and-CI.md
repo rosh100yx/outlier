@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npx @rosh100yx/outlier audit --strict
+      - run: npx outlier-audit audit --strict
 ```
 
 ## The Bouncer (Pre-Commit Hook)
 You can install the Bouncer directly into your local `.git/hooks/` directory to physically prevent code commits that exceed your defined AI-reliance threshold (e.g., >70% AI authored).
 
-Run `npx @rosh100yx/outlier policy` to interactively generate and install this hook.
+Run `npx outlier-audit policy` to interactively generate and install this hook.

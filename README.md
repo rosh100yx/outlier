@@ -6,14 +6,14 @@
   <br/>
   
   <p>
-    <a href="https://www.npmjs.com/package/@rosh100yx/outlier"><img src="https://img.shields.io/npm/v/@rosh100yx/outlier?style=for-the-badge&color=cb3837&logo=npm" /></a>
+    <a href="https://www.npmjs.com/package/outlier-audit"><img src="https://img.shields.io/npm/v/outlier-audit?style=for-the-badge&color=cb3837&logo=npm" /></a>
     <img src="https://img.shields.io/badge/Local_First-Zero_Trust-orange?style=for-the-badge" />
     <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
   </p>
 
   <p>
     <b>Get Started Instantly:</b><br/>
-    <code>npx @rosh100yx/outlier@latest</code>
+    <code>npx outlier-audit@latest</code>
   </p>
 
   <br/>
@@ -96,12 +96,12 @@ We are deliberately honest about this:
 ## Commands
 | Command | Purpose |
 |---------|---------|
-| `npx @rosh100yx/outlier` | Run the full AI reliance & capability audit |
-| `npx @rosh100yx/outlier authorship` | Scan git history for AI co-authorship ratio |
-| `npx @rosh100yx/outlier carbon` | Scan local logs for context waste & token costs |
-| `npx @rosh100yx/outlier capabilities` | Map what your agents can reach + blast radius |
-| `npx @rosh100yx/outlier policy` | Configure Personal, Team, or Enterprise guardrails in CI |
-| `npx @rosh100yx/outlier --json` | Machine-readable audit for agents, CI, and swarms |
+| `npx outlier-audit` | Run the full AI reliance & capability audit |
+| `npx outlier-audit authorship` | Scan git history for AI co-authorship ratio |
+| `npx outlier-audit carbon` | Scan local logs for context waste & token costs |
+| `npx outlier-audit capabilities` | Map what your agents can reach + blast radius |
+| `npx outlier-audit policy` | Configure Personal, Team, or Enterprise guardrails in CI |
+| `npx outlier-audit --json` | Machine-readable audit for agents, CI, and swarms |
 
 ### For agents, CI & swarms (`--json`)
 
@@ -120,7 +120,7 @@ We are deliberately honest about this:
 ```
 
 ### The UX Flow
-If you run `npx @rosh100yx/outlier` directly, you'll instantly get your audit receipt and a simple list of follow-up commands:
+If you run `npx outlier-audit` directly, you'll instantly get your audit receipt and a simple list of follow-up commands:
 ```text
   └────────────────────────────────────────────────────────┘
 
@@ -141,19 +141,19 @@ If you run `npx @rosh100yx/outlier` directly, you'll instantly get your audit re
 
 1. **Run your first audit**
    ```bash
-   npx @rosh100yx/outlier
+   npx outlier-audit
    ```
    *See who wrote the code, what it cost, and what your agents can reach.*
 
 2. **Set a limit (optional)**
    ```bash
-   npx @rosh100yx/outlier policy
+   npx outlier-audit policy
    ```
    *Pick a tier (e.g. "Team — 70% max AI"). It installs a local pre-commit hook that **warns** when AI authorship goes over your limit — it never silently blocks your work.*
 
 3. **Wire it into agents or CI**
    ```bash
-   npx @rosh100yx/outlier --json
+   npx outlier-audit --json
    ```
    *A clean JSON audit a supervisor agent, a swarm, or a CI pipeline can read and act on.*
 
@@ -172,7 +172,7 @@ If you run `npx @rosh100yx/outlier` directly, you'll instantly get your audit re
 `outlier` is IDE-agnostic. It works by parsing standard `Co-Authored-By` Git trailers, meaning it supports Claude Code, Cursor, Aider, and manual generation.
 
 **Can I run this in CI/CD like GitHub Actions?**  
-Yes. Use the `--strict` flag (`npx @rosh100yx/outlier audit --strict`) to return standard zero-exit-code parsing for headless CI environments.
+Yes. Use the `--strict` flag (`npx outlier-audit audit --strict`) to return standard zero-exit-code parsing for headless CI environments.
 
 ## Who is this for?
 

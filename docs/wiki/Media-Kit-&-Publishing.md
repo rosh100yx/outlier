@@ -19,4 +19,4 @@ Here are some highly engaging concepts to write about:
 Feel free to use any of our visual assets, including the cover image, the codecore aesthetic GIFs, and the terminal screenshots located in the `assets/` folder of the main repository.
 
 **Want to publish something?** 
-Run `npx @rosh100yx/outlier confessional` in your terminal and drop us a link to your draft or published piece, or open an Issue with the `[RESEARCH]` tag!
+Run `npx outlier-audit confessional` in your terminal and drop us a link to your draft or published piece, or open an Issue with the `[RESEARCH]` tag!
