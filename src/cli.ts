@@ -6,6 +6,7 @@ import { getAuthorshipStats } from './git';
 import { getCarbonStats } from './carbon';
 import { getCapabilitiesStats } from './capabilities';
 import { deriveInsights, type Insight } from './insights';
+import { projectEconomics } from './economics';
 import { writeFileSync, readFileSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
 import { detectAgent } from './agent';
@@ -84,6 +85,7 @@ async function emitJson() {
       status: aiRatio > cap ? 'over' : 'within',
     },
     insights: deriveInsights({ authorship: gitStats, carbon, caps, policyCap: cap }),
+    economics: projectEconomics({ aiRatio, estUsdSession: carbon ? carbon.estUsd : 0, teamSize: 1 }),
   };
 
   // Only JSON on stdout — nothing else.
@@ -667,19 +669,34 @@ Enforcement:  ${pc.cyan('Local pre-commit hook installed (backup created)')}`,
         'Active Governance Policy'
       );
     } else if (tier === 'regulatory') {
-      s.start('Generating Regulatory Compliance Audit (Decree 142)...');
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      
+      s.start('Generating human-oversight audit record (Decree 142)...');
+      // A real, honest compliance record from the actual local numbers — not a stub.
+      const gitStats = await getAuthorshipStats().catch(() => null);
+      const caps = await getCapabilitiesStats().catch(() => null);
+      const humanReviewRate = gitStats ? +(1 - gitStats.ratio).toFixed(3) : null;
+      const oversightOk = humanReviewRate !== null && humanReviewRate >= 0.30; // ≥30% human-authored
+      const record = {
+        timestamp: new Date().toISOString(),
+        policy: 'Vietnam Decree 142/2026 — human oversight of high-risk AI',
+        repo: process.cwd().split('/').pop(),
+        humanAuthorshipRate: humanReviewRate,
+        aiAuthorshipRate: gitStats ? +gitStats.ratio.toFixed(3) : null,
+        humanOversight: oversightOk ? 'present' : 'insufficient',
+        agentBlastRadius: caps ? caps.blastRadius : 'unknown',
+        dataExported: false,
+        note: 'Derived from local git history only. No code, prompts, or citizen data leave the machine. Authorship is a proxy for human oversight.',
+      };
       const reportPath = join(process.cwd(), 'outlier-audit-report.jsonl');
-      writeFileSync(reportPath, JSON.stringify({ timestamp: new Date().toISOString(), status: 'PREVIEW', policy: 'Decree 142', simulatedOversight: true }) + '\n');
-      s.stop('Audit Generated');
+      writeFileSync(reportPath, JSON.stringify(record) + '\n');
+      s.stop('Audit record written');
 
       note(
-        `Jurisdiction: ${pc.bold('Vietnam (Decree 142)')}
-Status:       ${pc.green('Compliant - Human oversight logged locally')}
-Privacy:      ${pc.green('Preserved - No citizen data exported')}
+        `Jurisdiction: ${pc.bold('Vietnam (Decree 142/2026)')}
+Human oversight: ${oversightOk ? pc.green('present') : pc.red('insufficient')} ${pc.dim(`(${humanReviewRate !== null ? (humanReviewRate * 100).toFixed(0) + '% human-authored' : 'no git history'})`)}
+Agent reach:  ${caps ? caps.blastRadius : 'unknown'}
+Privacy:      ${pc.green('preserved — nothing exported')}
 Artifact:     ${pc.cyan(reportPath)}`,
-        'Regulatory Compliance'
+        'Human-Oversight Audit Record'
       );
     }
   } else if (action === 'participate') {
@@ -742,6 +759,25 @@ Artifact:     ${pc.cyan(reportPath)}`,
     console.log(`  ${pc.red('Lose:')} Architectural intimacy. You become a reviewer.`);
     console.log(pc.cyan('\n■ Next 5-10 Years (The 1M+ LOC Crisis)'));
     console.log(`  When an agent introduces a fatal state bug in a monolithic architecture, human reviewers will lack the muscle memory to debug it. Outlier measures this exact sovereignty erosion.\n`);
+
+    // Economic translation: the macro shadow of your individual number.
+    const gitStats = await getAuthorshipStats().catch(() => null);
+    const carbon = await getCarbonStats().catch(() => null);
+    if (gitStats || carbon) {
+      const { projectEconomics } = await import('./economics');
+      const teamSize = (() => { const i = process.argv.indexOf('--team'); return i > -1 ? (parseInt(process.argv[i + 1] || '1') || 1) : 1; })();
+      const econ = projectEconomics({
+        aiRatio: gitStats ? gitStats.ratio : 0,
+        estUsdSession: carbon ? carbon.estUsd : 0,
+        teamSize,
+      });
+      console.log(pc.bold(pc.bgMagenta(' THE MACRO SHADOW ')) + pc.dim(`  (team of ${teamSize} — set with --team N)`));
+      for (const p of econ.projections) {
+        console.log(`  ${pc.bold(p.label.padEnd(20))} ${pc.cyan(p.value)}`);
+        console.log(`  ${pc.dim('  ' + p.note)}`);
+      }
+      console.log('\n' + pc.dim(' ' + econ.assumptions) + '\n');
+    }
   } else if (action === 'knowledge') {
     console.log('\n' + pc.bold(pc.bgBlue(' CORE LITERATURE & REFERENCES ')) + '\n');
     console.log(`1. ${pc.cyan('METR (Measuring AI Ability)')} - Evaluating AI on long-horizon software tasks.`);
