@@ -23,6 +23,40 @@ const ASCII_LOGO = `
 
 let finalReceipt = '';
 
+// Turn the left-rail receipt into a clean closed rectangle (adds the right border,
+// padding each line to a fixed inner width). Width-aware: strips ANSI and counts a few
+// known wide glyphs as 2 columns so the right edge lines up in a terminal and on GitHub.
+function closeBox(s: string, W = 66): string {
+  const wide = new Set(['⚠', '🛑', '✈', '🌱', '📸', '🔬', '💾', '💡', '✅', '❌', '😾', '😀']);
+  const chW = (ch: string) => { const cp = ch.codePointAt(0)!; return (cp >= 0x1F000 || wide.has(ch)) ? 2 : 1; };
+  const rail = '\x1b[2m│\x1b[0m';
+  // Fit a (possibly ANSI-coloured) line to exactly `totalVis` visible columns: pad with
+  // spaces, or truncate with an ellipsis — preserving colour codes either way.
+  const fit = (line: string, totalVis: number) => {
+    const parts = line.split(/(\x1b\[[0-9;]*m)/);
+    let out = '', vis = 0, cut = false;
+    for (const p of parts) {
+      if (/^\x1b\[/.test(p)) { out += p; continue; }
+      for (const ch of p) {
+        const w = chW(ch);
+        if (vis + w > totalVis - 1) { cut = true; break; }
+        out += ch; vis += w;
+      }
+      if (cut) break;
+    }
+    if (cut) { out += '…'; vis += 1; }
+    return out + ' '.repeat(Math.max(0, totalVis - vis)) + '\x1b[0m';
+  };
+  return s.split('\n').map(line => {
+    const plain = line.replace(/\x1b\[[0-9;]*m/g, '');
+    if (/^\s*┌/.test(plain)) return ' \x1b[2m┌' + '─'.repeat(W) + '┐\x1b[0m';
+    if (/^\s*├/.test(plain)) return ' \x1b[2m├' + '─'.repeat(W) + '┤\x1b[0m';
+    if (/^\s*└/.test(plain)) return ' \x1b[2m└' + '─'.repeat(W) + '┘\x1b[0m';
+    if (/^\s*│/.test(plain)) return fit(line, 2 + W) + rail; // 2 = leading space + left rail
+    return line;
+  }).join('\n');
+}
+
 // Build a stable, machine-readable audit object. This is the contract agents,
 // swarms, and CI parse — everything the human receipt shows, as plain JSON.
 async function emitJson() {
@@ -816,14 +850,15 @@ Artifact:     ${pc.cyan(reportPath)}`,
   outro('Done — nothing left your machine. (How it works: outlier --help)');
 
   if (typeof finalReceipt !== 'undefined' && finalReceipt) {
-    console.log(finalReceipt);
+    const boxed = closeBox(finalReceipt);
+    console.log(boxed);
 
     // --save: write a plain-text (no color) copy of the receipt next to the repo.
     if (process.argv.includes('--save')) {
       const stripAnsi = (s: string) => s.replace(/\x1b\[[0-9;]*m/g, '');
       const savePath = join(process.cwd(), 'outlier-audit.txt');
       try {
-        writeFileSync(savePath, stripAnsi(finalReceipt).trimStart() + '\n');
+        writeFileSync(savePath, stripAnsi(boxed).trimStart() + '\n');
         console.log(pc.dim(`\n 💾 Saved to ${savePath}`));
       } catch {}
     }
