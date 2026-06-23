@@ -15,7 +15,7 @@ const caps = (blast: string, reaches: string[] = []) => ({
 describe('insight rules engine', () => {
   test('high reliance + high reach is CRITICAL', () => {
     const ins = deriveInsights({ authorship: git(0.85), carbon: carbon(50), caps: caps('HIGH', ['deploy']) });
-    expect(ins[0].severity).toBe('critical');
+    expect(ins[0]?.severity).toBe('critical');
   });
 
   test('low AI% + heavy tokens flags missing trailers', () => {
@@ -31,11 +31,11 @@ describe('insight rules engine', () => {
   test('clean state yields a single good insight', () => {
     const ins = deriveInsights({ authorship: git(0.2), carbon: carbon(20), caps: caps('LOW') });
     expect(ins.length).toBe(1);
-    expect(ins[0].severity).toBe('good');
+    expect(ins[0]?.severity).toBe('good');
   });
 
   test('insights are sorted by severity (critical first)', () => {
     const ins = deriveInsights({ authorship: git(0.85), carbon: carbon(90), caps: caps('HIGH', ['deploy']) });
-    expect(ins[0].severity).toBe('critical');
+    expect(ins[0]?.severity).toBe('critical');
   });
 });
