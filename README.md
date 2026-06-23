@@ -49,15 +49,17 @@
 
 > *"In a room full of agents" shifts the perspective. The developer is no longer a solo coder — they are a manager of bots. Outlier exists to make sure the human doesn't get lazy while managing them. We all want our time back; we don't want to lose control of the craft.*
 
+> **Note:** the npm package is `outlier-audit`; the command it installs is `outlier`. So `npx outlier-audit` runs `outlier …`.
+
 ## How It Works
 ```text
-┌───────────┐   ┌────────────┐   ┌───────────┐   ┌─────────────┐
-│ AI CODING │──▸│ GIT COMMIT │──▸│  BOUNCER  │──▸│ AUDIT TRACE │
-└───────────┘   └────────────┘   └───────────┘   └─────────────┘
-                                       │ (Fails)
-                                 ┌───────────┐
-                                 │ MENTORING │
-                                 └───────────┘
+┌───────────┐   ┌────────────┐   ┌──────────┐   ┌──────────────┐
+│ AI CODING │──▸│ GIT + LOGS │──▸│  OUTLIER │──▸│ AUDIT + WARN │
+└───────────┘   └────────────┘   └──────────┘   └──────────────┘
+                                       │ (over your limit)
+                                 ┌──────────────┐
+                                 │ REVIEW PROMPT │  (warns, never blocks)
+                                 └──────────────┘
 ```
 **Step 1:** Developer delegates code generation to an AI agent (Claude Code, Cursor).  
 **Step 2:** `outlier` reads the local trace — git history + AI logs — already on the machine.  
