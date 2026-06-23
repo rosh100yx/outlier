@@ -9,6 +9,7 @@ import { deriveInsights, type Insight } from './insights';
 import { projectEconomics } from './economics';
 import { aggregateDir } from './aggregate';
 import { getTokenAuthorship } from './agentic';
+import { buildContribution } from './contribution';
 import { writeFileSync, readFileSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
 import { detectAgent } from './agent';
@@ -98,10 +99,16 @@ async function emitJson() {
       byTokens: (() => { const t = getTokenAuthorship(); return t.found ? {
         aiPercent: t.aiPercent, aiOutputTokens: t.aiOutputTokens, humanPromptTokens: t.humanPromptTokens, sessions: t.sessions,
       } : null; })(),
+      // 3-axis contribution profile: execution + intent + oversight + a judgment.
+      contribution: (() => { const c = buildContribution(gitStats); return {
+        label: c.label, judgment: c.judgment,
+        execution: c.execution, intent: c.intent, oversight: c.oversight,
+        blindSpots: c.blindSpots,
+      }; })(),
       // legacy top-level fields (commit-tag) for back-compat
       aiPercent: +(gitStats.ratio * 100).toFixed(1),
       provenance: 'proxy',
-      note: 'commit tags are a weak proxy; byTokens reflects real agentic authorship when session logs exist',
+      note: 'commit tags are a weak proxy; byTokens + contribution reflect real agentic authorship when session logs exist',
     } : null,
     cost: carbon ? {
       totalTokens: carbon.totalTokens,
@@ -469,40 +476,40 @@ ${tokenBlock}`,
     
     try {
         let authPct = '0%';
-        let nmFloorStr = '';
         let ruleFailures = 0;
 
         if (gitStats) {
           authPct = `${(gitStats.ratio * 100).toFixed(1)}%`;
-          // Conservative floor: non-merge commits only (merges often lack the trailer).
-          nmFloorStr = ` ${pc.dim(`(${(gitStats.ratioNoMerges * 100).toFixed(0)}% excl. merges)`)}`;
           if (gitStats.ratio > 0.7) ruleFailures++;
         }
 
-        // Token-based authorship — the honest signal for agentic work (the human prompts,
-        // the agent writes + commits). Far truer than the commit-tag count.
-        const tokAuth = getTokenAuthorship();
-        const tokenRow = tokAuth.found
-          ? `\n ${pc.dim('│')} ${pc.bold('By tokens')} ${pc.red(pc.bold(tokAuth.aiPercent.toFixed(0) + '% AI'))} ${pc.dim(`— agent generated ${(tokAuth.aiOutputTokens/1e6).toFixed(1)}M tokens vs your ~${(tokAuth.humanPromptTokens/1e3).toFixed(0)}K of prompts`)}\n ${pc.dim('│')} ${pc.dim(`(commit tags caught only ${gitStats ? (gitStats.ratio*100).toFixed(0) : '0'}% — that is tagging, not authorship)`)}`
-          : '';
-
-        // Honesty: a low commit-tag ratio usually means the agent doesn't tag commits,
-        // not that the human wrote everything.
-        const lowTrailerWarn = tokAuth.found
-          ? '' // the token row already tells the real story
-          : (gitStats && gitStats.ratio < 0.1 && carbon && carbon.totalTokens > 1_000_000
-            ? `\n ${pc.dim('│')}   ${pc.dim('Low %? Your agent may not tag commits — outlier counts only')}\n ${pc.dim('│')}   ${pc.dim('commits with a Co-Authored-By trailer.')}`
-            : '');
+        // 3-axis contribution profile: execution (who wrote tokens) is only one axis —
+        // intent (you steer) and oversight (you review/iterate) are where human value moved.
+        const contrib = buildContribution(gitStats);
+        const execAi = contrib.execution.aiPercent;
+        const execColor = execAi > 70 ? pc.red : execAi > 40 ? pc.yellow : pc.green;
+        const labelColor = contrib.label === 'Spectator' ? pc.red : contrib.label === 'Artisan' || contrib.label === 'Centaur' ? pc.green : pc.yellow;
+        const intentStr = contrib.intent.prompts !== null
+          ? `${pc.bold(String(contrib.intent.prompts))} prompts ${pc.dim(`· ~${((contrib.intent.promptTokens||0)/1e3).toFixed(0)}K tokens you typed`)}`
+          : pc.dim('no session logs for this repo');
+        const ovStr = contrib.oversight.totalCommits > 0
+          ? `${pc.bold((contrib.oversight.iterationRate*100).toFixed(0) + '%')} ${pc.dim(`fix/refactor/review commits (${contrib.oversight.iterationCommits}/${contrib.oversight.totalCommits})`)}`
+          : pc.dim('—');
+        const profileRows =
+          ` ${pc.dim('│')} Execution  ${execColor(pc.bold(execAi.toFixed(0) + '% AI'))} ${pc.dim('('+contrib.execution.source+')')}\n` +
+          ` ${pc.dim('│')} Intent     ${intentStr}\n` +
+          ` ${pc.dim('│')} Oversight  ${ovStr}\n` +
+          ` ${pc.dim('│')}\n` +
+          ` ${pc.dim('│')} ${labelColor(pc.bold(contrib.label))} — ${contrib.judgment.length > 52 ? contrib.judgment.slice(0,51)+'…' : contrib.judgment}\n` +
+          ` ${pc.dim('│')} ${pc.dim('Blind: copy-paste from chat is invisible; prompt quality unmeasured.')}`;
 
         let cachePct = '0';
         let co2Str = '0.0kg';
         let regionStr = 'Global Average';
         let sourceLabel = 'no local AI logs found';
-        let noData = true;
         if (carbon) {
           if (carbon.totalTokens > 0) {
             cachePct = ((carbon.cacheReadTokens / carbon.totalTokens) * 100).toFixed(1);
-            noData = false;
           }
           co2Str = `${carbon.localCo2Kg.toFixed(2)}kg CO2`;
           regionStr = carbon.localRegion;
@@ -531,12 +538,6 @@ ${tokenBlock}`,
         // The thermal receipt below is the single canonical output for `status`.
         // (The old @clack dashboard panel was removed: it duplicated the receipt's
         // numbers in a second format, doubling the output on every run.)
-        const isDanger = gitStats && gitStats.ratio > 0.7;
-        const verdictZone = isDanger ? pc.red('Mostly AI') : pc.green('You\'re driving');
-        const verdictText = isDanger
-          ? `AI wrote most of this. Read it through so you can\n   still debug it yourself when the agent isn't around.`
-          : `You're still writing the core of this. Good —\n   that's how you keep the skill.`;
-
         const isInefficient = parseFloat(cachePct) > 40;
         const cacheVerdict = isInefficient ? pc.yellow('Lots of re-reads') : pc.green('Lean');
         const cacheText = isInefficient
@@ -555,22 +556,14 @@ ${tokenBlock}`,
         const estUsdStr = carbon
           ? '$' + carbon.estUsd.toFixed(2) + (carbon.costIsReal ? '' : pc.dim(' (rough)'))
           : pc.dim('n/a');
-        const humanSov = gitStats ? ((1 - gitStats.ratio) * 100).toFixed(0) + '%' : '100%';
-        const authorshipStr = pc.bold(authPct) + (isDanger ? pc.red(' AI-written') : pc.green(' AI-written'));
-
         const getProgressBar = (pct: number, length = 10) => {
           const filled = Math.max(0, Math.min(length, Math.round((pct / 100) * length)));
           return '▰'.repeat(filled) + '▱'.repeat(length - filled);
         };
-        
-        const aiPctVal = gitStats ? gitStats.ratio * 100 : 0;
-        const aiBar = pc.yellow(getProgressBar(aiPctVal));
-        const humanBar = pc.cyan(getProgressBar(100 - aiPctVal));
         const cacheBar = pc.magenta(getProgressBar(parseFloat(cachePct) || 0));
 
         if (!isStrict) {
             const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
-            const timeStr = new Date().toLocaleTimeString('en-US', { hour12: false });
             const repoName = process.cwd().split('/').pop() || 'Unknown';
             
             finalReceipt = `
@@ -578,13 +571,8 @@ ${tokenBlock}`,
  ${pc.dim('│')} ${pc.cyan('█▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█')}  ${pc.bold(':: CODE AUDIT')}
  ${pc.dim('│')} ${pc.cyan('█▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄')}  ${pc.dim(`:: ${repoName} · ${dateStr}`)}
  ${pc.dim('├────────────────────────────────────────────────────────')}
- ${pc.dim('│')} ${pc.bold(pc.bgBlue(' WHO WROTE THE CODE '))}
- ${pc.dim('│')} ${pc.dim('By commit tags:')}
- ${pc.dim('│')} AI    ${aiBar} ${authorshipStr}${nmFloorStr}
- ${pc.dim('│')} You   ${humanBar} ${pc.bold(humanSov)}
- ${pc.dim('│')} ${pc.dim('Typical: solo devs 10–40% · AI-framework repos up to ~80%')}${tokenRow}
- ${pc.dim('│')}
- ${pc.dim('│')} ${verdictZone} — ${verdictText.split('\n').join('\n ' + pc.dim('│') + '   ')}${lowTrailerWarn}
+ ${pc.dim('│')} ${pc.bold(pc.bgBlue(' WHO WROTE THE CODE '))}  ${pc.dim('execution is only one axis')}
+${profileRows}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgMagenta(' WHAT IT COST '))}
  ${pc.dim('│')} Tokens used      ${pc.bold(totalTokensStr)}

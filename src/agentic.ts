@@ -45,6 +45,7 @@ export interface TokenAuthorship {
   humanPromptTokens: number;  // ~tokens the human typed as prompts
   aiPercent: number;          // 0..100, AI share of authored tokens
   sessions: number;
+  prompts: number;            // how many times the human actually typed a prompt
 }
 
 // Rough chars→tokens. We only need an order-of-magnitude human-vs-AI ratio.
@@ -70,11 +71,11 @@ function humanTextLen(content: any): number {
 }
 
 export function getTokenAuthorship(cwd: string = process.cwd(), baseDir: string = homedir()): TokenAuthorship {
-  const empty: TokenAuthorship = { found: false, aiOutputTokens: 0, humanPromptTokens: 0, aiPercent: 0, sessions: 0 };
+  const empty: TokenAuthorship = { found: false, aiOutputTokens: 0, humanPromptTokens: 0, aiPercent: 0, sessions: 0, prompts: 0 };
   const dirs = findRepoTranscriptDirs(cwd, baseDir);
   if (dirs.length === 0) return empty;
 
-  let aiOut = 0, humanChars = 0;
+  let aiOut = 0, humanChars = 0, prompts = 0;
   const sessions = new Set<string>();
   let anyFile = false;
 
@@ -95,7 +96,9 @@ export function getTokenAuthorship(cwd: string = process.cwd(), baseDir: string 
           if (role === 'assistant') {
             aiOut += (msg.usage && msg.usage.output_tokens) || 0;
           } else if (role === 'user') {
-            humanChars += humanTextLen(msg.content);
+            const len = humanTextLen(msg.content);
+            humanChars += len;
+            if (len > 0) prompts++; // a real human-typed prompt (not a tool result)
           }
         } catch {}
       }
@@ -111,5 +114,6 @@ export function getTokenAuthorship(cwd: string = process.cwd(), baseDir: string 
     humanPromptTokens: humanTokens,
     aiPercent: total > 0 ? +((aiOut / total) * 100).toFixed(1) : 0,
     sessions: sessions.size,
+    prompts,
   };
 }
