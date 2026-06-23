@@ -506,7 +506,7 @@ ${tokenBlock}`,
         // was computed from; commit-tags is the weaker fallback when no agent writes are logged.
         const kL = (n: number) => n >= 1000 ? (n / 1000).toFixed(0) + 'K' : String(n);
         const execBasis = contrib.execution.source === 'edits'
-          ? `edits · ${kL(contrib.execution.aiAddedLines || 0)} of ${kL(contrib.execution.gitAddedLines || 0)} lines`
+          ? `blame · ${kL(contrib.execution.aiLines || 0)} of ${kL(contrib.execution.totalLines || 0)} live lines`
           : contrib.execution.source === 'commit-tags' ? 'commit tags · weak signal' : 'no signal';
         const execMark = measured ? '' : pc.yellow('⚠ ');
         const profileRows =

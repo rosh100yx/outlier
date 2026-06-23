@@ -22,9 +22,9 @@ export interface Contribution {
     // 'proxy'     = commit-tags only; the editor was NOT observed (weak, can mislead)
     // 'none'      = no signal at all
     confidence: 'measured' | 'proxy' | 'none';
-    // raw line counts when source==='edits', so the % is auditable
-    aiAddedLines?: number;
-    gitAddedLines?: number;
+    // surviving line counts when source==='edits', so the % is auditable
+    aiLines?: number;
+    totalLines?: number;
   };
   intent:    { prompts: number | null; promptTokens: number | null };
   oversight: { iterationRate: number; iterationCommits: number; totalCommits: number };
@@ -61,8 +61,8 @@ export function buildContribution(gitStats: AuthorshipStats | null, cwd: string 
       aiPercent: edits.aiPercent,
       source: 'edits',
       confidence: 'measured',
-      aiAddedLines: edits.aiAddedLines,
-      gitAddedLines: edits.gitAddedLines,
+      aiLines: edits.aiLines,
+      totalLines: edits.totalLines,
     };
   } else if (gitStats) {
     // No Claude Code sessions for this repo → the editor was NOT observed. This number is
