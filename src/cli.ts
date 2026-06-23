@@ -11,6 +11,7 @@ import { aggregateDir } from './aggregate';
 import { getTokenAuthorship } from './agentic';
 import { buildContribution } from './contribution';
 import { getLearning } from './learn';
+import { runWrap, runStart, runStop, watchStatus } from './observe';
 import { writeFileSync, readFileSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
 import { detectAgent } from './agent';
@@ -306,6 +307,52 @@ async function main() {
     process.exit(0);
   }
 
+  // Effect-observer: bracket an agent session and record what it wrote (tool-agnostic).
+  // Handled early — wrap mode spawns the agent as a child; no banner/menu around it.
+  if (action === 'watch') {
+    const dd = process.argv.indexOf('--');
+    if (dd !== -1 && process.argv.length > dd + 1) {
+      const cmd = process.argv.slice(dd + 1);
+      console.log(pc.dim(`[outlier] observing this session — running: ${cmd.join(' ')}\n`));
+      const r = runWrap(cmd);
+      console.log(pc.green(`\n[outlier] ✓ observed ${pc.bold(String(r.added))} lines your agent (${r.tool}) wrote across ${r.files} file${r.files === 1 ? '' : 's'}.`));
+      console.log(pc.dim(`Now run  ${CMD} status  — execution counts this session, no Claude logs needed.`));
+      process.exit(0);
+    }
+    const sub = process.argv[3];
+    if (sub === 'start') {
+      const toolIdx = process.argv.indexOf('--tool');
+      const tool = toolIdx !== -1 ? (process.argv[toolIdx + 1] || 'manual') : 'manual';
+      const r = runStart(tool);
+      console.log(r.already
+        ? pc.yellow(`[outlier] a session is already being observed. Run  ${CMD} watch stop  to close it.`)
+        : pc.green(`[outlier] ✓ observing started (${tool}). Work in your editor, then:  ${CMD} watch stop`));
+      process.exit(0);
+    }
+    if (sub === 'stop') {
+      const r = runStop();
+      if (!r.ran) console.log(pc.yellow(`[outlier] no active session. Start one with  ${CMD} watch start`));
+      else {
+        if ((r.staleHours || 0) > 12) console.log(pc.yellow(`[outlier] note: this session was open ${r.staleHours}h — long windows over-attribute to the tool.`));
+        console.log(pc.green(`[outlier] ✓ observed ${pc.bold(String(r.added))} lines (${r.tool}) across ${r.files} file${r.files === 1 ? '' : 's'}. Run  ${CMD} status`));
+      }
+      process.exit(0);
+    }
+    if (sub === 'status') {
+      const st = watchStatus();
+      console.log(st.active
+        ? pc.cyan(`[outlier] observing now (${st.tool}, since ${st.startedAt}). ${st.sessions} session(s) recorded.`)
+        : pc.dim(`[outlier] not observing. ${st.sessions} session(s) recorded. Start:  ${CMD} watch -- <agent>  or  ${CMD} watch start`));
+      process.exit(0);
+    }
+    console.log(`${pc.bold('outlier watch')} — record what an agent writes, any tool, tracked by the file changes (not its logs).\n`);
+    console.log(`  ${pc.cyan(CMD + ' watch -- <cmd>')}   wrap a terminal agent (e.g. ${CMD} watch -- claude)`);
+    console.log(`  ${pc.cyan(CMD + ' watch start')}      begin a manual session (for GUI tools like Cursor)`);
+    console.log(`  ${pc.cyan(CMD + ' watch stop')}       end it and record what changed`);
+    console.log(`  ${pc.cyan(CMD + ' watch status')}     is a session active`);
+    process.exit(0);
+  }
+
   // Agent / CI / swarm contract: --json emits a structured audit and nothing else
   // (no logo, no spinner, no ANSI). This is how an agent perceives outlier.
   if (process.argv.includes('--json')) {
@@ -333,6 +380,7 @@ async function main() {
     console.log(`  ${pc.cyan(CMD + ' carbon')}       Just the token spend, cache waste & carbon`);
     console.log(`  ${pc.cyan(CMD + ' capabilities')} What tools & skills your agents can reach`);
     console.log(`  ${pc.cyan(CMD + ' learn')}        Turn what the AI wrote into a skill you can learn`);
+    console.log(`  ${pc.cyan(CMD + ' watch -- <cmd>')} Observe any agent (Cursor/Aider/…) by its file changes, not its logs`);
     console.log(`  ${pc.cyan(CMD + ' policy')}       Set an AI-authorship limit (local git hook / CI)`);
     console.log(`  ${pc.cyan(CMD + ' impact')}       What AI reliance compounds to over time`);
     console.log(`  ${pc.cyan(CMD + ' knowledge')}    The research behind the metrics`);
