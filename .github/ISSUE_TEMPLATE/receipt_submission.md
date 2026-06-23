@@ -7,7 +7,7 @@ assignees: ""
 ---
 
 ### 🖨️ Drop your Thermal Receipt here!
-Run `npx @rosh100yx/outlier status` and take a screenshot of your terminal, or simply copy/paste the text output below:
+Run `npx outlier-audit status` and take a screenshot of your terminal, or simply copy/paste the text output below:
 
 ```text
 // Paste your receipt here

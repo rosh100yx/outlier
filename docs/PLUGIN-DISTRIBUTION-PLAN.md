@@ -49,7 +49,7 @@ half-written cache never blanks the bar.
 When the developer opens Claude Code, a SessionStart hook prints a one-line greeting:
 ```
 [outlier] You're at 75% AI reliance this week · 3.8kg CO2 today.
-          Audit before you delegate:  npx @rosh100yx/outlier
+          Audit before you delegate:  npx outlier-audit
 ```
 - Automates the "pre-flight ritual" (the daily reliance check before delegating).
 - Once-per-day guard via a timestamp in `~/.outlier_config` so it doesn't nag every
@@ -71,7 +71,7 @@ Reuses outlier's existing `getAuthorshipStats` / `getCarbonStats`.
   with `/plugin marketplace add rosh100yx/outlier` then enable it.
 - The plugin wires: `statusLine` → outlier's reliance script; `SessionStart` → the
   greeting hook. Document the exact `settings.json` additions for manual installers too.
-- Keep the standalone `npx @rosh100yx/outlier` CLI as the home for the FULL receipt,
+- Keep the standalone `npx outlier-audit` CLI as the home for the FULL receipt,
   policy hooks, capabilities, impact/literature. The plugin is the ambient teaser; the
   CLI is the deep dive. The greeting drives people from the bar into the full audit.
 
