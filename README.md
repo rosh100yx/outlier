@@ -88,6 +88,37 @@ We are deliberately honest about this:
 - **Cost ($)** is exact when the log carries a cost field, otherwise a *rough* blended token estimate (labelled as such).
 - **Carbon** is a rough estimate (inference energy varies ~4–20× in the literature) and the per-region figure is a *counterfactual* — cloud inference runs on the provider's grid, not yours. Treat it as an order-of-magnitude signal, not an audit.
 
+## Install & Use
+
+**Option A — no install (always latest):**
+```bash
+npx outlier-audit            # run the audit (the command shown is `npx outlier-audit …`)
+npx outlier-audit --help
+```
+If `npx` serves a stale version, clear its cache: `rm -rf ~/.npm/_npx`.
+
+**Option B — install globally (cleaner: the command becomes `outlier`):**
+```bash
+npm install -g outlier-audit   # no sudo — use a node manager (mise/nvm) if you hit EACCES
+outlier                        # run the audit
+outlier --help
+```
+
+**First run** shows a one-time welcome screen (in a real terminal). It does **not** appear on
+later runs. To replay it: `rm ~/.outlier_config`.
+
+**Notes**
+- `outlier policy` installs a local **git pre-commit hook** (`.git/hooks/pre-commit`) that
+  *warns* over your AI-authorship limit. It backs up any existing hook. Needs write access to
+  your own repo's `.git/` (normal).
+- `outlier init` adds an opt-in once-a-day greeting to your shell rc — it **asks first**;
+  remove it with `outlier uninit`.
+- Everything is local-first: no network, no account, nothing leaves your machine.
+
+> The package on npm is **`outlier-audit`**; the command it provides is **`outlier`**. So with
+> a global install you type `outlier …`; with npx you type `npx outlier-audit …`. The tool
+> prints whichever form matches how you launched it.
+
 ## What Outlier Adds
 `outlier` builds a coordination layer on top of native agent workflows.
 
