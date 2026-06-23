@@ -672,8 +672,9 @@ ${tokenBlock}`,
  ${pc.dim('│')} ${pc.cyan('█▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█')}  ${pc.bold(':: CODE AUDIT')}
  ${pc.dim('│')} ${pc.cyan('█▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄')}  ${pc.dim(`:: ${repoName} · ${dateStr}`)}
  ${pc.dim('├────────────────────────────────────────────────────────')}
- ${pc.dim('│')} ${pc.bold(pc.bgBlue(' WHO WROTE THE CODE '))}  ${pc.dim('execution is only one axis')}
-${profileRows}
+ ${pc.dim('│')} ${pc.bold(pc.bgCyan(pc.black(' WHAT YOUR AGENTS CAN REACH ')))}
+ ${pc.dim('│')} Blast radius   ${reachStr}
+ ${pc.dim('│')} ${pc.dim('Full map: ' + CMD + ' capabilities')}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgMagenta(' WHAT IT COST '))}
  ${pc.dim('│')} New tokens       ${pc.bold(newTokensStr)} ${pc.dim('(work done)')}
@@ -685,13 +686,12 @@ ${profileRows}
  ${pc.dim('│')}
  ${pc.dim('│')} ${cacheVerdict} — ${cacheText.split('\n').join('\n ' + pc.dim('│') + '   ')}
  ${pc.dim('├────────────────────────────────────────────────────────')}
- ${pc.dim('│')} ${pc.bold(pc.bgCyan(pc.black(' WHAT YOUR AGENTS CAN REACH ')))}
- ${pc.dim('│')} Blast radius   ${reachStr}
- ${pc.dim('│')} ${pc.dim('Full map: ' + CMD + ' capabilities')}
- ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgYellow(pc.black(' YOUR LIMIT ')))}
  ${pc.dim('│')} AI cap   ${pc.bold(aiCap + '%')} ${pc.dim('· change with: ' + CMD + ' policy')}
  ${pc.dim('│')} Status   ${policyStatus} ${pc.dim('·')} ${policyAction}
+ ${pc.dim('├────────────────────────────────────────────────────────')}
+ ${pc.dim('│')} ${pc.dim('Who wrote the code')} ${pc.dim('· a mirror, not a verdict · ')}${pc.cyan(CMD + ' learn')} ${pc.dim('to level up')}
+${profileRows}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgGreen(pc.black(' WHAT TO DO ')))}
 ${insightLines}
