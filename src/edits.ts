@@ -41,6 +41,8 @@ export interface EditAuthorship {
   contributors: number;  // distinct commit authors in this repo
   shared: boolean;       // more than one author → a team repo
   scopedToUser: boolean; // when shared, true if counts were scoped to YOUR lines via blame
+  sessionEdits: number;     // agent edit events to repo files (Write/Edit/… calls)
+  sessionRevisions: number; // edits beyond the first per file = in-session iteration
 }
 
 // How big a repo we'll `git blame` line-by-line before deciding it's too slow to scope.
@@ -75,9 +77,10 @@ function repoRootOf(cwd: string): string {
 }
 
 // The set of substantive lines agents wrote to files inside repoRoot, from the transcripts.
-function buildAiLineSet(repoRoot: string, baseDir: string, cwd: string): { lines: Set<string>; files: Set<string> } {
+function buildAiLineSet(repoRoot: string, baseDir: string, cwd: string): { lines: Set<string>; files: Set<string>; editEvents: number } {
   const lines = new Set<string>();
   const files = new Set<string>();
+  let editEvents = 0; // one per Write/Edit/MultiEdit/NotebookEdit call that touched a repo file
   const inRepo = (p: any): p is string => typeof p === 'string' && p.startsWith(repoRoot) && isCountedPath(p);
 
   const addContent = (s: any, path: string) => {
@@ -93,18 +96,19 @@ function buildAiLineSet(repoRoot: string, baseDir: string, cwd: string): { lines
     const inp = b.input || {};
     switch (b.name) {
       case 'Write':
-        if (inRepo(inp.file_path)) addContent(inp.content, inp.file_path);
+        if (inRepo(inp.file_path)) { addContent(inp.content, inp.file_path); editEvents++; }
         break;
       case 'Edit':
-        if (inRepo(inp.file_path)) addContent(inp.new_string, inp.file_path);
+        if (inRepo(inp.file_path)) { addContent(inp.new_string, inp.file_path); editEvents++; }
         break;
       case 'MultiEdit':
         if (inRepo(inp.file_path) && Array.isArray(inp.edits)) {
           for (const e of inp.edits) addContent(e && e.new_string, inp.file_path);
+          editEvents++;
         }
         break;
       case 'NotebookEdit':
-        if (inRepo(inp.notebook_path)) addContent(inp.new_source, inp.notebook_path);
+        if (inRepo(inp.notebook_path)) { addContent(inp.new_source, inp.notebook_path); editEvents++; }
         break;
     }
   };
@@ -125,7 +129,7 @@ function buildAiLineSet(repoRoot: string, baseDir: string, cwd: string): { lines
       }
     }
   }
-  return { lines, files };
+  return { lines, files, editEvents };
 }
 
 // Tracked, counted files in the repo (working tree). Skips huge files (likely data dumps).
@@ -182,13 +186,15 @@ function countMineByBlame(repoRoot: string, files: string[], me: string, aiSet: 
 }
 
 export function getEditAuthorship(cwd: string = process.cwd(), baseDir: string = homedir()): EditAuthorship {
-  const empty: EditAuthorship = { found: false, aiLines: 0, totalLines: 0, humanLines: 0, aiPercent: 0, filesTouched: 0, contributors: 0, shared: false, scopedToUser: false };
+  const empty: EditAuthorship = { found: false, aiLines: 0, totalLines: 0, humanLines: 0, aiPercent: 0, filesTouched: 0, contributors: 0, shared: false, scopedToUser: false, sessionEdits: 0, sessionRevisions: 0 };
   const repoRoot = repoRootOf(cwd);
 
-  const { lines: aiSet, files } = buildAiLineSet(repoRoot, baseDir, cwd);
+  const { lines: aiSet, files, editEvents } = buildAiLineSet(repoRoot, baseDir, cwd);
   // No agent writes captured for this repo → no edit signal; let upstream fall back.
   if (aiSet.size === 0) return empty;
 
+  const sessionEdits = editEvents;
+  const sessionRevisions = Math.max(0, editEvents - files.size); // edits beyond first-per-file
   const authors = repoAuthors(repoRoot);
   const contributors = authors.length;
   const shared = contributors > 1;
@@ -207,6 +213,7 @@ export function getEditAuthorship(cwd: string = process.cwd(), baseDir: string =
         aiPercent: +((mine.ai / mine.total) * 100).toFixed(1),
         filesTouched: files.size,
         contributors, shared, scopedToUser: true,
+        sessionEdits, sessionRevisions,
       };
     }
   }
@@ -238,5 +245,6 @@ export function getEditAuthorship(cwd: string = process.cwd(), baseDir: string =
     aiPercent: +((aiLines / totalLines) * 100).toFixed(1),
     filesTouched: files.size,
     contributors, shared, scopedToUser: false,
+    sessionEdits, sessionRevisions,
   };
 }
