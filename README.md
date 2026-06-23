@@ -1,8 +1,8 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/cover.jpg" alt="Outlier: AI Code Governance and Policy Engine" width="100%" />
   <h1>Outlier: The Governance & Policy Engine for AI Engineering</h1>
-  <p><b>Measure AI adoption. Enforce Zero-Trust. Protect Human Mastery.</b></p>
-  <p><i>Outlier is an open-source, local-first CLI tool that measures AI code reliance, enforces zero-trust telemetry, and protects developers from deskilling by auditing local agent logs (Claude, Cursor) and Git history.</i></p>
+  <p><b>Measure AI adoption. See what your agents can reach. Keep your skill.</b></p>
+  <p><i>A local-first CLI for when you are building in a room full of agents — it measures how much of your code AI wrote, what it cost, and what your agents can actually touch, all without a single byte leaving your terminal.</i></p>
   <br/>
   
   <p>
@@ -19,25 +19,35 @@
   <br/>
   
   ```text
-  ┌────────────────────────────────────────────────────────┐
-  │ █▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█  :: THERMAL AUDIT RECEIPT    │
-  │ █▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄  :: TIMESTAMP: 2026-06-23    │
-  ├────────────────────────────────────────────────────────┤
-  │  [ COGNITIVE BUDGET ]                                  │
-  │  AI Authorship     ................. ▇▇▇▇░░░░░░ 40%    │
-  │  Human Sovereignty ................. ▇▇▇▇▇▇░░░░ 60%    │
-  │                                                        │
-  │  ↳ Verdict: (=^ ◡ ^=) CENTAUR                          │
-  │    Healthy symbiosis. You orchestrate agents           │
-  │    but maintain architectural authority.               │
-  ├────────────────────────────────────────────────────────┤
-  │  [ FINANCIAL & COMPUTE TOLL ]                          │
-  │  Tokens Burnt      ................. 3.12M vs Human    │
-  │  Cache Bloat       ................. ▇▇▇▇▇▇▇▇░░ 80%    │
-  │  Regional Grid     ................. 1.54 kgCO2        │
-  └────────────────────────────────────────────────────────┘
+  ┌────────────────────────────────────────────────────────
+  │ █▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█  :: CODE AUDIT
+  │ █▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄  :: my-repo · JUN 23, 2026
+  ├────────────────────────────────────────────────────────
+  │  WHO WROTE THE CODE
+  │ AI    ▰▰▰▰░░░░░░ 40%   (64 of 160 commits)
+  │ You   ▰▰▰▰▰▰░░░░ 60%
+  │ Typical: solo devs 10–40% · AI-framework repos up to ~80%
+  │ You're driving — you still write the core. That's how you keep the skill.
+  ├────────────────────────────────────────────────────────
+  │  WHAT IT COST
+  │ Tokens used      3.1M
+  │ Est. spend       $18.40
+  │ Re-used context  ▰▰▰▰▰▰▰▰░░ 80%
+  │ Energy           0.12kg CO2 (Global Average grid)
+  │ Source: estimated · Claude Code transcripts
+  ├────────────────────────────────────────────────────────
+  │  WHAT YOUR AGENTS CAN REACH
+  │ Blast radius   HIGH · 13 tools, 5 can write/deploy
+  │ Full map (deploy/push/write tools): outlier capabilities
+  ├────────────────────────────────────────────────────────
+  │  YOUR LIMIT
+  │ AI cap   70% · change with: outlier policy
+  │ Status   Within limit · Nothing to do.
+  └────────────────────────────────────────────────────────
   ```
 </div>
+
+> *"In a room full of agents" shifts the perspective. The developer is no longer a solo coder — they are a manager of bots. Outlier exists to make sure the human doesn't get lazy while managing them. We all want our time back; we don't want to lose control of the craft.*
 
 ## How It Works
 ```text
@@ -77,10 +87,11 @@ We are deliberately honest about this:
 
 | Capability | Ungoverned AI | Outlier Governed |
 |------------|---------------|------------------|
-| **Deskilling** | Silent skill atrophy | JIT Mentoring Triggers on high-reliance |
-| **Commit Gate**| Accepts hallucinated code | Physically blocks code over AI-thresholds |
-| **Context** | Blind token spend | Detects "Cache Bloat" and context waste |
-| **Security** | Opaque MCP access | Maps and audits active skills/capabilities |
+| **Deskilling** | Silent skill atrophy | Flags high AI-authorship as a deskilling risk |
+| **Commit Gate**| Ships AI code unchecked | A local hook *warns* when AI authorship is over your limit |
+| **Context** | Blind token spend | Surfaces re-used context (the part that's most of your bill) |
+| **Agent reach** | Opaque MCP access | Maps what your agents can reach + a **blast-radius** score |
+| **Agents & CI** | No machine signal | `--json` audit a supervisor agent or pipeline can act on |
 
 ## Commands
 | Command | Purpose |
@@ -109,7 +120,7 @@ We are deliberately honest about this:
 ```
 
 ### The UX Flow
-If you run `npx @rosh100yx/outlier` directly, you'll instantly get your Thermal Receipt and a simple list of follow-up commands:
+If you run `npx @rosh100yx/outlier` directly, you'll instantly get your audit receipt and a simple list of follow-up commands:
 ```text
   └────────────────────────────────────────────────────────┘
 
@@ -128,30 +139,29 @@ If you run `npx @rosh100yx/outlier` directly, you'll instantly get your Thermal 
 
 **Prerequisites:** You need Node/Bun installed and to be inside a Git repository.
 
-1. **Set the Trap (Install the Bouncer)**
-   ```bash
-   npx @rosh100yx/outlier policy
-   ```
-   *Select the "Team (70% Max AI)" tier.*
-
-2. **Trigger the Bouncer**
-   Write a massive feature using 100% AI. Attempt to commit it:
-   ```bash
-   git commit -am "added massive ai feature"
-   ```
-   *Watch the Bouncer physically block your commit for deskilling risk.*
-
-3. **Measure the Damage**
+1. **Run your first audit**
    ```bash
    npx @rosh100yx/outlier
    ```
-   *Instantly generate your Thermal Receipt to see your exact AI Authorship ratio and Token Waste.*
+   *See who wrote the code, what it cost, and what your agents can reach.*
+
+2. **Set a limit (optional)**
+   ```bash
+   npx @rosh100yx/outlier policy
+   ```
+   *Pick a tier (e.g. "Team — 70% max AI"). It installs a local pre-commit hook that **warns** when AI authorship goes over your limit — it never silently blocks your work.*
+
+3. **Wire it into agents or CI**
+   ```bash
+   npx @rosh100yx/outlier --json
+   ```
+   *A clean JSON audit a supervisor agent, a swarm, or a CI pipeline can read and act on.*
 
 ## Theoretical Foundations
 `outlier` is the live, technical implementation of an academic thesis on the thermodynamics of AI code generation and digital sovereignty. 
 - **The Geographic Tax:** Western tech companies ship highly compute-intensive AI tools globally, but local infrastructure in the Global South is forced to absorb the carbon cost. `outlier` proves this by weighting session carbon by regional grid intensity (e.g., proving identical work imports 31x more carbon in Vietnam than France).
 - **Disempowerment:** Incremental AI substitution erodes human influence. `outlier` acts as a sovereignty shield against opaque AI platforms.
-- **Deskilling:** Delegating operators lose supervisory skills. By parsing `Co-Authored-By` Git trailers, `outlier` tracks AI reliance per-individual and flags high reliance as a "Deskilling Risk", triggering mandatory mentoring checkpoints.
+- **Deskilling:** Delegating operators lose the skills they need to supervise (Bainbridge, 1983). By parsing `Co-Authored-By` Git trailers, `outlier` tracks AI reliance per-individual and flags high reliance as a "Deskilling Risk" — a prompt to review before you delegate more, not a wall.
 
 ## FAQ
 
@@ -169,7 +179,7 @@ Yes. Use the `--strict` flag (`npx @rosh100yx/outlier audit --strict`) to return
 If you hold one of these roles, `outlier` was built specifically for you. Please help us improve the framework by running an audit and sharing your terminal screenshot on X.com or your favorite developer community!
 
 - **Engineering Managers & CTOs:** Stop flying blind. Measure true AI adoption, enforce zero-trust security on your IP, and cut your API token bloat.
-- **Principal & Staff Engineers:** Protect the craft. Use the Bouncer hook to enforce architectural standards and prevent your team from deskilling.
+- **Principal & Staff Engineers:** Protect the craft. See your team's blast radius (what your agents can deploy/push/write) and use the warn-on-commit hook to keep humans in the loop.
 - **Developers & "Vibe Coders":** Prove your mastery. Run the audit, check your vibe, and post your "Artisan" or "Centaur" terminal status to the community.
 
 ## Support the Thesis & Collaborate
