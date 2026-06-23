@@ -12,8 +12,9 @@
   </p>
 
   <p>
-    <b>Get Started Instantly:</b><br/>
-    <code>npx outlier-audit@latest</code>
+    <b>Get Started — one command, then a guided menu:</b><br/>
+    <code>npx outlier-audit@latest</code><br/>
+    <sub>It runs the audit, then lets you arrow-key through everything else — no commands to memorise.</sub>
   </p>
 
   <br/>
@@ -90,19 +91,29 @@ We are deliberately honest about this:
 
 ## Install & Use
 
-**Option A — no install (always latest):**
-```bash
-npx outlier-audit            # run the audit (the command shown is `npx outlier-audit …`)
-npx outlier-audit --help
-```
-If `npx` serves a stale version, clear its cache: `rm -rf ~/.npm/_npx`.
+**The easy path — just run it.** One word, then a menu does the rest:
 
-**Option B — install globally (cleaner: the command becomes `outlier`):**
+```bash
+npx outlier-audit          # runs the audit, then opens a guided menu
+```
+```text
+◆  What next?
+│  ● Pre-flight briefing        before you start an agent
+│  ○ Agent reach / blast radius  what your agents can touch
+│  ○ Set an AI-authorship limit  local git hook / CI
+│  ○ Impact over time · authorship · cost & carbon · research
+│  ○ Exit
+└  ↑/↓ navigate · enter select · esc to leave
+```
+No commands to memorise — arrow-key through it. (Run a command directly any time, e.g.
+`npx outlier-audit capabilities`, to skip the menu.)
+
+**Want the short `outlier` command?** Install globally:
 ```bash
 npm install -g outlier-audit   # no sudo — use a node manager (mise/nvm) if you hit EACCES
-outlier                        # run the audit
-outlier --help
+outlier                        # now the command is just `outlier`
 ```
+If `npx` ever serves a stale version, clear its cache: `rm -rf ~/.npm/_npx`.
 
 **First run** shows a one-time welcome screen (in a real terminal). It does **not** appear on
 later runs. To replay it: `rm ~/.outlier_config`.
