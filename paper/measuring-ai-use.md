@@ -8,9 +8,9 @@
 
 ## Abstract
 
-AI adoption happens one person at a time: a developer at a computer asks an AI agent to write code, and in that moment two hidden costs appear. First, running the AI uses electricity and creates carbon emissions. Second, the developer gives up some of their own understanding and skill. Existing tools count the tokens and the cloud bill. They do not count the carbon footprint, and they do not count what the developer loses.
+AI adoption happens one person at a time. A developer sits down, asks an AI agent to write code, and two hidden costs appear. First, running the AI burns electricity and creates carbon emissions. Second, the developer gives up some of their own skill and understanding. Existing tools count the tokens and the cloud bill. They do not count the carbon footprint, and they do not count what the developer loses.
 
-We built a simple monitoring approach that tracks both. It reads the logs already sitting on the developer's machine. No new infrastructure. No data leaves the country. 
+We built a simple monitoring approach that tracks both. It reads the logs already sitting on the developer's machine. No new infrastructure. No data leaves the country.
 
 Why measure at the developer's computer instead of the datacenter? Because local measurement reveals a hidden geographic tax. Developers in regions with coal-heavy grids, like Vietnam, generate up to 31 times more carbon per prompt than their European counterparts. They inadvertently bear a massive, disproportionate environmental cost just to access the same global AI tools.
 
@@ -54,10 +54,10 @@ Why pair these two? Because the same delegation event produces both. A developer
 
 ## 3. Methods
 
-To prove this works, we built the actual tool. It is a live, open-source CLI that anyone can run today ( `npx @rosh100yx/outlier` ). It is not a mockup. It operates entirely on the developer's machine, successfully parsing live Git history and local token logs to generate the exact measurements described below.
+To prove this works, we built the actual tool. It is a live, open-source CLI that anyone can run today (`npx outlier-audit`). It is not a mockup. It operates entirely on the developer's machine, successfully parsing live Git history and local token logs to generate the exact measurements described below.
 
 ```text
-$ npx @rosh100yx/outlier audit
+$ npx outlier-audit audit
 [outlier] 3/5 policies • ⚠ Mentoring Emergency: 75.6% AI-generated. High risk of skill atrophy. • 6.81kg CO2
 
 (Ф∇Ф) [1] Capability Engine ▰▰▰▰▰▰▱▱▱▱  Active
@@ -74,13 +74,13 @@ Governance: (=ಠᆽಠ=) 2 policy failures
 
 ### 3.1 Indicator 1 — Share of work done by AI
 
-At first, we used version-control commits as the work unit. We counted the `Co-Authored-By` trailers in Git to get a fast, public baseline. But counting commits is a weak proxy: squashing a PR destroys the tag, and a commit with 1 line of AI code looks identical to one with 10,000 lines. 
+At first, we used version-control commits as the work unit. We counted the `Co-Authored-By` trailers in Git to get a fast, public baseline. But counting commits is a weak proxy: squashing a PR destroys the tag, and a commit with 1 line of AI code looks identical to one with 10,000 lines.
 
 To fix this, we upgraded the instrument to use **blame-based, content-matched line survival**.
 
 > **Execution Share = (AI-authored lines that survive in HEAD) / (Total lines in the codebase)**
 
-We don't guess. The CLI parses the developer's local Claude session transcripts (the `.jsonl` logs) to find the exact lines the agent generated. It hashes those lines and walks `git blame` to see how many of them actually survive in the living codebase. Trivial lines (blanks, bare brackets) are ignored. 
+We don't guess. The CLI parses the developer's local Claude session transcripts (the `.jsonl` logs) to find the exact lines the agent generated. It hashes those lines and walks `git blame` to see how many of them actually survive in the living codebase. Trivial lines (blanks, bare brackets) are ignored.
 
 For tools that don't leave logs (like Cursor or Copilot), the CLI uses `outlier watch`. You start the watch, work with your agent, and stop the watch. The CLI brackets the session and counts the file changes. It's tool-agnostic, local-first, and gives a hard mathematical ratio of who actually wrote the code.
 
@@ -122,7 +122,7 @@ We choose conservative, independently-converging numbers:
 
 ### 3.4 Reading the logs that already exist locally
 
-AI authorship share is computable from public git history. Session carbon is not — git stores no token counts. But the AI assistant's own session logs do. Claude Code writes a per-message usage ledger to local JSONL files. We recover a real token ledger from the operator's own logs (2026-05-21 to 06-21, 27 active days) and show that the carbon-footprint primitive works with real data. *(Caveat: the operator traveled during this period, so the absolute per-country figure is a bound, not a precise audit. The 31× regional ratio is exact.)*
+AI authorship share is computable from public git history. Session carbon is not — git stores no token counts. But the AI assistant's own session logs do. Claude Code writes a per-message usage ledger to local JSONL files. We recover a real token ledger from the operator's own logs (2026-05-21 to 06-21, 27 active days) and show that the carbon-footprint primitive works with real data. (Caveat: the operator traveled during this period, so the absolute per-country figure is a bound, not a precise audit. The 31× regional ratio is exact.)
 
 **The core methodological point:** the data we propose to standardize already exists on the developer's machine. It is simply never read as a carbon-or-skill signal. The tool is a reader, not new infrastructure. To measure token waste, we parse the local `tokenomics-log.jsonl` files to count the exact bytes of redundant cache reads. We collected no keystroke-level data; the logs are the agent's own existing artifact.
 
@@ -130,9 +130,9 @@ AI authorship share is computable from public git history. Session carbon is not
 
 ## 4. Results
 
-### 4.1 Share of AI-authored work: majority-AI within two weeks, at enterprise-framework levels
+### 4.1 AI authorship share: majority-AI within two weeks, at enterprise-framework levels
 
-Using the commit-proxy on a 160-commit history, we established a baseline: **121 are AI-co-authored (75.6% AI authorship)** [Observation]. 
+Using the commit-proxy on a 160-commit history, we established a baseline: **121 are AI-co-authored (75.6% AI authorship)**.
 
 However, when we applied the upgraded blame-based execution tracking over the repository's **8.2K live lines of code**, the instrument revealed a true **Execution Share of 62%** (5.1K lines directly attributable to AI generation that survived into production). Model mix: 108 Opus-4.8, 18 Sonnet-4.6, 1 other.
 
@@ -168,11 +168,11 @@ W25  █████████████████████████
 
 *(W21: no commits. Bars scaled to 100% = 40 characters.)*
 
-**What this number means.** We are not making a population-level claim. We built an instrument to measure a blind spot. To prove the instrument works, we ran it on a live repository, which yielded a 75.6% AI-authorship rate. Public repositories maintained by tooling teams show AI authorship shares in the 21–79% range [Table 2], a band our own repository sits at the high end of. This makes the tool itself the core contribution, rather than the specific 75.6% number. *Observation vs. interpretation:* 75.6% is a measured fact about commit attribution; whether it qualifies as "disempowerment" is a judgment whose strength we bound in Section 5.
+**What this number means.** We are not making a population-level claim. We built an instrument to measure a blind spot. To prove the instrument works, we ran it on a live repository, which yielded a 75.6% AI-authorship rate. Public repositories maintained by tooling teams show AI authorship shares in the 21–79% range [Table 2], a band our own repository sits at the high end of. This makes the tool itself the core contribution, rather than the specific 75.6% number. 75.6% is a measured fact about commit attribution; whether it qualifies as "disempowerment" is a judgment we bound in Section 5.
 
 ### 4.2 Session carbon: real token logs, bounded by travel
 
-Aggregating the developer's own Claude Code session logs (2026-05-21 to 06-21, 27 active days) gives a real token ledger: **2.26 billion tokens processed**. Cache-read tokens make up 94.9% of the total (2.14 billion). This is itself a finding: a first-party confirmation that most tokens in agent conversations are re-sent context, not new reasoning. *(Observation.)*
+Aggregating the developer's own Claude Code session logs (2026-05-21 to 06-21, 27 active days) gives a real token ledger: **2.26 billion tokens processed**. Cache-read tokens make up 94.9% of the total (2.14 billion). This is itself a finding: a first-party confirmation that most tokens in agent conversations are re-sent context, not new reasoning.
 
 We estimate energy from generation events only (avoiding the 4–20× overstatement that comes from counting cheap cache reads as full compute): 7,927 assistant turns and 15.1 million output tokens imply **≈ 5–15 kWh of inference energy over 27 days** (central estimate ≈ 10 kWh). Converting through each grid:
 
@@ -185,11 +185,11 @@ France   █                                          0.22 kgCO₂   (21.7 g/kWh
                                    Vietnam : France ≈ 31×  ·  Vietnam : USA ≈ 1.8×
 ```
 
-*Caveat:* the developer worked from Thailand, Malaysia, Philippines, and Vietnam during the logging period. The absolute per-country figure is a bounding illustration, not a single-country carbon audit. While absolute carbon tonnage relies on inference-energy proxies, the **regional ratios (31× VN:FR, ~1.8× VN:US) are exact** and mathematically immune to proxy error. Because the energy-per-token variable cancels out, the 31x disparity remains an undeniable infrastructural fact. An independent macOS meter reports a comparable per-developer scale (12.7M tokens/day) [7], corroborating the order of magnitude. *(External corroboration.)*
+*Caveat:* the developer worked from Thailand, Malaysia, Philippines, and Vietnam during the logging period. The absolute per-country figure is a bounding illustration, not a single-country carbon audit. While absolute carbon tonnage relies on inference-energy proxies, the **regional ratios (31× VN:FR, ~1.8× VN:US) are exact** and mathematically immune to proxy error. Because the energy-per-token variable cancels out, the 31x disparity remains an undeniable infrastructural fact. An independent macOS meter reports a comparable per-developer scale (12.7M tokens/day) [7], corroborating the order of magnitude.
 
-**Imported Emissions and the Geographic Tax.** Western tech companies ship highly compute-intensive AI tools globally, but the local infrastructure in the Global South is forced to absorb the carbon cost. Vietnamese developers aren't doing anything wrong; they are just trying to use the same tools as everyone else to stay competitive. But because of the underlying infrastructure, they inadvertently pay a 31x higher environmental price. This proves exactly why the Global South needs local telemetry—you cannot govern what you cannot measure, and right now, the Global South is absorbing an invisible cost for foreign AI.
+**Imported Emissions and the Geographic Tax.** Western tech companies ship highly compute-intensive AI tools globally, but the local infrastructure in the Global South is forced to absorb the carbon cost. Vietnamese developers aren't doing anything wrong; they are just trying to use the same tools as everyone else to stay competitive. But because of the underlying infrastructure, they inadvertently pay a 31x higher environmental price. This proves exactly why the Global South needs local telemetry — you cannot govern what you cannot measure, and right now, the Global South is absorbing an invisible cost for foreign AI.
 
-Annualized: **≈ 60–180 kgCO₂/yr in Vietnam-range grids vs ≈ 2.9 kg in France** for one solo developer. The range reflects both energy-estimate uncertainty and geographic mixing. *(Robustness: the ratio is robust; the absolute figure is a bound.)*
+Annualized: **≈ 60–180 kgCO₂/yr in Vietnam-range grids vs ≈ 2.9 kg in France** for one solo developer. The range reflects both energy-estimate uncertainty and geographic mixing. (Robustness: the ratio is robust; the absolute figure is a bound.)
 
 ### 4.3 Why the developer's computer is the right place to measure
 
@@ -236,12 +236,12 @@ AI authorship share and session carbon give the state a leading indicator of AI 
 
 ## 6. Code, Data, and Demo
 
-*   **Reproduction & Instrument:** The open-source CLI instrument, full source code, and telemetry framework are available at [github.com/rosh100yx/outlier](https://github.com/rosh100yx/outlier). The published package can be tested directly via `npx @rosh100yx/outlier audit`.
+*   **Reproduction & Instrument:** The open-source CLI instrument, full source code, and telemetry framework are available at [github.com/rosh100yx/outlier](https://github.com/rosh100yx/outlier). The published package can be tested directly via `npx outlier-audit`.
 *   **Data:** We publish the method and aggregate counts. No private repository contents are used. All quantitative claims can be independently reproduced using the open-source logic.
 *   **Demo:**
 
 ```text
-$ npx @rosh100yx/outlier audit
+$ npx outlier-audit audit
 [outlier] 3/5 policies • ⚠ Mentoring Emergency: 75.6% AI-generated. High risk of skill atrophy. • 6.81kg CO2
 
 (Ф∇Ф) [1] Capability Engine ▰▰▰▰▰▰▱▱▱▱  Active
@@ -275,7 +275,7 @@ The easiest way for researchers and auditors to measure AI reliance and session 
 git clone https://github.com/microsoft/autogen && cd autogen
 
 # 2. Run the audit instrument
-npx @rosh100yx/outlier audit --strict
+npx outlier-audit audit --strict
 ```
 
 For absolute transparency, the underlying `git` heuristics used by the CLI to calculate the Authorship Share are fully open-source and reduce exactly to these POSIX commands:
@@ -353,10 +353,9 @@ This research was developed as part of the Global South AI Safety Hackathon. We 
 
 ## Call for Knowledge Sharing & Researcher Contributions
 
-The thermodynamics of AI code generation and the phenomenon of developer deskilling are rapidly evolving fields. We are committed to remaining honest, transparent, and research-backed. 
+The thermodynamics of AI code generation and the phenomenon of developer deskilling are rapidly evolving fields. We are committed to remaining honest, transparent, and research-backed.
 
-**We actively invite researchers, engineers, and ethicists to contribute to this living document.** 
-If you have written a paper, published an article, or discovered empirical data regarding:
+**We actively invite researchers, engineers, and ethicists to contribute to this living document.** If you have written a paper, published an article, or discovered empirical data regarding:
 - AI context waste and token costs
 - Behavioral shifts in developer productivity
 - Governance frameworks and policy architectures
@@ -364,7 +363,7 @@ If you have written a paper, published an article, or discovered empirical data 
 
 Please submit them! You can contribute in whatever format you are most comfortable with:
 1. **GitHub Pull Requests:** Directly add your citations to this Markdown file.
-2. **The "Confessional" Terminal:** Run `npx @rosh100yx/outlier confessional` and drop a link to your work.
+2. **The "Confessional" Terminal:** Run `npx outlier-audit confessional` and drop a link to your work.
 3. **Open Issues:** Open an issue on our GitHub repository with the `[RESEARCH]` tag.
 
 We strictly ensure that **all contributors receive full credit and attribution** for their knowledge sharing. If your reference or contribution helps us improve the Outlier tool or proves higher value in our delivery, your name and work will be permanently codified in our Acknowledgments and References sections.
