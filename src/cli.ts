@@ -168,8 +168,36 @@ As agents write more of our code, we lose visibility into:
   writeFileSync(configPath, JSON.stringify({ onboarded: true, date: new Date().toISOString() }));
 }
 
+// Guided "what next?" menu — so developers navigate instead of memorising commands.
+// Each pick re-runs `outlier <command>` as a child process (inheriting the terminal),
+// which reuses all existing logic and keeps interactive sub-prompts (e.g. policy) working.
+async function whatNext() {
+  const { spawnSync } = require('child_process');
+  while (true) {
+    const choice = await select({
+      message: 'What next?',
+      options: [
+        { value: 'preflight',    label: 'Pre-flight briefing',        hint: 'before you start an agent' },
+        { value: 'capabilities', label: 'Agent reach / blast radius',  hint: 'what your agents can touch' },
+        { value: 'policy',        label: 'Set an AI-authorship limit',  hint: 'local git hook / CI' },
+        { value: 'impact',        label: 'Impact over time',            hint: 'the macro shadow' },
+        { value: 'authorship',    label: 'Just authorship',             hint: 'AI vs human commits' },
+        { value: 'carbon',        label: 'Just cost & carbon',          hint: 'tokens, waste, CO2' },
+        { value: 'status',        label: 'Re-run the full audit',       hint: '' },
+        { value: 'knowledge',     label: 'The research behind it',      hint: '' },
+        { value: 'exit',          label: 'Exit',                        hint: 'or press Esc' },
+      ],
+    });
+    if (isCancel(choice) || choice === 'exit') break;
+    // Run the chosen command in a child process; inherit stdio so it's fully interactive.
+    spawnSync(process.argv[0], [process.argv[1], String(choice)], { stdio: 'inherit' });
+    console.log(''); // breathing room before the menu reappears
+  }
+}
+
 async function main() {
   let action = process.argv[2] as any;
+  const bareInteractive = (!process.argv[2] || process.argv[2] === 'audit') && !!process.stdout.isTTY;
 
   if (action === 'daily-greeting') {
     const configPath = join(os.homedir(), '.outlier_config');
@@ -215,7 +243,7 @@ async function main() {
     console.log(pc.dim('  Reads your local git history and AI logs — on your machine — to show'));
     console.log(pc.dim('  how much of your code AI wrote, what it cost, and how to keep your skill.\n'));
     console.log(pc.bold('COMMANDS:'));
-    console.log(`  ${pc.cyan('outlier')}              Run the audit (the default — same as 'status')`);
+    console.log(`  ${pc.cyan('outlier')}              Run the audit, then a guided menu (no commands to memorise)`);
     if (CMD !== 'outlier') console.log(pc.dim(`  (you ran via npx; tip: 'npm i -g outlier-audit' to get the short 'outlier' command)\n`));
     console.log(`  ${pc.cyan(CMD + ' preflight')}    Quick briefing BEFORE you start an agent (reach + skill + spend)`);
     console.log(`  ${pc.cyan(CMD + ' status')}       Full audit: who wrote the code, what it cost, your limit`);
@@ -906,6 +934,13 @@ Artifact:     ${pc.cyan(reportPath)}`,
     console.log(
       pc.dim(' costs, and what is actually working:  ') + pc.bold(pc.cyan(CMD + ' --help'))
     );
+  }
+
+  // Bare, interactive `outlier` → after the audit, offer a navigable menu so the dev
+  // can keep going without remembering commands. Direct commands and CI/--json skip this.
+  if (bareInteractive) {
+    console.log('');
+    await whatNext();
   }
 }
 
