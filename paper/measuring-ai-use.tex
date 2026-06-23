@@ -11,19 +11,19 @@
 
 \geometry{margin=1in}
 
-\title{Measuring the Hidden Costs of AI Delegation: Local Telemetry for Geographic Carbon Disparities and Authorship Atrophy in Software Engineering}
+\title{Outlier - Measuring AI Use: A Governance Framework for Carbon, Authorship Erosion, and AI Adoption}
 
 \author[1]{Roshan Abraham}
 \affil[1]{Independent Researcher and UX Design Engineer, Ho Chi Minh City, Vietnam}
 
-\date{\today}
+\date{22 June 2026}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-We introduce a local-telemetry methodology to quantify the invisible externalities of AI coding assistants at the developer terminal. While existing literature measures the systemic risks of AI at the datacenter or organizational level, AI adoption occurs at the individual terminal. At this intersection, two hidden costs emerge: the carbon emission of inference and the gradual disempowerment of the human author. We deploy an open-source Command Line Interface (CLI) instrument that operates entirely locally, parsing Git history and token logs to extract a novel metric pair: Authorship Ratio and Session Carbon. In a live case study, we observe an AI-authorship rate of 75.6\%, corroborating the extreme right tail of AI authorship seen in enterprise frameworks. Crucially, by applying local grid intensity to the compute logs, we identify a massive geographic disparity: Global South developers (e.g., in Vietnam) generate up to 31 times more carbon per prompt than European counterparts. We propose this local-first measurement as a foundational signal for governance, enabling verifiable human oversight and environmental tracking without exporting citizen data.
+We introduce a local-telemetry methodology to quantify the invisible externalities of AI coding assistants at the developer terminal. Although the existing literature measures the systemic risks of AI at the datacenter or organizational level, adoption of AI occurs at the individual terminal. At this intersection, two hidden costs emerge: the carbon emission of inference and the gradual dis-empowerment of the human author. We built a simple monitoring approach that tracks both. It reads the logs already sitting on the developer's machine. No new infrastructure. No data leaves the country. Why measure at the developer's computer instead of the datacenter? Because local measurement reveals a hidden geographic tax. Developers in regions with coal-heavy grids, like Vietnam, generate up to 31 times more carbon per prompt than their European counterparts. Because local measurement reveals a hidden geographic tax. Developers in regions with coal-heavy grids, such as Vietnam, generate up to 31 times more carbon per prompt than their European counterparts. Inadvertently, they pay a massive, disproportionate environmental cost just to access the same global AI tools. To prove this works, we built and deployed a live, open-source CLI instrument. We demonstrate its viability on a live repository, corroborating the high rates of AI authorship observed in public enterprise frameworks. This instrument makes both the carbon and skill costs visible at the exact moment of delegation. Why should governments care? Because AI adoption and usage monitoring gives regulators a simple, auditable signal of foreign AI dependency at three levels they already regulate: the worker (premature de-professionalization), the firm (human oversight of high-risk AI), and the nation (trade-off between foreign cloud spending and local carbon cost), all without exporting citizen data to foreign servers.
 \end{abstract}
 
 \section{Introduction}
