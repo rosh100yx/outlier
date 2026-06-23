@@ -30,6 +30,8 @@ import { readdirSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { findRepoTranscriptDirs } from './agentic';
+import { isSubstantive, isCountedPath, repoRootOf, hashLine } from './util';
+import { getObservedHashes } from './observe';
 
 export interface EditAuthorship {
   found: boolean;
@@ -48,35 +50,8 @@ export interface EditAuthorship {
 // How big a repo we'll `git blame` line-by-line before deciding it's too slow to scope.
 const BLAME_FILE_CAP = 2500;
 
-// A line worth attributing: not blank, not pure punctuation/brackets, long enough that a match
-// is meaningful. Short and bracket-only lines (`}`, `});`, `return`, ``) collide across all code
-// and would create false AI matches, so they are excluded from numerator AND denominator.
-function isSubstantive(trimmed: string): boolean {
-  if (trimmed.length < 8) return false;
-  if (!/[A-Za-z0-9]/.test(trimmed)) return false;
-  return true;
-}
-
-// Files nobody hand-authored pollute the denominator: binaries git misreads as text (PDFs,
-// fonts), lockfiles, minified/generated output, vendored deps. Excluded on both sides.
-const EXCLUDE_RE = new RegExp([
-  '\\.(pdf|png|jpe?g|gif|webp|svg|ico|bmp|tiff?|woff2?|ttf|otf|eot|mp4|mov|webm|mp3|wav|zip|gz|tar|tgz|rar|7z|wasm|lockb|ipynb)$',
-  '(^|/)(node_modules|dist|build|out|vendor|\\.next|\\.nuxt|\\.svelte-kit|coverage|__snapshots__)/',
-  '(^|/)(package-lock\\.json|yarn\\.lock|pnpm-lock\\.yaml|bun\\.lock|composer\\.lock|poetry\\.lock|Cargo\\.lock|Gemfile\\.lock)$',
-  '\\.min\\.(js|css)$',
-  '\\.(map)$',
-].join('|'), 'i');
-
-const isCountedPath = (path: string): boolean => !EXCLUDE_RE.test(path);
-
-function repoRootOf(cwd: string): string {
-  try {
-    return execSync(`git -C "${cwd}" rev-parse --show-toplevel`, { stdio: ['ignore', 'pipe', 'ignore'] })
-      .toString().trim() || cwd;
-  } catch { return cwd; }
-}
-
 // The set of substantive lines agents wrote to files inside repoRoot, from the transcripts.
+// Stored as line hashes (see util.hashLine) so the same set can union the observed ledger.
 function buildAiLineSet(repoRoot: string, baseDir: string, cwd: string): { lines: Set<string>; files: Set<string>; editEvents: number } {
   const lines = new Set<string>();
   const files = new Set<string>();
@@ -88,7 +63,7 @@ function buildAiLineSet(repoRoot: string, baseDir: string, cwd: string): { lines
     files.add(path);
     for (const raw of s.split('\n')) {
       const t = raw.trim();
-      if (isSubstantive(t)) lines.add(t);
+      if (isSubstantive(t)) lines.add(hashLine(t));
     }
   };
   const countTool = (b: any) => {
@@ -178,17 +153,21 @@ function countMineByBlame(repoRoot: string, files: string[], me: string, aiSet: 
         const t = line.slice(1).trim();
         if (!isSubstantive(t)) continue;
         total++;
-        if (aiSet.has(t)) ai++;
+        if (aiSet.has(hashLine(t))) ai++;
       }
     }
   }
   return { ai, total };
 }
 
-// The set of substantive lines an agent wrote to this repo's files — exposed for the
-// learning loop, which detects which techniques the AI used on your behalf.
+// The set of substantive AI-written line HASHES for this repo — the union of two providers:
+// Claude Code transcripts AND the tool-agnostic observed ledger (any tool, via `outlier watch`).
+// Exposed for the learning loop; callers hash a candidate line and test membership.
 export function getAiLines(cwd: string = process.cwd(), baseDir: string = homedir()): Set<string> {
-  return buildAiLineSet(repoRootOf(cwd), baseDir, cwd).lines;
+  const repoRoot = repoRootOf(cwd);
+  const set = buildAiLineSet(repoRoot, baseDir, cwd).lines;
+  for (const h of getObservedHashes(repoRoot, baseDir)) set.add(h);
+  return set;
 }
 
 export function getEditAuthorship(cwd: string = process.cwd(), baseDir: string = homedir()): EditAuthorship {
@@ -196,6 +175,9 @@ export function getEditAuthorship(cwd: string = process.cwd(), baseDir: string =
   const repoRoot = repoRootOf(cwd);
 
   const { lines: aiSet, files, editEvents } = buildAiLineSet(repoRoot, baseDir, cwd);
+  // Union the tool-agnostic observed ledger (sessions captured via `outlier watch`), so
+  // execution is honest for Cursor/Aider/Copilot/etc. — not just Claude Code.
+  for (const h of getObservedHashes(repoRoot, baseDir)) aiSet.add(h);
   // No agent writes captured for this repo → no edit signal; let upstream fall back.
   if (aiSet.size === 0) return empty;
 
@@ -238,7 +220,7 @@ export function getEditAuthorship(cwd: string = process.cwd(), baseDir: string =
       const t = raw.trim();
       if (!isSubstantive(t)) continue;
       totalLines++;
-      if (aiSet.has(t)) aiLines++;
+      if (aiSet.has(hashLine(t))) aiLines++;
     }
   }
   if (totalLines === 0) return empty;

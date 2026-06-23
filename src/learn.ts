@@ -11,6 +11,7 @@
 
 import { execSync } from 'child_process';
 import { getAiLines } from './edits';
+import { hashLine } from './util';
 import { homedir } from 'os';
 
 export interface Skill {
@@ -92,7 +93,7 @@ function locate(cwd: string, skill: Skill, aiSet: Set<string>): { file: string; 
     const snippet = (m[3] || '').trim();
     // Coach on real usage, not the import line that names the technique.
     if (/^(import |from .+ import|export .+ from|const .* = require|require\(|using |#include|@import)/.test(snippet)) continue;
-    if (aiSet.has(snippet)) return { file: m[1], line: parseInt(m[2], 10), snippet: snippet.slice(0, 76) };
+    if (aiSet.has(hashLine(snippet))) return { file: m[1], line: parseInt(m[2], 10), snippet: snippet.slice(0, 76) };
   }
   return null;
 }
