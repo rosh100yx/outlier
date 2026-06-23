@@ -1097,16 +1097,16 @@ ${pc.dim('write and where deskilling bites — it directly shapes the metrics an
     console.log(`\n ${pc.dim('Paste this in:')}`);
     console.log(surveyData.split('\n').map(l => '   ' + l).join('\n') + '\n');
   } else if (action === 'impact') {
-    console.log('\n' + pc.bold(pc.bgMagenta(' THE COMPOUNDING HORIZON OF DESKILLING ')) + '\n');
-    console.log(pc.bold('What Do We Lose and Gain?'));
-    console.log(pc.cyan('■ Today (The 5-minute task)'));
-    console.log(`  ${pc.green('Gain:')} Velocity. AI scaffolds your components.`);
-    console.log(`  ${pc.red('Lose:')} Syntax recall. Memory of the low-level pipes.`);
-    console.log(pc.cyan('\n■ Tomorrow (The 5-hour task - e.g. Claude Opus 4.5)'));
-    console.log(`  ${pc.green('Gain:')} Massive scale. You are a systems orchestrator.`);
-    console.log(`  ${pc.red('Lose:')} Architectural intimacy. You become a reviewer.`);
-    console.log(pc.cyan('\n■ Next 5-10 Years (The 1M+ LOC Crisis)'));
-    console.log(`  When an agent introduces a fatal state bug in a monolithic architecture, human reviewers will lack the muscle memory to debug it. Outlier measures this exact sovereignty erosion.\n`);
+    console.log('\n' + pc.bold(pc.bgMagenta(' THE GAP BETWEEN SHIP AND UNDERSTAND ')) + '\n');
+    console.log(pc.dim('Agents take on longer tasks every quarter (METR). As they do, the gap between'));
+    console.log(pc.dim('what you can ship and what you actually understand widens. The move is to close'));
+    console.log(pc.dim('it on purpose — not to panic, not to stop using the speed.\n'));
+    console.log(pc.cyan('■ Now — minute-scale tasks'));
+    console.log(`  ${pc.green('Keep:')} velocity — let agents scaffold.   ${pc.cyan('Close the gap:')} read what ships; ${CMD} learn.`);
+    console.log(pc.cyan('\n■ Soon — hour-scale tasks across many files'));
+    console.log(`  ${pc.green('Keep:')} scale — orchestrate.   ${pc.cyan('Close the gap:')} review the core paths; keep one you can rebuild.`);
+    console.log(pc.cyan('\n■ Ahead — day-scale tasks in large codebases'));
+    console.log(`  ${pc.green('Keep:')} leverage.   ${pc.cyan('Close the gap:')} stay fluent in the architecture you own, so you can still debug it.\n`);
 
     // Economic translation: the macro shadow of your individual number.
     const gitStats = await getAuthorshipStats().catch(() => null);
