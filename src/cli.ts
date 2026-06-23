@@ -254,11 +254,11 @@ async function main() {
      
      const START_MARKER = '# --- OUTLIER PRE-FLIGHT RITUAL START ---';
      const END_MARKER = '# --- OUTLIER PRE-FLIGHT RITUAL END ---';
-     const BLOCK = `\n${START_MARKER}\nif command -v outlier >/dev/null 2>&1; then\n  outlier daily-greeting\nfi\n${END_MARKER}\n`;
+     const BLOCK = `\n${START_MARKER}\nif command -v ${CMD} >/dev/null 2>&1; then\n  ${CMD} daily-greeting\nfi\n${END_MARKER}\n`;
 
      if (action === 'init') {
         const confirmWrite = await confirm({
-           message: `Add a once-per-day Outlier greeting to your ${rcName}? (You can remove it with ' uninit')`,
+           message: `Add a once-per-day Outlier greeting to your ${rcName}? (You can remove it with '${CMD} uninit')`,
            initialValue: true
         });
         if (isCancel(confirmWrite) || !confirmWrite) {
@@ -444,7 +444,7 @@ Conservative Floor: ${color(nmPct + '%')}`,
         }
 
         // One-line agent-reach summary (full detail in `outlier capabilities`).
-        let reachStr = pc.dim('run:  capabilities');
+        let reachStr = pc.dim('run: ' + CMD + ' capabilities');
         if (capabilities) {
           const rc = capabilities.blastRadius;
           const col = rc === 'CRITICAL' || rc === 'HIGH' ? pc.red : rc === 'MEDIUM' ? pc.yellow : pc.green;
@@ -530,23 +530,23 @@ Conservative Floor: ${color(nmPct + '%')}`,
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgCyan(pc.black(' WHAT YOUR AGENTS CAN REACH ')))}
  ${pc.dim('│')} Blast radius   ${reachStr}
- ${pc.dim('│')} ${pc.dim('Full map:  capabilities')}
+ ${pc.dim('│')} ${pc.dim('Full map: ' + CMD + ' capabilities')}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgYellow(pc.black(' YOUR LIMIT ')))}
- ${pc.dim('│')} AI cap   ${pc.bold('70%')} ${pc.dim('· change with:  policy')}
+ ${pc.dim('│')} AI cap   ${pc.bold('70%')} ${pc.dim('· change with: ' + CMD + ' policy')}
  ${pc.dim('│')} Status   ${policyStatus} ${pc.dim('·')} ${policyAction}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgGreen(pc.black(' WHAT TO DO ')))}
 ${insightLines}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.dim('Numbers are local estimates — authorship is a proxy and')}
- ${pc.dim('│')} ${pc.dim('carbon is rough. How it works:  --help')}
+ ${pc.dim('│')} ${pc.dim('carbon is rough. How it works: ' + CMD + ' --help')}
  ${pc.dim('│')} ${pc.dim(pc.italic('Run this before you start. Keep the skill while you use the speed.'))}
  ${pc.dim('└────────────────────────────────────────────────────────')}`;
         } else {
             note(
               `status: ${authPct} AI Reliance | ${cachePct}% Cache Bloat | ${co2Str}`,
-              `${pc.bold('[outlier]')} CI/CD Audit`
+              `${pc.bold(`[${CMD}]`)} CI/CD Audit`
             );
         }
     } catch (e: any) {
@@ -600,8 +600,8 @@ ${pc.dim('This is your attack surface. Fewer write/deploy tools per session = sm
     // Team/fleet rollup from a folder of `outlier --json` files. Local-first, no export.
     const dir = process.argv[3];
     if (!dir || !existsSync(dir)) {
-      console.error(pc.red('Usage: outlier aggregate <folder-of-json-audits>'));
-      console.log(pc.dim('  Each dev:  --json > team/<name>.json   then:  aggregate team/'));
+      console.error(pc.red(`Usage: ${CMD} aggregate <folder-of-json-audits>`));
+      console.log(pc.dim(`  Each dev: ${CMD} --json > team/<name>.json   then: ${CMD} aggregate team/`));
       process.exit(1);
     }
     const r = aggregateDir(dir);
@@ -853,7 +853,7 @@ Artifact:     ${pc.cyan(reportPath)}`,
     console.log(`\nRead the full academic foundation at: ${pc.underline('https://github.com/rosh100yx/outlier')}\n`);
   }
 
-  outro('Done — nothing left your machine. (How it works:  --help)');
+  outro(`Done — nothing left your machine. (How it works: ${CMD} --help)`);
 
   if (typeof finalReceipt !== 'undefined' && finalReceipt) {
     const boxed = closeBox(finalReceipt);
