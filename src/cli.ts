@@ -23,6 +23,11 @@ const ASCII_LOGO = `
 
 let finalReceipt = '';
 
+// The command users should type to re-run us. When launched via `npx outlier-audit`
+// there is no `outlier` on PATH, so instructing them to run `outlier …` fails. Detect
+// the npx cache path and show the form that actually works.
+const CMD = (process.argv[1] || '').includes('/_npx/') ? 'npx outlier-audit' : 'outlier';
+
 // Turn the left-rail receipt into a clean closed rectangle (adds the right border,
 // padding each line to a fixed inner width). Width-aware: strips ANSI and counts a few
 // known wide glyphs as 2 columns so the right edge lines up in a terminal and on GitHub.
@@ -189,7 +194,7 @@ async function main() {
     const aiP = g ? (g.ratio * 100).toFixed(0) + '%' : '—';
     const br = cp ? cp.blastRadius : '—';
     const brc = br === 'HIGH' || br === 'CRITICAL' ? pc.red : br === 'MEDIUM' ? pc.yellow : pc.green;
-    console.log(`${pc.dim('[outlier]')} AI authorship ${pc.bold(aiP)} · agent reach ${brc(pc.bold(br))} ${pc.dim('· before you delegate, run: outlier preflight')}`);
+    console.log(`${pc.dim('[outlier]')} AI authorship ${pc.bold(aiP)} · agent reach ${brc(pc.bold(br))} ${pc.dim('· before you delegate, run:  preflight')}`);
     process.exit(0);
   }
 
@@ -211,19 +216,20 @@ async function main() {
     console.log(pc.dim('  how much of your code AI wrote, what it cost, and how to keep your skill.\n'));
     console.log(pc.bold('COMMANDS:'));
     console.log(`  ${pc.cyan('outlier')}              Run the audit (the default — same as 'status')`);
-    console.log(`  ${pc.cyan('outlier preflight')}    Quick briefing BEFORE you start an agent (reach + skill + spend)`);
-    console.log(`  ${pc.cyan('outlier status')}       Full audit: who wrote the code, what it cost, your limit`);
-    console.log(`  ${pc.cyan('outlier status --save')} Save the audit to ./outlier-audit.txt`);
-    console.log(`  ${pc.cyan('outlier --json')}       Machine-readable audit (for agents, CI, swarms)`);
-    console.log(`  ${pc.cyan('outlier authorship')}   Just the AI-vs-human commit breakdown`);
-    console.log(`  ${pc.cyan('outlier carbon')}       Just the token spend, cache waste & carbon`);
-    console.log(`  ${pc.cyan('outlier capabilities')} What tools & skills your agents can reach`);
-    console.log(`  ${pc.cyan('outlier policy')}       Set an AI-authorship limit (local git hook / CI)`);
-    console.log(`  ${pc.cyan('outlier impact')}       What AI reliance compounds to over time`);
-    console.log(`  ${pc.cyan('outlier knowledge')}    The research behind the metrics`);
-    console.log(`  ${pc.cyan('outlier participate')}  Share anonymous feedback for the deskilling study`);
-    console.log(`  ${pc.cyan('outlier init')}         Show a once-per-day reliance greeting in new shells`);
-    console.log(`  ${pc.cyan('outlier uninit')}       Remove that greeting`);
+    if (CMD !== 'outlier') console.log(pc.dim(`  (you ran via npx; tip: 'npm i -g outlier-audit' to get the short 'outlier' command)\n`));
+    console.log(`  ${pc.cyan(CMD + ' preflight')}    Quick briefing BEFORE you start an agent (reach + skill + spend)`);
+    console.log(`  ${pc.cyan(CMD + ' status')}       Full audit: who wrote the code, what it cost, your limit`);
+    console.log(`  ${pc.cyan(CMD + ' status --save')} Save the audit to ./outlier-audit.txt`);
+    console.log(`  ${pc.cyan(CMD + ' --json')}       Machine-readable audit (for agents, CI, swarms)`);
+    console.log(`  ${pc.cyan(CMD + ' authorship')}   Just the AI-vs-human commit breakdown`);
+    console.log(`  ${pc.cyan(CMD + ' carbon')}       Just the token spend, cache waste & carbon`);
+    console.log(`  ${pc.cyan(CMD + ' capabilities')} What tools & skills your agents can reach`);
+    console.log(`  ${pc.cyan(CMD + ' policy')}       Set an AI-authorship limit (local git hook / CI)`);
+    console.log(`  ${pc.cyan(CMD + ' impact')}       What AI reliance compounds to over time`);
+    console.log(`  ${pc.cyan(CMD + ' knowledge')}    The research behind the metrics`);
+    console.log(`  ${pc.cyan(CMD + ' participate')}  Share anonymous feedback for the deskilling study`);
+    console.log(`  ${pc.cyan(CMD + ' init')}         Show a once-per-day reliance greeting in new shells`);
+    console.log(`  ${pc.cyan(CMD + ' uninit')}       Remove that greeting`);
     console.log('\n' + pc.dim('Local-first: nothing ever leaves your machine.'));
     console.log(pc.dim('How it works → https://github.com/rosh100yx/outlier#how-it-works'));
     process.exit(0);
@@ -252,7 +258,7 @@ async function main() {
 
      if (action === 'init') {
         const confirmWrite = await confirm({
-           message: `Add a once-per-day Outlier greeting to your ${rcName}? (You can remove it with 'outlier uninit')`,
+           message: `Add a once-per-day Outlier greeting to your ${rcName}? (You can remove it with ' uninit')`,
            initialValue: true
         });
         if (isCancel(confirmWrite) || !confirmWrite) {
@@ -438,7 +444,7 @@ Conservative Floor: ${color(nmPct + '%')}`,
         }
 
         // One-line agent-reach summary (full detail in `outlier capabilities`).
-        let reachStr = pc.dim('run: outlier capabilities');
+        let reachStr = pc.dim('run:  capabilities');
         if (capabilities) {
           const rc = capabilities.blastRadius;
           const col = rc === 'CRITICAL' || rc === 'HIGH' ? pc.red : rc === 'MEDIUM' ? pc.yellow : pc.green;
@@ -524,17 +530,17 @@ Conservative Floor: ${color(nmPct + '%')}`,
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgCyan(pc.black(' WHAT YOUR AGENTS CAN REACH ')))}
  ${pc.dim('│')} Blast radius   ${reachStr}
- ${pc.dim('│')} ${pc.dim('Full map (deploy/push/write tools): outlier capabilities')}
+ ${pc.dim('│')} ${pc.dim('Full map:  capabilities')}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgYellow(pc.black(' YOUR LIMIT ')))}
- ${pc.dim('│')} AI cap   ${pc.bold('70%')} ${pc.dim('· change with: outlier policy')}
+ ${pc.dim('│')} AI cap   ${pc.bold('70%')} ${pc.dim('· change with:  policy')}
  ${pc.dim('│')} Status   ${policyStatus} ${pc.dim('·')} ${policyAction}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgGreen(pc.black(' WHAT TO DO ')))}
 ${insightLines}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.dim('Numbers are local estimates — authorship is a proxy and')}
- ${pc.dim('│')} ${pc.dim('carbon is rough. How it works: outlier --help')}
+ ${pc.dim('│')} ${pc.dim('carbon is rough. How it works:  --help')}
  ${pc.dim('│')} ${pc.dim(pc.italic('Run this before you start. Keep the skill while you use the speed.'))}
  ${pc.dim('└────────────────────────────────────────────────────────')}`;
         } else {
@@ -595,7 +601,7 @@ ${pc.dim('This is your attack surface. Fewer write/deploy tools per session = sm
     const dir = process.argv[3];
     if (!dir || !existsSync(dir)) {
       console.error(pc.red('Usage: outlier aggregate <folder-of-json-audits>'));
-      console.log(pc.dim('  Each dev: outlier --json > team/<name>.json   then: outlier aggregate team/'));
+      console.log(pc.dim('  Each dev:  --json > team/<name>.json   then:  aggregate team/'));
       process.exit(1);
     }
     const r = aggregateDir(dir);
@@ -847,7 +853,7 @@ Artifact:     ${pc.cyan(reportPath)}`,
     console.log(`\nRead the full academic foundation at: ${pc.underline('https://github.com/rosh100yx/outlier')}\n`);
   }
 
-  outro('Done — nothing left your machine. (How it works: outlier --help)');
+  outro('Done — nothing left your machine. (How it works:  --help)');
 
   if (typeof finalReceipt !== 'undefined' && finalReceipt) {
     const boxed = closeBox(finalReceipt);
@@ -882,16 +888,16 @@ Artifact:     ${pc.cyan(reportPath)}`,
       pc.underline('https://x.com/intent/tweet?text=I+just+audited+my+codebase+with+%23Outlier')
     );
     console.log(
-      pc.bold(pc.cyan(' 🔬 Research: ')) + 'Help the AI-deskilling study — type:  ' + pc.bold('outlier participate')
+      pc.bold(pc.cyan(' 🔬 Research: ')) + 'Help the AI-deskilling study — type:  ' + pc.bold(CMD + ' participate')
     );
     if (!process.argv.includes('--save')) {
-      console.log(pc.dim(' 💾 Save: outlier status --save'));
+      console.log(pc.dim(` 💾 Save: ${CMD} status --save`));
     }
     console.log(
       pc.dim('\n outlier does more than this audit — see how you adopt AI, what it')
     );
     console.log(
-      pc.dim(' costs, and what is actually working:  ') + pc.bold(pc.cyan('outlier --help'))
+      pc.dim(' costs, and what is actually working:  ') + pc.bold(pc.cyan(CMD + ' --help'))
     );
   }
 }
