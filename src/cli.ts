@@ -5,6 +5,7 @@ import pc from 'picocolors';
 import { getAuthorshipStats } from './git';
 import { getCarbonStats } from './carbon';
 import { getCapabilitiesStats } from './capabilities';
+import { deriveInsights, type Insight } from './insights';
 import { writeFileSync, readFileSync, chmodSync, existsSync } from 'fs';
 import { join } from 'path';
 import { detectAgent } from './agent';
@@ -82,6 +83,7 @@ async function emitJson() {
       aiCapPercent: cap * 100,
       status: aiRatio > cap ? 'over' : 'within',
     },
+    insights: deriveInsights({ authorship: gitStats, carbon, caps, policyCap: cap }),
   };
 
   // Only JSON on stdout — nothing else.
@@ -164,6 +166,7 @@ async function main() {
     console.log(pc.dim('  how much of your code AI wrote, what it cost, and how to keep your skill.\n'));
     console.log(pc.bold('COMMANDS:'));
     console.log(`  ${pc.cyan('outlier')}              Run the audit (the default — same as 'status')`);
+    console.log(`  ${pc.cyan('outlier preflight')}    Quick briefing BEFORE you start an agent (reach + skill + spend)`);
     console.log(`  ${pc.cyan('outlier status')}       Full audit: who wrote the code, what it cost, your limit`);
     console.log(`  ${pc.cyan('outlier status --save')} Save the audit to ./outlier-audit.txt`);
     console.log(`  ${pc.cyan('outlier --json')}       Machine-readable audit (for agents, CI, swarms)`);
@@ -398,6 +401,16 @@ Conservative Floor: ${color(nmPct + '%')}`,
           reachStr = `${col(pc.bold(rc))} · ${capabilities.mcps.length} tools` + (risky ? pc.dim(`, ${risky} can write/deploy`) : '');
         }
 
+        // Insight engine: turn the numbers into the top thing to actually do.
+        const insights = deriveInsights({ authorship: gitStats, carbon, caps: capabilities, policyCap: 0.70 });
+        const sevColor = (s: string) => s === 'critical' ? pc.red : s === 'warn' ? pc.yellow : s === 'good' ? pc.green : pc.cyan;
+        const sevMark = (s: string) => s === 'critical' ? '✗' : s === 'warn' ? '⚠' : s === 'good' ? '✓' : 'i';
+        const insightLines = insights.slice(0, 2).map((ins: Insight) =>
+          ` ${pc.dim('│')} ${sevColor(ins.severity)(sevMark(ins.severity))} ${pc.bold(ins.title)}\n` +
+          ` ${pc.dim('│')}   ${ins.detail.length > 56 ? ins.detail.slice(0, 55) + '…' : ins.detail}\n` +
+          ` ${pc.dim('│')}   ${pc.cyan('→ ' + ins.action)}`
+        ).join(`\n ${pc.dim('│')}\n`);
+
         // The thermal receipt below is the single canonical output for `status`.
         // (The old @clack dashboard panel was removed: it duplicated the receipt's
         // numbers in a second format, doubling the output on every run.)
@@ -472,6 +485,9 @@ Conservative Floor: ${color(nmPct + '%')}`,
  ${pc.dim('│')} AI cap   ${pc.bold('70%')} ${pc.dim('· change with: outlier policy')}
  ${pc.dim('│')} Status   ${policyStatus} ${pc.dim('·')} ${policyAction}
  ${pc.dim('├────────────────────────────────────────────────────────')}
+ ${pc.dim('│')} ${pc.bold(pc.bgGreen(pc.black(' WHAT TO DO ')))}
+${insightLines}
+ ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.dim('Numbers are local estimates — authorship is a proxy and')}
  ${pc.dim('│')} ${pc.dim('carbon is rough. How it works: outlier --help')}
  ${pc.dim('│')} ${pc.dim(pc.italic('Run this before you start. Keep the skill while you use the speed.'))}
@@ -529,6 +545,44 @@ ${pc.dim('This is your attack surface. Fewer write/deploy tools per session = sm
       s.stop('Audit failed');
       console.error(pc.red(e.message));
     }
+  } else if (action === 'preflight') {
+    // Forward-looking briefing — the reason to run outlier BEFORE you start an agent.
+    // Same engine as status, framed for the session you are about to begin: reach,
+    // skill, spend, and the one thing to do, ending with the handoff to your agent.
+    s.start('Pre-flight check...');
+    const gitStats = await getAuthorshipStats().catch(() => null);
+    const carbon = await getCarbonStats().catch(() => null);
+    const caps = await getCapabilitiesStats().catch(() => null);
+    s.stop('Ready for take-off');
+
+    const aiPct = gitStats ? (gitStats.ratio * 100).toFixed(0) : '—';
+    const youPct = gitStats ? (100 - gitStats.ratio * 100).toFixed(0) : '—';
+    const blast = caps ? caps.blastRadius : 'UNKNOWN';
+    const blastCol = blast === 'CRITICAL' || blast === 'HIGH' ? pc.red : blast === 'MEDIUM' ? pc.yellow : pc.green;
+    const risky = caps ? caps.mcps.filter(m => ['money','exec','deploy','write-remote','write-local'].includes(m.reach)).length : 0;
+    const spend = carbon ? `$${carbon.estUsd.toFixed(0)}` : '—';
+    const cachePct = carbon && carbon.totalTokens ? ((carbon.cacheReadTokens / carbon.totalTokens) * 100).toFixed(0) + '%' : '—';
+
+    const insights = deriveInsights({ authorship: gitStats, carbon, caps, policyCap: 0.70 });
+    const sevCol = (sv: string) => sv === 'critical' ? pc.red : sv === 'warn' ? pc.yellow : sv === 'good' ? pc.green : pc.cyan;
+    const sevMk = (sv: string) => sv === 'critical' ? '✗' : sv === 'warn' ? '⚠' : sv === 'good' ? '✓' : 'i';
+    const actionLines = insights.slice(0, 3)
+      .map(ins => ` ${sevCol(ins.severity)(sevMk(ins.severity))} ${pc.cyan('→')} ${ins.action}`)
+      .join('\n');
+
+    console.log('');
+    console.log(pc.bold(pc.cyan(' ✈  PRE-FLIGHT')) + pc.dim(`  ·  ${process.cwd().split('/').pop()}`));
+    console.log(pc.dim(' ────────────────────────────────────────────────────'));
+    console.log(`  ${pc.bold('Reach')}   ${blastCol(pc.bold(blast))}` + (caps ? pc.dim(` · ${caps.mcps.length} tools, ${risky} can write/deploy`) : ''));
+    console.log(`  ${pc.bold('Skill')}   AI wrote ${pc.bold(aiPct + '%')} · you own ${pc.bold(youPct + '%')}`);
+    console.log(`  ${pc.bold('Spend')}   ${pc.bold(spend)} · ${cachePct} re-sent context`);
+    console.log('');
+    console.log(pc.bold(' Before you delegate:'));
+    console.log(actionLines);
+    console.log('');
+    const agent = detectAgent();
+    console.log(pc.bold(pc.magenta(' ✓ Ready? ')) + 'Start your session:  ' + pc.bold(agent || 'your AI agent'));
+    console.log('');
   } else if (action === 'policy') {
     const tier = await select({
       message: 'Select the governance tier to configure:',
