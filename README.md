@@ -6,8 +6,14 @@
   <br/>
   
   <p>
-    <a href="https://www.npmjs.com/package/outlier-audit"><img src="https://img.shields.io/npm/v/outlier-audit?style=for-the-badge&color=cb3837&logo=npm" /></a>
-    <img src="https://img.shields.io/badge/Local_First-Zero_Trust-orange?style=for-the-badge" />
+    <a href="https://www.npmjs.com/package/outlier-audit"><img src="https://img.shields.io/npm/v/outlier-audit?style=for-the-badge&color=cb3837&logo=npm" alt="npm" /></a>
+    <a href="https://github.com/rosh100yx/outlier/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=%5BFEATURE%5D+"><img src="https://img.shields.io/badge/%E2%9C%A8_Feature_Request-Submit_an_idea-blueviolet?style=for-the-badge&logo=github" alt="Feature Request" /></a>
+  </p>
+  <p>
+    <img src="https://img.shields.io/badge/Compliance-Strict-blue?style=for-the-badge" />
+    <img src="https://img.shields.io/badge/AI_Safety-Enabled-green?style=for-the-badge" />
+    <img src="https://img.shields.io/badge/Zero_Trust-Verified-orange?style=for-the-badge" />
+    <img src="https://img.shields.io/badge/Carbon_Footprint-Tracked-lightgrey?style=for-the-badge" />
     <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
   </p>
 
