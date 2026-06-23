@@ -254,6 +254,7 @@ async function whatNext() {
     const choice = await select({
       message: 'What next?',
       options: [
+        { value: 'participate',  label: 'Participate',                 hint: 'screenshot your receipt + send feedback — it shapes the study' },
         { value: 'preflight',    label: 'Pre-flight briefing',        hint: 'before you start an agent' },
         { value: 'capabilities', label: 'Agent reach / blast radius',  hint: 'what your agents can touch' },
         { value: 'policy',        label: 'Set an AI-authorship limit',  hint: 'local git hook / CI' },
@@ -926,6 +927,19 @@ Artifact:     ${pc.cyan(reportPath)}`,
     s.start('Connecting to the Outlier research project...');
     await new Promise(resolve => setTimeout(resolve, 600));
     s.stop('Secure connection established.');
+
+    note(
+      `Three quick taps, then you paste into a public GitHub issue. Nothing is sent
+automatically — you stay in control of what you share.
+
+  ${pc.cyan('1.')} Take a screenshot of your terminal — the visual status / receipt above.
+  ${pc.cyan('2.')} Answer the three questions below.
+  ${pc.cyan('3.')} Open the issue, paste the lines, drop in the screenshot.
+
+${pc.dim('How it helps: your receipt + answers are real-world data on how much agents')}
+${pc.dim('write and where deskilling bites — it directly shapes the metrics and the study.')}`,
+      'Participate — share your receipt + feedback'
+    );
 
     const q1 = await select({
       message: pc.cyan('What is your current engineering reality today?'),
