@@ -6,9 +6,9 @@
   <br/>
   
   <p>
-    <img src="https://img.shields.io/badge/Compliance-Strict-blue?style=for-the-badge" />
-    <img src="https://img.shields.io/badge/AI_Safety-Enabled-green?style=for-the-badge" />
-    <img src="https://img.shields.io/badge/Zero_Trust-Verified-orange?style=for-the-badge" />
+    <a href="https://www.npmjs.com/package/@rosh100yx/outlier"><img src="https://img.shields.io/npm/v/@rosh100yx/outlier?style=for-the-badge&color=cb3837&logo=npm" /></a>
+    <img src="https://img.shields.io/badge/Local_First-Zero_Trust-orange?style=for-the-badge" />
+    <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
   </p>
 
   <p>
