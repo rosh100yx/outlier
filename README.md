@@ -188,6 +188,9 @@ later runs. To replay it: `rm ~/.outlier_config`.
 }
 ```
 
+### First run
+The very first time you run it in a terminal, outlier shows a short welcome: what it stands for (keep the skill while you use the speed; measure honestly; local, not surveillance), the problem it addresses, and its zero-trust principles — then asks you to set your **governance framework**: who the limit is for (Personal / Team / Enterprise) and the maximum AI-authorship share you'll allow before it flags a review (50 / 70 / 85 / 100%). That cap is saved to `~/.outlier_config` and drives the **YOUR LIMIT** line on every audit. Change it anytime with `outlier policy`. In CI / non-interactive shells the welcome is skipped (no hang) and the default 70% cap applies.
+
 ### The UX Flow
 If you run `npx outlier-audit` directly, you'll instantly get your audit receipt and a simple list of follow-up commands:
 ```text

@@ -75,7 +75,7 @@ async function emitJson() {
   ]);
 
   const aiRatio = gitStats ? gitStats.ratio : 0;
-  const cap = 0.70;
+  const cap = configuredCap() / 100;
   const writeOrDeploy = caps
     ? caps.mcps.filter((m: any) => ['money', 'exec', 'deploy', 'write-remote', 'write-local'].includes(m.reach)).length
     : 0;
@@ -153,17 +153,42 @@ async function emitJson() {
   process.stdout.write(JSON.stringify(out, null, 2) + '\n');
 }
 
+const CONFIG_PATH = join(os.homedir(), '.outlier_config');
+
+function readConfig(): any {
+  try { return JSON.parse(readFileSync(CONFIG_PATH, 'utf-8')); } catch { return {}; }
+}
+function writeConfig(patch: Record<string, any>) {
+  try { writeFileSync(CONFIG_PATH, JSON.stringify({ ...readConfig(), ...patch }, null, 2)); } catch {}
+}
+// The AI-authorship cap the user committed to at onboarding (0..100). Defaults to 70.
+function configuredCap(): number {
+  const c = readConfig();
+  const v = c && c.governance && c.governance.capPercent;
+  return typeof v === 'number' && v > 0 ? v : 70;
+}
+
 async function runOnboarding() {
   console.log(pc.cyan(ASCII_LOGO));
   intro(pc.inverse(' outlier: Welcome '));
 
+  // What we stand for — stated first, before any audit. This is the contract.
   note(
-    `Outlier is a local-first Policy Engine & Governance Framework for AI Engineering.
+    `${pc.bold('The human stays the author of their own judgment.')}
+Agents are leverage, not a replacement for understanding. Speed is welcome;
+losing the ability to debug what you ship is not.
 
-As agents write more of our code, we lose visibility into:
+  ${pc.cyan('1.')} Keep the skill while you use the speed.
+  ${pc.cyan('2.')} Measure honestly — abstain when blind, never fake a number.
+  ${pc.cyan('3.')} Your machine, your data — governance is local, not surveillance.`,
+    'What Outlier stands for'
+  );
+
+  note(
+    `As agents write more of our code, we lose visibility into:
 1. Deskilling Risk (Are we becoming spectators in our own codebase?)
 2. Carbon Cost (What is the true regional energy cost of token caching?)
-3. Capability Drift (What hidden skills are our agents using?)`,
+3. Capability Drift (What hidden tools & skills can our agents reach?)`,
     'The Problem: AI Safety in Development'
   );
 
@@ -175,18 +200,49 @@ As agents write more of our code, we lose visibility into:
     'Privacy & Zero-Trust Principles'
   );
 
-  const ready = await confirm({
-    message: 'Are you ready to run your first Governance Audit and generate your Thermal Receipt?',
-    initialValue: true,
+  // Ask for the governance framework up front — the cap the audits will hold you to.
+  const tier = await select({
+    message: 'Set your governance framework. Who is this cap for?',
+    options: [
+      { value: 'personal',   label: 'Personal',   hint: 'self-imposed limit for skill retention' },
+      { value: 'team',       label: 'Team',       hint: 'a lead sets the human-review threshold' },
+      { value: 'enterprise', label: 'Enterprise', hint: 'production compliance threshold' },
+    ],
+  });
+  if (isCancel(tier)) { cancel('Onboarding paused. Run outlier again when you are ready.'); process.exit(0); }
+
+  const cap = await select({
+    message: 'Maximum AI-authorship share you want to allow before outlier flags a review:',
+    options: [
+      { value: '50',  label: '50% — Strict human-majority' },
+      { value: '70',  label: '70% — Standard hybrid (recommended)', hint: 'balanced' },
+      { value: '85',  label: '85% — High velocity' },
+      { value: '100', label: '100% — Unrestricted (measure only)' },
+    ],
+    initialValue: '70',
+  });
+  if (isCancel(cap)) { cancel('Onboarding paused. Run outlier again when you are ready.'); process.exit(0); }
+
+  writeConfig({
+    onboarded: true,
+    date: new Date().toISOString(),
+    governance: { tier: String(tier), capPercent: parseInt(String(cap), 10) },
   });
 
+  note(
+    `Framework set: ${pc.bold(String(tier))} · cap ${pc.bold(cap + '%')} AI authorship.
+outlier will flag (never block) when you cross it. Change it anytime: ${pc.cyan(CMD + ' policy')}.`,
+    'Governance framework saved'
+  );
+
+  const ready = await confirm({
+    message: 'Run your first Governance Audit and generate your Thermal Receipt now?',
+    initialValue: true,
+  });
   if (isCancel(ready) || !ready) {
     cancel('Onboarding paused. Run outlier again when you are ready.');
     process.exit(0);
   }
-
-  const configPath = join(os.homedir(), '.outlier_config');
-  writeFileSync(configPath, JSON.stringify({ onboarded: true, date: new Date().toISOString() }));
 }
 
 // Guided "what next?" menu — so developers navigate instead of memorising commands.
@@ -387,7 +443,7 @@ Ratio: ~31x carbon penalty on coal-heavy grid`,
         
         let color = pc.green;
         let warning = '';
-        if (gitStats.ratio > 0.7) {
+        if (gitStats.ratio > configuredCap() / 100) {
           color = pc.red;
           warning = pc.red(' ⚠ high dependency');
         } else if (gitStats.ratio > 0.4) {
@@ -481,10 +537,11 @@ ${tokenBlock}`,
     try {
         let authPct = '0%';
         let ruleFailures = 0;
+        const aiCap = configuredCap(); // the limit the user set at onboarding (default 70)
 
         if (gitStats) {
           authPct = `${(gitStats.ratio * 100).toFixed(1)}%`;
-          if (gitStats.ratio > 0.7) ruleFailures++;
+          if (gitStats.ratio > aiCap / 100) ruleFailures++;
         }
 
         // 3-axis contribution profile: execution (who wrote tokens) is only one axis —
@@ -561,7 +618,7 @@ ${tokenBlock}`,
         }
 
         // Insight engine: turn the numbers into the top thing to actually do.
-        const insights = deriveInsights({ authorship: gitStats, carbon, caps: capabilities, policyCap: 0.70 });
+        const insights = deriveInsights({ authorship: gitStats, carbon, caps: capabilities, policyCap: configuredCap() / 100 });
         const sevColor = (s: string) => s === 'critical' ? pc.red : s === 'warn' ? pc.yellow : s === 'good' ? pc.green : pc.cyan;
         const sevMark = (s: string) => s === 'critical' ? '✗' : s === 'warn' ? '⚠' : s === 'good' ? '✓' : 'i';
         const insightLines = insights.slice(0, 2).map((ins: Insight) =>
@@ -629,7 +686,7 @@ ${profileRows}
  ${pc.dim('│')} ${pc.dim('Full map: ' + CMD + ' capabilities')}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgYellow(pc.black(' YOUR LIMIT ')))}
- ${pc.dim('│')} AI cap   ${pc.bold('70%')} ${pc.dim('· change with: ' + CMD + ' policy')}
+ ${pc.dim('│')} AI cap   ${pc.bold(aiCap + '%')} ${pc.dim('· change with: ' + CMD + ' policy')}
  ${pc.dim('│')} Status   ${policyStatus} ${pc.dim('·')} ${policyAction}
  ${pc.dim('├────────────────────────────────────────────────────────')}
  ${pc.dim('│')} ${pc.bold(pc.bgGreen(pc.black(' WHAT TO DO ')))}
@@ -731,7 +788,7 @@ ${r.notes.length ? '\n' + r.notes.map(n => `${pc.yellow('•')} ${n}`).join('\n'
     const spend = carbon ? `$${carbon.estUsd.toFixed(0)}` : '—';
     const cachePct = carbon && carbon.totalTokens ? ((carbon.cacheReadTokens / carbon.totalTokens) * 100).toFixed(0) + '%' : '—';
 
-    const insights = deriveInsights({ authorship: gitStats, carbon, caps, policyCap: 0.70 });
+    const insights = deriveInsights({ authorship: gitStats, carbon, caps, policyCap: configuredCap() / 100 });
     const sevCol = (sv: string) => sv === 'critical' ? pc.red : sv === 'warn' ? pc.yellow : sv === 'good' ? pc.green : pc.cyan;
     const sevMk = (sv: string) => sv === 'critical' ? '✗' : sv === 'warn' ? '⚠' : sv === 'good' ? '✓' : 'i';
     const actionLines = insights.slice(0, 3)
