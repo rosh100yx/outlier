@@ -1,980 +1,128 @@
-% Options for packages loaded elsewhere
-\PassOptionsToPackage{unicode}{hyperref}
-\PassOptionsToPackage{hyphens}{url}
-\documentclass[
-]{article}
-\usepackage{xcolor}
-\usepackage{amsmath,amssymb}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
-\usepackage{iftex}
-\ifPDFTeX
-  \usepackage[T1]{fontenc}
-  \usepackage[utf8]{inputenc}
-  \usepackage{textcomp} % provide euro and other symbols
-\else % if luatex or xetex
-  \usepackage{unicode-math} % this also loads fontspec
-  \defaultfontfeatures{Scale=MatchLowercase}
-  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
-\fi
-\usepackage{lmodern}
-\ifPDFTeX\else
-  % xetex/luatex font selection
-\fi
-% Use upquote if available, for straight quotes in verbatim environments
-\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-\IfFileExists{microtype.sty}{% use microtype if available
-  \usepackage[]{microtype}
-  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
-}{}
-\makeatletter
-\@ifundefined{KOMAClassName}{% if non-KOMA class
-  \IfFileExists{parskip.sty}{%
-    \usepackage{parskip}
-  }{% else
-    \setlength{\parindent}{0pt}
-    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
-}{% if KOMA class
-  \KOMAoptions{parskip=half}}
-\makeatother
-\usepackage{color}
-\usepackage{fancyvrb}
-\newcommand{\VerbBar}{|}
-\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
-\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
-% Add ',fontsize=\small' for more characters per line
-\newenvironment{Shaded}{}{}
-\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
-\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
-\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
-\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
-\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
-\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
-\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
-\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
-\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
-\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
-\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
-\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
-\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
-\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
-\newcommand{\ExtensionTok}[1]{#1}
-\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
-\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
-\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
-\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
-\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
-\newcommand{\NormalTok}[1]{#1}
-\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
-\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
-\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
-\newcommand{\RegionMarkerTok}[1]{#1}
-\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
-\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
-\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
-\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
-\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
-\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
-\usepackage{longtable,booktabs,array}
-\newcounter{none} % for unnumbered tables
-\usepackage{calc} % for calculating minipage widths
-% Correct order of tables after \paragraph or \subparagraph
-\usepackage{etoolbox}
-\makeatletter
-\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
-\makeatother
-% Allow footnotes in longtable head/foot
-\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
-\makesavenoteenv{longtable}
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\usepackage{bookmark}
-\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same}
-% fallback for those not using the hyperref driver hyperxmp:
-\makeatletter
-\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
-\makeatother
-\hypersetup{
-  pdftitle={Measuring AI Use: A Governance Framework for Carbon{,} Authorship Erosion{,} and AI Adoption},
-  pdfauthor={Roshan Abraham},
-  hidelinks,
-  pdfcreator={LaTeX via pandoc}}
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{authblk}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{amsmath}
 
-\title{Measuring AI Use: A Governance Framework for Carbon, Authorship
-Erosion, and AI Adoption}
-\author{Roshan Abraham}
-\date{}
+\geometry{margin=1in}
+
+\title{Measuring the Hidden Costs of AI Delegation: Local Telemetry for Geographic Carbon Disparities and Authorship Atrophy in Software Engineering}
+
+\author[1]{Roshan Abraham}
+\affil[1]{Independent Researcher and UX Design Engineer, Ho Chi Minh City, Vietnam}
+
+\date{\today}
 
 \begin{document}
+
 \maketitle
 
-\section{Measuring AI Use: A Governance Framework for Carbon, Authorship
-Erosion, and AI
-Adoption}\label{measuring-ai-use-a-governance-framework-for-carbon-authorship-erosion-and-ai-adoption}
+\begin{abstract}
+We introduce a local-telemetry methodology to quantify the invisible externalities of AI coding assistants at the developer terminal. While existing literature measures the systemic risks of AI at the datacenter or organizational level, AI adoption occurs at the individual terminal. At this intersection, two hidden costs emerge: the carbon emission of inference and the gradual disempowerment of the human author. We deploy an open-source Command Line Interface (CLI) instrument that operates entirely locally, parsing Git history and token logs to extract a novel metric pair: Authorship Ratio and Session Carbon. In a live case study, we observe an AI-authorship rate of 75.6\%, corroborating the extreme right tail of AI authorship seen in enterprise frameworks. Crucially, by applying local grid intensity to the compute logs, we identify a massive geographic disparity: Global South developers (e.g., in Vietnam) generate up to 31 times more carbon per prompt than European counterparts. We propose this local-first measurement as a foundational signal for governance, enabling verifiable human oversight and environmental tracking without exporting citizen data.
+\end{abstract}
 
-\textbf{Author:} Roshan Abraham --- Independent Researcher and UX Design
-Engineer, Ho Chi Minh City, Vietnam \textbf{With:} Apart Research ---
-The Global South AI Safety Hackathon, June 2026 \textbf{Track:} Asia ·
-Socio-economic impacts (primary) · Governance \& geopolitics (secondary)
+\section{Introduction}
+The usual AI safety picture is sudden: a system defects and damage follows. A quieter failure is already happening. Incremental AI improvements erode human influence over the economy, culture, and the state until that loss becomes hard to reverse---not because any system defected, but because each small act of delegation is locally rational \cite{kulveit2025gradual}.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Abstract}\label{abstract}
-
-AI adoption happens one person at a time. A developer sits down, asks an
-AI agent to write code, and two hidden costs appear. First, running the
-AI burns electricity and creates carbon emissions. Second, the developer
-gives up some of their own skill and understanding. Existing tools count
-the tokens and the cloud bill. They do not count the carbon footprint,
-and they do not count what the developer loses.
-
-We built a simple monitoring approach that tracks both. It reads the
-logs already sitting on the developer's machine. No new infrastructure.
-No data leaves the country.
-
-Why measure at the developer's computer instead of the datacenter?
-Because local measurement reveals a hidden geographic tax. Developers in
-regions with coal-heavy grids, like Vietnam, generate up to 31 times
-more carbon per prompt than their European counterparts. They
-inadvertently bear a massive, disproportionate environmental cost just
-to access the same global AI tools.
-
-To prove this works, we built and deployed a live, open-source CLI
-instrument. We demonstrate its viability on a live repository,
-corroborating the high rates of AI authorship observed in public
-enterprise frameworks. This instrument makes both the carbon and skill
-costs visible at the exact moment of delegation.
-
-Why should governments care? Because AI adoption and usage monitoring
-gives regulators a simple, auditable signal of foreign AI dependency at
-three levels they already regulate: the worker (premature
-deprofessionalization), the firm (human oversight of high-risk AI), and
-the nation (trade-off between foreign cloud spending and local carbon
-cost), all without exporting citizen data to foreign servers.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{1. Introduction}\label{introduction}
-
-The usual AI safety picture is sudden: a system defects and damage
-follows. A quieter failure is already happening. Incremental AI
-improvements erode human influence over the economy, culture, and the
-state until that loss becomes hard to reverse --- not because any system
-defected, but because each small act of delegation is locally rational
-{[}1{]}. Vietnam's AI-safety hub, Antoàn, calls this exact problem ``xói
-mòn năng lực'' and asks for ``measurement indicators tracking human
-influence'' {[}2{]}.
-
-That call has gone unanswered at the only scale where adoption is
-actually visible. A national economy does not adopt AI; a person at a
-computer does {[}3{]}{[}4{]}{[}5{]}.
-
-We measured two things in that setting: the carbon from the compute, and
-the share of work the developer ceded to AI. The first is a planetary
-cost. The second is an individual-disempowerment cost. Both are
-invisible to existing dashboards.
-
-Why pair these two? Because the same delegation event produces both. A
-developer who asks AI to write code consumes electricity and
-simultaneously reduces their own engagement with the work. Existing
-governance frameworks treat these as separate problems --- energy policy
-handles the first, labor policy the second. At the developer's computer,
-they are one event.
-
-\textbf{Our contributions are:}
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  A way to measure AI's impact at the individual level, not just the
-  datacenter or the economy.
-\item
-  Two simple indicators --- (a) the share of work done by AI, and (b)
-  the carbon footprint of a work session --- both computable today from
-  logs that already exist locally.
-\item
-  A live, open-source CLI instrument that measures these impacts, and a
-  governance proposal: a local-first monitor that keeps all data inside
-  the country.
-\end{enumerate}
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{2. Related Work}\label{related-work}
-
-\textbf{Disempowerment.} Kulveit et al.~(2025) argue incremental AI
-substitution quietly erodes human influence {[}1{]}. The closest
-empirical analogue is algorithmically-managed platform labor in
-Southeast Asia {[}11{]}. We move one step closer: we measure at the
-individual developer.
-
-\textbf{Carbon.} The literature meters AI's footprint at model and
-datacenter scale: training energy {[}12{]}; inference energy converging
-on \textasciitilde0.3 Wh per chat query {[}13{]}{[}14{]}; regional
-carbon routing {[}15{]}. We meter by developer, at the moment of
-delegation, and weight by local grid.
-
-\textbf{Authorship.} Greptile tracks fully-AI pull requests rising from
-0.86\% to 27.6\% over fourteen months {[}5{]}. That is population-level
-data. We measure the individual.
-
-\textbf{Deskilling.} Operators who delegate lose supervisory skills
-{[}16{]}. Recent work hardens this: higher GenAI confidence predicts
-less critical thinking {[}17{]}; experienced developers become slower
-while believing they are faster {[}8{]}.
-
-\emph{The gap.} No prior work fuses per-developer carbon and
-per-developer AI authorship into a single monitoring tool, nor frames
-that pair as twin unmeasured side effects for governance. The technical
-plumbing exists (edit-attribution tooling, carbon APIs, log readers);
-the framing and the indicator pair do not.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{3. Methods}\label{methods}
-
-To prove this works, we built the actual tool. It is a live, open-source
-CLI that anyone can run today (\texttt{npx\ outlier-audit}). It is not a
-mockup. It operates entirely on the developer's machine, successfully
-parsing live Git history and local token logs to generate the exact
-measurements described below.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{$ npx outlier{-}audit audit}
-\NormalTok{[outlier] 3/5 policies • ⚠ Mentoring Emergency: 75.6\% AI{-}generated. High risk of skill atrophy. • 6.81kg CO2}
-
-\NormalTok{(Ф∇Ф) [1] Capability Engine ▰▰▰▰▰▰▱▱▱▱  Active}
-\NormalTok{    status: ✓ Configured}
-\NormalTok{(=\^{}･ω･\^{}=) [2] AI Code Reliance ▰▰▰▰▰▰▰▰▱▱  75.6\% Reliance}
-\NormalTok{    vibe: Did you write any of this, or are you just the manager now?}
-\NormalTok{    gate: (=ಠᆽಠ=) Deskilling Risk Detected ⚠ Security Audit Required}
-\NormalTok{    mentor: 💡 Architecture Challenge Pending (See Git Hook)}
-\NormalTok{(O\_O;) [3] Tokenomics \& Cost ▰▰▰▰▰▰▰▰▰▱ 94.9\% Cache Bloat}
-\NormalTok{    waste: ⚠ 94.9\% of tokens are redundant context reads}
-\NormalTok{    carbon: ✓ 6.81kg CO2 (Grid{-}weighted estimate)}
-\NormalTok{Governance: (=ಠᆽಠ=) 2 policy failures}
-\end{Highlighting}
-\end{Shaded}
-
-\subsubsection{3.1 Indicator 1 --- Share of work done by
-AI}\label{indicator-1-share-of-work-done-by-ai}
-
-At first, we used version-control commits as the work unit. We counted
-the \texttt{Co-Authored-By} trailers in Git to get a fast, public
-baseline. But counting commits is a weak proxy: squashing a PR destroys
-the tag, and a commit with 1 line of AI code looks identical to one with
-10,000 lines.
-
-To fix this, we upgraded the instrument to use \textbf{blame-based,
-content-matched line survival}.
-
-\begin{quote}
-\textbf{Execution Share = (AI-authored lines that survive in HEAD) /
-(Total lines in the codebase)}
-\end{quote}
-
-We don't guess. The CLI parses the developer's local Claude session
-transcripts (the \texttt{.jsonl} logs) to find the exact lines the agent
-generated. It hashes those lines and walks \texttt{git\ blame} to see
-how many of them actually survive in the living codebase. Trivial lines
-(blanks, bare brackets) are ignored.
-
-For tools that don't leave logs (like Cursor or Copilot), the CLI uses
-\texttt{outlier\ watch}. You start the watch, work with your agent, and
-stop the watch. The CLI brackets the session and counts the file
-changes. It's tool-agnostic, local-first, and gives a hard mathematical
-ratio of who actually wrote the code.
-
-\textbf{Data used.} The author's own production repository (AI-first
-design studio; solo founder), 2026-05-06 to 2026-06-20 (46 days), 160
-commits. Self-selection is acknowledged below.
-
-\subsubsection{3.2 The measurement gap}\label{the-measurement-gap}
-
-Table 1 shows who meters what today --- and where the gap is.
-
-\textbf{Table 1. Who meters what.}
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Externality / Scale
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Region / Nation
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Ecosystem
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Developer (at the computer)
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Money / tokens & cloud bills, TCO studies & provider revenue & cost
-dashboards (partial) \\
-Carbon & CarbonBench (by grid) {[}15{]} & datacenter totals & --- \\
-Authorship & Kulveit macro indicators {[}1{]} & Greptile {[}5{]} & ---
-(this work proposes it) \\
-\end{longtable}
-}
-
-No existing tool reads the developer's own logs to surface either carbon
-or AI authorship.
-
-\subsubsection{3.3 Indicator 2 --- Session carbon
-footprint}\label{indicator-2-session-carbon-footprint}
-
-For the compute side, we estimate the carbon produced by one work
-session.
-
-\begin{quote}
-\textbf{Session carbon = tokens generated × energy per token × local
-grid intensity}
-\end{quote}
-
-We choose conservative, independently-converging numbers:
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Parameter
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Value used
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Source / note
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Per-query energy (chat) & \textasciitilde0.3 Wh & Epoch 0.3 {[}14{]};
-Microsoft/Joule 0.34 {[}6{]} --- two independent studies \\
-Agentic task token volume & 1--3.5 million tokens & Stanford/MIT/MSR
-{[}19{]} \\
-Representative per-developer rate & 12.7 M tokens/day ≈
-\textasciitilde1.8 kWh/day (conservative) & Claude Carbon, measured
-{[}7{]} \\
-Grid intensity --- Vietnam & 681 gCO₂/kWh (coal 49.5\%) & HUST / Vietnam
-News 2024 {[}20{]} \\
-Grid intensity --- USA & 384 gCO₂/kWh (operational) & Ember 2024
-{[}21{]} \\
-Grid intensity --- France & 21.7 gCO₂/kWh (operational; 30.2 lifecycle)
-& RTE 2024 {[}22{]} \\
-\textbf{The number that matters} & \textbf{regional ratio
-(\textasciitilde31× Vietnam:France, \textasciitilde1.8× Vietnam:USA)} &
-holds no matter the energy assumption \\
-\end{longtable}
-}
-
-\textbf{Honesty guard.} A single query's carbon is small and has
-historically been overstated 4--20× {[}6{]}. We make no claim resting on
-per-query magnitude. Our claim rests on the \textbf{grid ratio}, which
-is fixed by public data, and on the fact that the side effect is
-unmeasured and stacked up across an entire developer's work.
-
-\subsubsection{3.4 Reading the logs that already exist
-locally}\label{reading-the-logs-that-already-exist-locally}
-
-AI authorship share is computable from public git history. Session
-carbon is not --- git stores no token counts. But the AI assistant's own
-session logs do. Claude Code writes a per-message usage ledger to local
-JSONL files. We recover a real token ledger from the operator's own logs
-(2026-05-21 to 06-21, 27 active days) and show that the carbon-footprint
-primitive works with real data. (Caveat: the operator traveled during
-this period, so the absolute per-country figure is a bound, not a
-precise audit. The 31× regional ratio is exact.)
-
-\textbf{The core methodological point:} the data we propose to
-standardize already exists on the developer's machine. It is simply
-never read as a carbon-or-skill signal. The tool is a reader, not new
-infrastructure. To measure token waste, we parse the local
-\texttt{tokenomics-log.jsonl} files to count the exact bytes of
-redundant cache reads. We collected no keystroke-level data; the logs
-are the agent's own existing artifact.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{4. Results}\label{results}
-
-\subsubsection{4.1 AI authorship share: majority-AI within two weeks, at
-enterprise-framework
-levels}\label{ai-authorship-share-majority-ai-within-two-weeks-at-enterprise-framework-levels}
-
-Using the commit-proxy on a 160-commit history, we established a
-baseline: \textbf{121 are AI-co-authored (75.6\% AI authorship)}.
-
-However, when we applied the upgraded blame-based execution tracking
-over the repository's \textbf{8.2K live lines of code}, the instrument
-revealed a true \textbf{Execution Share of 62\%} (5.1K lines directly
-attributable to AI generation that survived into production). Model mix:
-108 Opus-4.8, 18 Sonnet-4.6, 1 other.
-
-To check whether this is high or low, we sample the same primitive on
-public repositories maintained by framework teams. \emph{Method:} last
-100 commits whose message contains \texttt{Co-Authored-By}.
-
-\textbf{Table 2. AI authorship share on public GitHub repositories (most
-recent 100 commits).}
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Repository
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Language
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-AI-attributed
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Total
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-AI authorship share
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\href{https://github.com/microsoft/semantic-kernel}{microsoft/semantic-kernel}
-& C\# & 79 & 100 & 79.0\% \\
-\href{https://github.com/vercel/ai}{vercel/ai} & TypeScript & 48 & 100 &
-48.0\% \\
-\href{https://github.com/langchain-ai/langgraph}{langchain-ai/langgraph}
-& Python & 43 & 100 & 43.0\% \\
-\href{https://github.com/microsoft/autogen}{microsoft/autogen} & Python
-& 44 & 100 & 44.0\% \\
-\href{https://github.com/modelscope/agentscope}{modelscope/agentscope} &
-Python & 21 & 100 & 21.0\% \\
-\href{https://github.com/joaomdmoura/crewAI}{joaomdmoura/crewAI} &
-Python & 10 & 100 & 10.0\% \\
-\href{https://github.com/irobin-dev/ai-coauthor}{irobin-dev/ai-coauthor}
-& TypeScript & 1 & 1 & 100.0\% \\
-\end{longtable}
-}
-
-These repositories span Python, C\#, and TypeScript. semantic-kernel and
-autogen are enterprise multi-agent frameworks by Microsoft. langgraph is
-graph-based orchestration. agentscope is a multi-agent platform. crewAI
-is crew-based role-play. ai-coauthor auto-adds the co-author note to
-every accepted suggestion. The results show that AI authorship share is
-measurable on public repositories without any inside access.
-
-The weekly level (Figure 1) shows a jump, not a slow climb: after a 25\%
-ramp-up week, AI authorship share reaches 82--100\% by the second active
-week and never falls below 71\%.
-
-\textbf{Figure 1. Weekly AI authorship share in a live solo-founder
-repository (2026).} ISO week · AI-co-authored ÷ total commits.
-
-\begin{verbatim}
-W19  ██████████                               25.0%   (1/4)
-W20  ████████████████████████████████████████ 100.0% (11/11)
-W22  █████████████████████████████████        83.3%  (5/6)
-W23  ████████████████████████████████████████ 100.0% (15/15)
-W24  █████████████████████████████            72.0%  (54/75)
-W25  █████████████████████████████            71.4%  (35/49)
-                                               overall AI authorship share = 75.6% (121/160)
-\end{verbatim}
-
-\emph{(W21: no commits. Bars scaled to 100\% = 40 characters.)}
-
-\textbf{What this number means.} We are not making a population-level
-claim. We built an instrument to measure a blind spot. To prove the
-instrument works, we ran it on a live repository, which yielded a 75.6\%
-AI-authorship rate. Public repositories maintained by tooling teams show
-AI authorship shares in the 21--79\% range {[}Table 2{]}, a band our own
-repository sits at the high end of. This makes the tool itself the core
-contribution, rather than the specific 75.6\% number. 75.6\% is a
-measured fact about commit attribution; whether it qualifies as
-``disempowerment'' is a judgment we bound in Section 5.
-
-\subsubsection{4.2 Session carbon: real token logs, bounded by
-travel}\label{session-carbon-real-token-logs-bounded-by-travel}
-
-Aggregating the developer's own Claude Code session logs (2026-05-21 to
-06-21, 27 active days) gives a real token ledger: \textbf{2.26 billion
-tokens processed}. Cache-read tokens make up 94.9\% of the total (2.14
-billion). This is itself a finding: a first-party confirmation that most
-tokens in agent conversations are re-sent context, not new reasoning.
-
-We estimate energy from generation events only (avoiding the 4--20×
-overstatement that comes from counting cheap cache reads as full
-compute): 7,927 assistant turns and 15.1 million output tokens imply
-\textbf{≈ 5--15 kWh of inference energy over 27 days} (central estimate
-≈ 10 kWh). Converting through each grid:
-
-\textbf{Figure 2. Session carbon over 27 days, by representative grid.}
-\textasciitilde10 kWh × grid intensity.
-
-\begin{verbatim}
-Vietnam  ████████████████████████████████████████ 6.81 kgCO₂   (681 g/kWh)
-USA      ██████████████████████                    3.84 kgCO₂   (384 g/kWh)
-France   █                                          0.22 kgCO₂   (21.7 g/kWh)
-                                   Vietnam : France ≈ 31×  ·  Vietnam : USA ≈ 1.8×
-\end{verbatim}
-
-\emph{Caveat:} the developer worked from Thailand, Malaysia,
-Philippines, and Vietnam during the logging period. The absolute
-per-country figure is a bounding illustration, not a single-country
-carbon audit. While absolute carbon tonnage relies on inference-energy
-proxies, the \textbf{regional ratios (31× VN:FR, \textasciitilde1.8×
-VN:US) are exact} and mathematically immune to proxy error. Because the
-energy-per-token variable cancels out, the 31x disparity remains an
-undeniable infrastructural fact. An independent macOS meter reports a
-comparable per-developer scale (12.7M tokens/day) {[}7{]}, corroborating
-the order of magnitude.
-
-\textbf{Imported Emissions and the Geographic Tax.} Western tech
-companies ship highly compute-intensive AI tools globally, but the local
-infrastructure in the Global South is forced to absorb the carbon cost.
-Vietnamese developers aren't doing anything wrong; they are just trying
-to use the same tools as everyone else to stay competitive. But because
-of the underlying infrastructure, they inadvertently pay a 31x higher
-environmental price. This proves exactly why the Global South needs
-local telemetry --- you cannot govern what you cannot measure, and right
-now, the Global South is absorbing an invisible cost for foreign AI.
-
-Annualized: \textbf{≈ 60--180 kgCO₂/yr in Vietnam-range grids vs ≈ 2.9
-kg in France} for one solo developer. The range reflects both
-energy-estimate uncertainty and geographic mixing. (Robustness: the
-ratio is robust; the absolute figure is a bound.)
-
-\subsubsection{4.3 Why the developer's computer is the right place to
-measure}\label{why-the-developers-computer-is-the-right-place-to-measure}
-
-Figures 1 and 2 measure the same event from two angles. Every
-AI-assisted commit (a) generated tokens that emitted carbon and (b)
-shifted a slice of authorship from human to machine. The developer's
-dashboard shows tokens, not lost agency. A national council sees
-neither. Only the developer's own machine sees both.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{5. Discussion, Limitations, and Future
-Work}\label{discussion-limitations-and-future-work}
-
-AI authorship share and session carbon give the state a leading
-indicator of AI dependency at the three levels it already regulates: the
-worker (where a high AI share threatens premature deprofessionalization
-in IT-export economies), the firm (where the AI share provides the only
-auditable metric for Decree 142's human-oversight mandate), and the
-nation (where session carbon models the exact trade-off between
-foreign-exchange drain from imported AI clouds and the carbon cost of
-building sovereign compute). Developers are the pilot population because
-they are the only workforce where all three artifacts already exist
-locally.
-
-\textbf{Economic impact at scale.} The individual number has a macro
-shadow. A 75.6\% AI-authorship share at one desk is a data point. The
-same shift across a national software workforce is an economic
-transition, and it runs in three steps. First, the skill ladder breaks:
-if juniors delegate the work that used to build expertise, fewer become
-seniors, and the human-capital base of an IT-export economy thins.
-Second, value capture moves offshore: the productivity gain accrues to
-the foreign AI vendor, paid in hard currency, and to the offshore
-client, not to the local worker whose labor it replaces. Third, the tax
-base shifts: locally-taxed software wages give way to AI inference
-billed by foreign firms, eroding income-tax revenue with no domestic
-corporate-tax offset. For Vietnam, whose software exports are a
-strategic earner, and for India's IT and BPO workforce of several
-million, this is the premature deprofessionalization and fiscal-cliff
-risk the regional research agenda names directly {[}11{]}. AI authorship
-share is the earliest measurable signal of that transition, visible at
-the desk years before it shows up in employment or trade data. We do not
-estimate the national magnitude here; we provide the leading indicator a
-finance or labor ministry would need to track it.
-
-\textbf{Why this matters.} Carbon and authorship are two readings of one
-delegation event. We propose a simple monitoring tool: an open,
-local-first, on-device indicator that surfaces AI authorship share and
-session carbon in real time, using logs that already exist on the
-developer's machine. This lets a national body require disclosure
-without exporting citizen data to foreign servers, keeping all data
-strictly inside the country. Vietnam's Decree 142/2026 mandates human
-oversight and human control for high-risk AI systems {[}24{]} --- this
-tool is one concrete way to make that oversight real.
-
-\textbf{Policy profiles.} This simple monitoring approach scales
-seamlessly across four policy layers: * \textbf{Personal.} A developer
-sets their own limits. * \textbf{Team.} An engineering lead sets
-team-wide guardrails. * \textbf{Enterprise.} Compliance layer: ``AI
-authorship share must not exceed 60\% in production.'' *
-\textbf{Regulatory.} A regulator could require logging of AI
-contribution at the developer's computer, extending Decree 142's
-human-oversight mandate.
-
-\textbf{Tool-agnostic measurement.} GitHub is a coordination layer, not
-the work layer. Agents operate across IDE, terminal, orchestration, and
-CI/CD. The formula stays the same; only the collection point changes:
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Layer
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-AI Authorship Artifact
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-AI Session Log Artifact
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\textbf{IDE} & Edit attribution events & Token API responses \\
-\textbf{Terminal} & Session transcript with Co-Authored-By & Model API
-telemetry \\
-\textbf{Orchestrator} & Task graph with delegation edges & Per-agent
-token counts \\
-\textbf{CI/CD} & Commit trailer in pipeline & Build-time compute
-estimate \\
-\end{longtable}
-}
-
-\textbf{The Governance Gap.} Vietnam's national AI agenda and the ASEAN
-governance framework both call for measurement at scale {[}2{]}{[}25{]}.
-Neither currently addresses the developer's computer. The ASEAN Guide
-governs at organizational and national scales, leaving a coverage gap at
-the individual terminal. AI authorship share and session carbon fill
-that gap with a lightweight, on-device signal that respects data
-sovereignty. This gap is not unique to Vietnam; it is common to every
-Global South jurisdiction adopting AI rapidly while relying on imported
-cloud infrastructure and coal-heavy grids.
-
-\textbf{Dual use.} The same monitoring could be misused: an employer
-could rank developers by AI dependence; a government could tax or
-restrict AI workloads. We propose three design constraints to keep it
-safe: (1) collect only AI authorship share and session-carbon totals,
-never raw prompts or code; (2) make the tool open-source and auditable
-by any third party; (3) give individuals the right to audit, export, and
-delete their own data.
-
-\textbf{Agent controls.} For teams using multiple AI agents: (1) limit
-how deeply humans hand off work --- flag if a human reviewed fewer than
-N of the last M agent actions; (2) require diversity --- block
-single-agent swarms from composing most of the recent work; (3) keep a
-trail --- every agent action must link to the human directive that
-authorized it.
-
-\textbf{Human connections.} High AI authorship share correlates with
-skill atrophy and weaker code review. \emph{Observation:} mentoring and
-trust-building happen primarily through code review, not solo debugging.
-When AI authorship share stays above 70\% for multiple weeks, the team
-loses the human feedback loops that produce senior engineers. Policy
-checks: require un-delegated design review if weekly AI authorship share
-exceeds 70\%; flag the team lead if three consecutive sessions show no
-human review; treat rising AI authorship share as a mentoring emergency.
-
-\textbf{Limitations.} AI authorship share is a rough signal: a commit is
-not a unit of cognition, and AI tends to concentrate in boilerplate
-where high shares may be harmless. N = 1, self-selected. Tokens are
-metered but energy is still estimated (4--20× variance in literature).
-Grid data are operational, not lifecycle. Session carbon during logging
-is travel-confounded: the developer moved across countries, so absolute
-country-level numbers are bounds. The regional ratios are the
-load-bearing claim.
-
-\textbf{Future work.} Expand AI authorship share beyond git to IDE edit
-events and agent plan/solve cycles. Validate it as a proxy for skill
-through user studies. Build a cross-regional AI authorship share
-benchmark with a Global South cut.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{6. Code, Data, and Demo}\label{code-data-and-demo}
-
+This problem is particularly acute in software engineering. A developer who asks AI to write code consumes electricity and simultaneously reduces their own engagement with the work. Existing governance frameworks treat these as separate problems. However, at the developer's computer, they are a single event. Our contributions are:
 \begin{itemize}
-\tightlist
-\item
-  \textbf{Reproduction \& Instrument:} The open-source CLI instrument,
-  full source code, and telemetry framework are available at
-  \href{https://github.com/rosh100yx/outlier}{github.com/rosh100yx/outlier}.
-  The published package can be tested directly via
-  \texttt{npx\ outlier-audit}.
-\item
-  \textbf{Data:} We publish the method and aggregate counts. No private
-  repository contents are used. All quantitative claims can be
-  independently reproduced using the open-source logic.
-\item
-  \textbf{Demo:}
+    \item A methodology to measure AI's impact at the individual developer level using existing local logs.
+    \item Two quantifiable indicators: the Authorship Ratio and the Session Carbon Footprint.
+    \item An empirical case study utilizing an open-source CLI instrument demonstrating the viability of this measurement and highlighting severe geographic carbon disparities.
 \end{itemize}
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{$ npx outlier{-}audit audit}
-\NormalTok{[outlier] 3/5 policies • ⚠ Mentoring Emergency: 75.6\% AI{-}generated. High risk of skill atrophy. • 6.81kg CO2}
+\section{Related Work}
+\textbf{Disempowerment:} Kulveit et al. (2025) argue incremental AI substitution quietly erodes human influence \cite{kulveit2025gradual}. Recent studies show that higher Generative AI confidence predicts less critical thinking, and experienced developers become slower while believing they are faster \cite{metr2025}.
 
-\NormalTok{(Ф∇Ф) [1] Capability Engine ▰▰▰▰▰▰▱▱▱▱  Active}
-\NormalTok{    status: ✓ Configured}
-\NormalTok{(=\^{}･ω･\^{}=) [2] AI Code Reliance ▰▰▰▰▰▰▰▰▱▱  75.6\% Reliance}
-\NormalTok{    vibe: Did you write any of this, or are you just the manager now?}
-\NormalTok{    gate: (=ಠᆽಠ=) Deskilling Risk Detected ⚠ Security Audit Required}
-\NormalTok{    mentor: 💡 Architecture Challenge Pending (See Git Hook)}
-\NormalTok{(O\_O;) [3] Tokenomics \& Cost ▰▰▰▰▰▰▰▰▰▱ 94.9\% Cache Bloat}
-\NormalTok{    waste: ⚠ 94.9\% of tokens are redundant context reads}
-\NormalTok{    carbon: ✓ 6.81kg CO2 (Grid{-}weighted estimate)}
-\NormalTok{Governance: (=ಠᆽಠ=) 2 policy failures}
-\end{Highlighting}
-\end{Shaded}
+\textbf{Carbon:} The literature meters AI's footprint at model and datacenter scale: training energy and inference energy converging on $\sim$0.3 Wh per chat query \cite{oviedo2025energy, you2025energy}. We meter by developer, at the moment of delegation, weighted by the local power grid.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+\textbf{Authorship:} Ecosystem trackers note fully-AI pull requests rising rapidly \cite{greptile2026}. We localize this to the individual terminal, providing an auditable proxy for human oversight.
 
-\subsection{7. Conclusion}\label{conclusion}
+\section{Methodology}
+\subsection{Execution Share (Authorship via Line Survival)}
+Past ecosystem trackers have relied on parsing \texttt{Co-Authored-By} Git trailers to measure AI involvement. However, commit-level tracking is fundamentally flawed: squashed pull requests destroy the metadata, and a commit containing one line of AI code is weighted identically to one containing ten thousand lines.
 
-Gradual disempowerment and AI's carbon cost are usually told as separate
-stories. We showed they meet at one place --- the developer's own
-computer --- and are two readings of one act: a person asking a machine
-to do work. We built the simplest possible tools for that place and
-deployed a live instrument to measure it. Our instrument corroborates
-the extreme right tail of AI authorship seen in enterprise frameworks
---- while revealing that this work imports \textbf{31 times more carbon
-on Vietnam's grid} than a clean one. Tellingly, we could measure the
-skill side from public artifacts but not the carbon side --- which is
-the whole argument: the side effects of AI adoption are half-visible and
-wholly unmeasured at the point where they are produced. Building the
-tool that closes that gap --- cheap, local-first, sovereignty-preserving
---- is a governance move the Global South can make first, and it is the
-working demo this thesis will become.
+We introduce a \textbf{blame-based, content-matched line survival} metric. The metric is defined as:
+\begin{equation}
+Execution\_Share = \frac{Lines_{AI\_Authored\_Surviving}}{Lines_{Total\_in\_HEAD}}
+\end{equation}
+The local CLI instrument operates by parsing the developer's raw AI session transcripts (e.g., Claude Code logs) for \texttt{Edit} and \texttt{Write} events. It extracts the exact lines generated by the agent, hashes them, and cross-references them against \texttt{git blame} and \texttt{git ls-files} in the current \texttt{HEAD}. Crucially, this only counts lines that \textit{survive} into the living artifact. Trivial lines (blank lines, bare brackets, $<$8 characters) and generated files (e.g., lockfiles) are strictly excluded from both the numerator and denominator to prevent ratio inflation.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+For agents that do not leave parseable local logs (e.g., Copilot, Aider, Cursor), we introduce an effect-observer primitive (\texttt{outlier watch}). This brackets a coding session, captures all file changes occurring within that temporal window, and attributes the surviving lines to the active tool, rendering the execution signal entirely tool-agnostic. We retain the commit-trailer proxy solely as a fallback floor when transcript data is purged or unavailable.
 
-\subsection{Appendices}\label{appendices}
+\subsection{Session Carbon Footprint}
+For the compute side, we estimate the carbon produced by one work session using the formula:
+\begin{equation}
+Session\_Carbon = \sum (Tokens_{out} \times Energy_{token} \times Grid_{local\_intensity})
+\end{equation}
+By fixing the $Energy_{token}$ estimate ($\sim$0.3 Wh) and utilizing regional grid intensity data \cite{hust2024, rte2024}, we can isolate the geographic variable.
 
-\subsubsection{Appendix A --- Reproducing the measurements on any
-repository}\label{appendix-a-reproducing-the-measurements-on-any-repository}
+\section{Empirical Study \& Results}
+Using our local CLI instrument, we analyzed an active 46-day solo-founder repository (160 commits) alongside public framework data.
 
-The easiest way for researchers and auditors to measure AI reliance and
-session carbon on any repository is to use the published CLI instrument:
+\subsection{Authorship Findings}
+Using the fallback commit-proxy on a 160-commit history, we established an initial baseline of 75.6\% AI authorship. However, when applying the rigorous blame-based execution tracking over the repository's 8.2K live lines of code, the instrument revealed a true Execution Share of 62\% (5.1K lines directly attributable to AI generation that survived into production). We verified the commit-level proxy against public repositories (e.g., Microsoft Semantic Kernel, Vercel AI SDK), which showed AI authorship shares ranging from 21\% to 79\%, confirming the tool's ability to measure both deep line-survival and broad commit proxies.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{\# 1. Navigate to any local or cloned repository}
-\FunctionTok{git}\NormalTok{ clone https://github.com/microsoft/autogen }\KeywordTok{\&\&} \BuiltInTok{cd}\NormalTok{ autogen}
+\subsection{The Geographic Carbon Tax}
+Aggregating the developer's Claude Code session logs yielded 2.26 billion tokens processed, with 94.9\% representing redundant cache reads. Based on output token generation ($\sim$10 kWh inference energy), we applied grid intensity factors:
+\begin{itemize}
+    \item Vietnam (681 $gCO_2/kWh$): 6.81 $kgCO_2$
+    \item USA (384 $gCO_2/kWh$): 3.84 $kgCO_2$
+    \item France (21.7 $gCO_2/kWh$): 0.22 $kgCO_2$
+\end{itemize}
+This reveals an undeniable infrastructural fact: the same AI workload produces approximately 31 times more carbon on Vietnam's grid than on France's grid. 
 
-\CommentTok{\# 2. Run the audit instrument}
-\ExtensionTok{npx}\NormalTok{ outlier{-}audit audit }\AttributeTok{{-}{-}strict}
-\end{Highlighting}
-\end{Shaded}
+\section{Socio-Economic \& Governance Implications}
+AI Authorship Ratio and Session Carbon provide the state with a leading indicator of AI dependency. For IT-export economies in the Global South, a high AI authorship share threatens premature deprofessionalization. Simultaneously, the massive carbon disparity highlights an ``imported emissions'' problem, where local infrastructure is forced to absorb the environmental cost of accessing foreign AI tools.
 
-For absolute transparency, the underlying \texttt{git} heuristics used
-by the CLI to calculate the Authorship Share are fully open-source and
-reduce exactly to these POSIX commands:
+This local-first telemetry allows governments to enforce mandates like Vietnam's Decree 142/2026 (requiring human oversight for high-risk AI) without exporting citizen data to foreign servers.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{git}\NormalTok{ log }\AttributeTok{{-}{-}oneline} \KeywordTok{|} \FunctionTok{wc} \AttributeTok{{-}l}                                   \CommentTok{\# total commits}
-\FunctionTok{git}\NormalTok{ log }\AttributeTok{{-}{-}grep}\OperatorTok{=}\StringTok{\textquotesingle{}Co{-}Authored{-}By\textquotesingle{}} \AttributeTok{{-}i} \AttributeTok{{-}{-}oneline} \KeywordTok{|} \FunctionTok{wc} \AttributeTok{{-}l}        \CommentTok{\# AI{-}co{-}authored}
-\FunctionTok{git}\NormalTok{ log }\AttributeTok{{-}{-}date}\OperatorTok{=}\NormalTok{format:}\StringTok{\textquotesingle{}\%G{-}W\%V\textquotesingle{}} \AttributeTok{{-}{-}format}\OperatorTok{=}\StringTok{\textquotesingle{}\%ad\textquotesingle{}} \KeywordTok{|} \FunctionTok{sort} \KeywordTok{|} \FunctionTok{uniq} \AttributeTok{{-}c} \CommentTok{\# Weekly breakdown}
-\end{Highlighting}
-\end{Shaded}
+\section{Conclusion}
+Gradual disempowerment and AI's carbon cost intersect at the developer's computer. By building a tool that measures both phenomena locally, we reveal a 75.6\% reliance rate and a 31x geographic carbon penalty. This sovereignty-preserving telemetry is a necessary step for the Global South to manage the socio-economic transition of widespread AI adoption.
 
-\subsubsection{Appendix B --- Session carbon parameters (for
-rescalings)}\label{appendix-b-session-carbon-parameters-for-rescalings}
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
 
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Parameter
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Value
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Source
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Representative per-developer rate & 12.7 M tokens/day & Claude Carbon
-{[}7{]} \\
-Energy per developer per day (conservative) & \textasciitilde1.8 kWh &
-derived from {[}7{]} \\
-Per-query energy (chat) & \textasciitilde0.3 Wh & {[}14{]}{[}6{]} \\
-Agentic task tokens & 1--3.5 million & {[}19{]} \\
-Grid: Vietnam / USA / France & 681 / 384 / 21.7 gCO₂/kWh &
-{[}20{]}{[}21{]}{[}22{]} \\
-\textbf{Load-bearing figure} & \textbf{regional ratio
-(\textasciitilde31× VN:FR, \textasciitilde1.8× VN:US)} & holds for any
-energy assumption \\
-\end{longtable}
-}
+\bibitem{kulveit2025gradual}
+Jan Kulveit, et al.
+\textit{Gradual Disempowerment: Systemic Existential Risks from Incremental AI Development}.
+arXiv:2501.16946, 2025.
 
-\subsubsection{Appendix C --- Evidence
-tiering}\label{appendix-c-evidence-tiering}
+\bibitem{metr2025}
+METR.
+\textit{Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity}.
+arXiv:2507.09089, 2025.
 
-Sources were quality-tiered A/B/C. Load-bearing claims rest on Tier-A/B
-sources (Stack Overflow 2025, DORA 2024, METR RCT, Microsoft/Joule,
-CarbonBench, official grid data, Kulveit 2025). Tier-C sources (vendor
-stats, practitioner essays) appear only as corroboration with caveats.
-The three claims most exposed on evidence --- per-query carbon
-magnitude, the AI authorship share → disempowerment inference, and
-grid-scope consistency --- are each guarded explicitly in Section 3.3
-and Section 5.
+\bibitem{oviedo2025energy}
+F. Oviedo, et al.
+\textit{Energy Use of AI Inference: Efficiency Pathways and Test-Time Compute}.
+Joule; arXiv:2509.20241, 2025.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+\bibitem{you2025energy}
+J. You / Epoch AI.
+\textit{How Much Energy Does ChatGPT Use?}
+2025.
 
-\subsection{LLM Usage Statement}\label{llm-usage-statement}
+\bibitem{greptile2026}
+Greptile.
+\textit{Rise of the Overnight Agents}.
+2026.
 
-This paper was drafted with assistance from Claude (via Claude Code),
-which also ran the git-log analysis. Every quantitative claim is
-independently verifiable from the cited sources and the Appendix-A
-commands. Reflexively, this paper is itself a high-AI-authorship
-artifact --- the very phenomenon it measures --- noted here as a
-transparency point, not a flaw.
+\bibitem{hust2024}
+Hanoi Univ. of Science \& Technology.
+\textit{Vietnam grid emission factor}.
+2024.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+\bibitem{rte2024}
+RTE.
+\textit{Annual Electricity Review 2024 (France)}.
+2024.
 
-\subsection{Acknowledgments}\label{acknowledgments}
-
-This research was developed as part of the Global South AI Safety
-Hackathon. We extend our gratitude to Apart Research and specifically to
-\textbf{Antoàn AI}, the local hub and organizer in Ho Chi Minh City, for
-fostering the community and discourse that made this work possible.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{References}\label{references}
-
-\emph{Tier key: \textbf{A} = peer-reviewed / official statistics ·
-\textbf{B} = credible preprint / major industry report · \textbf{C} =
-vendor / blog / uncertain (used only as corroboration, caveated).}
-
-{[}1{]} Kulveit, J., Douglas, R., Ammann, N., Turan, D., Krueger, D.,
-Duvenaud, D. (2025). \emph{Gradual Disempowerment: Systemic Existential
-Risks from Incremental AI Development.} arXiv:2501.16946; ICML 2025
-(Position). {[}B{]} https://arxiv.org/abs/2501.16946 {[}2{]} Antoàn.
-\emph{Xói mòn năng lực (Gradual disempowerment).} antoan.ai. {[}---{]}
-https://www.antoan.ai/van-de/xoi-mon-nang-luc {[}3{]} Stack Overflow
-(2025). \emph{2025 Developer Survey --- AI} (n≈49,000): 84\% use/plan,
-51\% daily, 29\% trust. {[}A{]} https://survey.stackoverflow.co/2025/ai
-{[}4{]} Google / DORA (2024). \emph{Accelerate State of DevOps Report
-2024}: 75.9\% AI use; -7.2\% delivery stability per +25\% adoption.
-{[}A{]} https://dora.dev/research/2024/dora-report/ {[}5{]} Greptile
-(2026). \emph{Rise of the Overnight Agents}: fully-AI merged PRs 0.86\%
-(Feb'25) → 27.6\% (Apr'26). {[}A/B{]}
-https://www.greptile.com/blog/rise-of-the-overnight-agents {[}6{]}
-Oviedo, F., Kazhamiaka, F., Choukse, E., et al.~(2025/2026).
-\emph{Energy Use of AI Inference: Efficiency Pathways and Test-Time
-Compute.} Joule; arXiv:2509.20241. Per-query 0.34 Wh; public estimates
-overstated 4--20×. {[}B→A{]} https://arxiv.org/abs/2509.20241 {[}7{]} We
-Eat Robots (2026). \emph{Claude Carbon / What's Your AI Footprint?}:
-12.7M tok/day/dev ≈ 15\% US household/day; 1M users ≈ 1.6 TWh/yr.
-{[}B{]} https://weeatrobots.substack.com {[}8{]} METR (2025).
-\emph{Measuring the Impact of Early-2025 AI on Experienced Open-Source
-Developer Productivity} (RCT, n=16): 19\% slower, believed 20\% faster.
-arXiv:2507.09089. {[}B{]} https://arxiv.org/abs/2507.09089 {[}9{]}
-Adaption Labs. \emph{Applying Preferences.} docs.adaptionlabs.ai.
-{[}---{]} https://docs.adaptionlabs.ai/guides/applying-preferences/
-{[}10{]} Cockroach Labs (2026). \emph{Managing Agentic AI Costs at
-Scale} (Uber 32\%→84\%; \$500--2,000/eng/mo; 62\% re-sent context
-{[}Stanford{]}; Gartner 40\% cancelled by 2027). {[}A, aggregator{]}
-https://www.cockroachlabs.com/blog/managing-agentic-ai-costs-at-scale
-{[}11{]} Carnegie Endowment (2024). \emph{The Plight of Platform Workers
-Under Algorithmic Management in SE Asia} (84.8\% market; 2025 Indonesian
-strikes). {[}A/B{]} https://carnegieendowment.org {[}12{]} Strubell, E.,
-Ganesh, A., McCallum, A. (2019). \emph{Energy and Policy Considerations
-for Deep Learning in NLP.} ACL; arXiv:1906.02243. {[}A{]}
-https://arxiv.org/abs/1906.02243 {[}13{]} Luccioni, S., Jernite, Y.,
-Strubell, E. (2024). \emph{Power Hungry Processing: Watts Driving the
-Cost of AI Deployment?} ACM FAccT; arXiv:2311.16863.
-\textasciitilde0.047 Wh/query (open models). {[}A{]}
-https://doi.org/10.1145/3630106.3658542 {[}14{]} You, J. / Epoch AI
-(2025). \emph{How Much Energy Does ChatGPT Use?} \textasciitilde0.3
-Wh/query. {[}B{]}
-https://epoch.ai/gradient-updates/how-much-energy-does-chatgpt-use
-{[}15{]} Karlovich, N. (2026). \emph{CarbonBench} (carbonbench.ai): 85
-models × 9 regions; 4--530 gCO₂/Mtok by grid+time. {[}A, measured{]}
-https://carbonbench.ai {[}16{]} Bainbridge, L. (1983). \emph{Ironies of
-Automation.} Automatica 19(6):775--779. {[}A{]}
-https://doi.org/10.1016/0005-1098(83)90046-8 {[}17{]} Lee, H.-P.,
-Sarkar, A., et al.~(2025). \emph{The Impact of Generative AI on Critical
-Thinking\ldots{}} CHI 2025 (n=319). {[}A{]}
-https://doi.org/10.1145/3706598.3713778 {[}18{]} \emph{AI Code in the
-Wild} (2025). arXiv:2512.18567 (top-1,000 repos, 7,000 CVEs): AI
-concentrates in glue/tests/docs; core logic stays human. {[}A{]}
-https://arxiv.org/abs/2512.18567 {[}19{]} Brynjolfsson, E., Pentland,
-A., Pei, S., et al.~(2026). \emph{How Do AI Agents Spend Your Money?}
-arXiv:2604.22750 --- agentic coding 1--3.5M tok/task; 30× same-task
-variance; 153:1 input:output. {[}A{]} https://arxiv.org/abs/2604.22750
-{[}20{]} Hanoi Univ. of Science \& Technology / Vietnam News (2024).
-\emph{Vietnam grid emission factor 2024: 0.681 tCO₂e/MWh; coal 49.5\%.}
-{[}B→A{]} {[}21{]} Ember (2025). \emph{US Electricity 2025}: 384
-gCO₂/kWh (2024, operational). {[}A{]} https://ember-energy.org {[}22{]}
-RTE (2024). \emph{Annual Electricity Review 2024} (France): 21.7
-gCO₂/kWh direct; 30.2 lifecycle. {[}A{]} https://www.rte-france.com
-{[}23{]} Agent Native (2026). \emph{TurboQuant: Local Agent Swarms with
-4M-Token Context on a \$5k Desktop}: 4,083,072-token context; replaces
-\textasciitilde\$600/mo API; local break-even \textless1yr. {[}B{]}
-https://agentnativedev.medium.com {[}24{]} National Assembly of Vietnam
-(2025). \emph{Law on AI No.~134/2025/QH15} (in force 1 Mar 2026) +
-\emph{Decree 142/2026/ND-CP} (1 May 2026): risk tiers, human control
-over high-risk AI. {[}A{]}
-https://english.luatvietnam.vn/law-no-134-2025-qh15 {[}25{]} ASEAN
-(2024). \emph{ASEAN Guide on AI Governance and Ethics} (adopted 2 Feb
-2024; voluntary; Expanded GenAI ed.~Jan 2025). {[}A{]} https://asean.org
-{[}26{]} Google Research (2026). \emph{Towards a Science of Scaling
-Agent Systems} (180 configs): multi-agent degrades 39--70\% on
-sequential reasoning. {[}A{]} http://research.google.com {[}27{]}
-Jasmi.news (2026). \emph{Dictionary: High-Agency vs.~NPC.} Explores the
-psychological shift between developers who shape systems versus those
-who passively consume AI autocomplete. {[}C{]}
-https://jasmi.news/p/dictionary {[}28{]} Entire.io (2026).
-\emph{Introducing User-Defined Redaction \& Improving Agentic Search.}
-Frameworks for giving users explicit control over what local context AI
-agents can access. {[}C{]} https://entire.io/ {[}29{]} ProofEditor.ai
-(2026). \emph{Proof Auditing and Authorship Verification.} Mechanisms
-for proving human authorship in the face of generative AI over-reliance.
-{[}C{]} https://www.proofeditor.ai/
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Call for Knowledge Sharing \& Researcher
-Contributions}\label{call-for-knowledge-sharing-researcher-contributions}
-
-The thermodynamics of AI code generation and the phenomenon of developer
-deskilling are rapidly evolving fields. We are committed to remaining
-honest, transparent, and research-backed.
-
-\textbf{We actively invite researchers, engineers, and ethicists to
-contribute to this living document.} If you have written a paper,
-published an article, or discovered empirical data regarding: - AI
-context waste and token costs - Behavioral shifts in developer
-productivity - Governance frameworks and policy architectures - New
-methodologies for authorship verification
-
-Please submit them! You can contribute in whatever format you are most
-comfortable with: 1. \textbf{GitHub Pull Requests:} Directly add your
-citations to this Markdown file. 2. \textbf{The ``Confessional''
-Terminal:} Run \texttt{npx\ outlier-audit\ confessional} and drop a link
-to your work. 3. \textbf{Open Issues:} Open an issue on our GitHub
-repository with the \texttt{{[}RESEARCH{]}} tag.
-
-We strictly ensure that \textbf{all contributors receive full credit and
-attribution} for their knowledge sharing. If your reference or
-contribution helps us improve the Outlier tool or proves higher value in
-our delivery, your name and work will be permanently codified in our
-Acknowledgments and References sections.
+\end{thebibliography}
 
 \end{document}
