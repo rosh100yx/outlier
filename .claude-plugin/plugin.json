@@ -1,18 +1,12 @@
 {
   "name": "outlier",
-  "version": "0.10.0",
-  "description": "Point-of-use AI governance for Claude Code. A once-per-day pre-flight greeting (AI reliance + agent blast radius) when you start a session. Local-first — nothing leaves your machine.",
-  "author": { "name": "Roshan Abraham", "url": "https://github.com/rosh100yx/outlier" },
+  "version": "0.23.0",
+  "description": "Point-of-use AI governance: measures AI reliance, carbon, and agent blast radius. Local-first CLI + audit pipeline.",
+  "author": { "name": "Roshan Abraham", "url": "https://github.com/rosh100yx" },
   "homepage": "https://github.com/rosh100yx/outlier",
   "license": "MIT",
   "keywords": ["ai-governance", "ai-safety", "blast-radius", "deskilling", "local-first"],
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          { "type": "command", "command": "npx -y outlier-audit daily-greeting 2>/dev/null", "timeout": 10 }
-        ]
-      }
-    ]
+  "peerDependencies": {
+    "outlier-learn": ">=0.1.0"
   }
 }
