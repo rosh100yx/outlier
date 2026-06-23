@@ -12,9 +12,16 @@
 import { execSync } from 'child_process';
 import type { AuthorshipStats } from './git';
 import { getTokenAuthorship, type TokenAuthorship } from './agentic';
+import { getEditAuthorship, type EditAuthorship } from './edits';
 
 export interface Contribution {
-  execution: { aiPercent: number; source: 'tokens' | 'commit-tags' | 'none' };
+  execution: {
+    aiPercent: number;
+    source: 'edits' | 'commit-tags' | 'none';
+    // raw line counts when source==='edits', so the % is auditable
+    aiAddedLines?: number;
+    gitAddedLines?: number;
+  };
   intent:    { prompts: number | null; promptTokens: number | null };
   oversight: { iterationRate: number; iterationCommits: number; totalCommits: number };
   label: string;
@@ -39,12 +46,24 @@ function getOversight(cwd: string): { iterationRate: number; iterationCommits: n
 
 export function buildContribution(gitStats: AuthorshipStats | null, cwd: string = process.cwd()): Contribution {
   const tok: TokenAuthorship = getTokenAuthorship(cwd);
+  const edits: EditAuthorship = getEditAuthorship(cwd);
 
-  // Execution: prefer the token signal (honest for agentic work); fall back to commit tags.
+  // Execution: prefer EDIT attribution — lines an agent actually wrote to repo files,
+  // measured against git's shipped additions. That is denominated in the artifact, not
+  // in chat tokens. Fall back to commit tags (weak) only when no agent writes are on record.
   let execution: Contribution['execution'];
-  if (tok.found) execution = { aiPercent: tok.aiPercent, source: 'tokens' };
-  else if (gitStats) execution = { aiPercent: +(gitStats.ratio * 100).toFixed(1), source: 'commit-tags' };
-  else execution = { aiPercent: 0, source: 'none' };
+  if (edits.found) {
+    execution = {
+      aiPercent: edits.aiPercent,
+      source: 'edits',
+      aiAddedLines: edits.aiAddedLines,
+      gitAddedLines: edits.gitAddedLines,
+    };
+  } else if (gitStats) {
+    execution = { aiPercent: +(gitStats.ratio * 100).toFixed(1), source: 'commit-tags' };
+  } else {
+    execution = { aiPercent: 0, source: 'none' };
+  }
 
   const intent = tok.found
     ? { prompts: tok.prompts, promptTokens: tok.humanPromptTokens }
@@ -53,15 +72,23 @@ export function buildContribution(gitStats: AuthorshipStats | null, cwd: string 
   const ov = getOversight(cwd);
   const oversight = { iterationRate: ov.iterationRate, iterationCommits: ov.iterationCommits, totalCommits: ov.total };
 
-  // Judgment — combine the axes. The point: high AI execution is fine IF intent + oversight
-  // are present (you're a Centaur/Director); it's the deskilling risk only when they're absent.
+  // Judgment — combine the axes. execution.aiPercent is a LOWER bound: a low number can
+  // mean "you hand-wrote it" OR "most shipped lines are imported/pasted prose, not agent
+  // code." The two are told apart by intent: someone firing hundreds of prompts is steering
+  // agents, not hand-coding — so a low execution % there is denominator composition, not
+  // craftsmanship. Only call it Artisan when low AI coincides with little agent direction.
   const ai = execution.aiPercent;
+  const STEER_MIN = 20; // prompts below this = incidental, not meaningful direction
   const reviews = oversight.iterationRate >= 0.15;
-  const steers = (intent.prompts ?? 0) > 0;
+  const steers = (intent.prompts ?? 0) >= STEER_MIN;
   let label: string, judgment: string;
-  if (ai < 30) {
+  if (ai < 30 && !steers) {
     label = 'Artisan';
-    judgment = 'You write most of the code yourself. Low deskilling risk.';
+    judgment = 'Little agent code, little agent direction — you hand-write this. Low deskilling risk.';
+  } else if (ai < 30 && steers) {
+    // Heavy direction but few shipped lines trace to an agent: mixed/prose repo, or pasted code.
+    label = reviews ? 'Centaur' : 'Director';
+    judgment = `You direct agents heavily (${intent.prompts} prompts), yet only ${ai}% of shipped lines trace to one — the rest is hand-written, imported, or pasted. The execution % is a floor, not the whole story.`;
   } else if (reviews && steers) {
     label = 'Centaur';
     judgment = 'AI writes most of it, but you steer and you iterate/review. Healthy — you keep the judgment.';

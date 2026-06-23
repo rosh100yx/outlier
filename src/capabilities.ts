@@ -1,6 +1,7 @@
 import { homedir } from 'os';
 import { join } from 'path';
 import { existsSync, readdirSync, readFileSync } from 'fs';
+import { findRepoTranscriptDirs } from './agentic';
 
 // Reach = what a tool can actually do to you if an agent (or a prompt injection) drives it.
 export type Reach = 'read' | 'network' | 'model' | 'data' | 'write-local' | 'write-remote' | 'deploy' | 'exec' | 'money';
@@ -8,18 +9,49 @@ export type Reach = 'read' | 'network' | 'model' | 'data' | 'write-local' | 'wri
 export interface ToolReach {
   name: string;
   reach: Reach;
+  observed: boolean;   // was this server actually called in this repo's sessions?
 }
 
 export type BlastRadius = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export interface CapabilitiesStats {
   mcps: ToolReach[];
+  mcpsObserved: number;   // configured servers actually called in this repo's sessions
+  mcpsLatent: number;     // configured but never called = reachable surface, zero benefit
   skills: string[];
   subagents: number;
   hooks: string[];        // lifecycle events with auto-firing hooks
   hasOrchestration: boolean;
   blastRadius: BlastRadius;
   blastReasons: string[]; // plain-language reasons for the score
+}
+
+// Which configured MCP servers were actually invoked in this repo's sessions?
+// Tool calls appear as `mcp__<server>__<tool>` in the transcripts. A configured server
+// that is never called is pure attack surface: an injection can still drive it, but you
+// get no benefit from carrying the risk. Names are matched loosely (config key vs the
+// server segment of the tool name, which can differ in punctuation/case).
+function observedMcpServers(repoPath: string, homeDirPath: string): Set<string> {
+  const seen = new Set<string>();
+  const re = /mcp__([a-zA-Z0-9_.-]+)__/g;
+  for (const dir of findRepoTranscriptDirs(repoPath, homeDirPath)) {
+    let files: string[] = [];
+    try { files = readdirSync(dir).filter(f => f.endsWith('.jsonl')); } catch { continue; }
+    for (const f of files) {
+      let text = '';
+      try { text = readFileSync(join(dir, f), 'utf-8'); } catch { continue; }
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(text))) { if (m[1]) seen.add(m[1].toLowerCase()); }
+    }
+  }
+  return seen;
+}
+
+const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+function wasObserved(serverName: string, observed: Set<string>): boolean {
+  const n = norm(serverName);
+  for (const o of observed) { const no = norm(o); if (no === n || no.includes(n) || n.includes(no)) return true; }
+  return false;
 }
 
 // Classify an MCP/tool by name into a reach category. Keyword-based, since names vary.
@@ -92,7 +124,10 @@ export async function getCapabilitiesStats(repoPath: string = process.cwd(), hom
     try { readdirSync(geminiMcp, { withFileTypes: true }).filter(d => d.isDirectory()).forEach(d => mcpNames.add(d.name)); } catch {}
   }
 
-  const mcps: ToolReach[] = [...mcpNames].map(name => ({ name, reach: classifyReach(name) }));
+  const observed = observedMcpServers(repoPath, homeDirPath);
+  const mcps: ToolReach[] = [...mcpNames].map(name => ({ name, reach: classifyReach(name), observed: wasObserved(name, observed) }));
+  const mcpsObserved = mcps.filter(m => m.observed).length;
+  const mcpsLatent = mcps.length - mcpsObserved;
 
   // Skills
   const skills: string[] = [];
@@ -116,6 +151,9 @@ export async function getCapabilitiesStats(repoPath: string = process.cwd(), hom
   const hasOrchestration = existsSync(join(repoPath, 'AGENTS.md')) || existsSync(join(repoPath, '.mcp.json'));
 
   const { radius, reasons } = scoreBlast(mcps.map(m => m.reach));
+  // Latent surface: reachable-but-unused tools carry risk for no benefit. Flag the risky ones.
+  const latentRisky = mcps.filter(m => !m.observed && ['money', 'exec', 'deploy', 'write-remote', 'write-local', 'data'].includes(m.reach)).length;
+  if (latentRisky > 0) reasons.push(`${latentRisky} write/deploy/money tool${latentRisky > 1 ? 's' : ''} reachable but never used`);
 
-  return { mcps, skills, subagents, hooks, hasOrchestration, blastRadius: radius, blastReasons: reasons };
+  return { mcps, mcpsObserved, mcpsLatent, skills, subagents, hooks, hasOrchestration, blastRadius: radius, blastReasons: reasons };
 }
