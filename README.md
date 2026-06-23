@@ -1,8 +1,8 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/cover.jpg" alt="Outlier: AI Code Governance and Policy Engine" width="100%" />
   <h1>Outlier: The Governance & Policy Engine for AI Engineering</h1>
-  <p><b>Measure AI adoption. See what your agents can reach. Keep your skill.</b></p>
-  <p><i>A local-first CLI for when you are building in a room full of agents — it measures how much of your code AI wrote, what it cost, and what your agents can actually touch, all without a single byte leaving your terminal.</i></p>
+  <p><b>See how much of your code is AI's, what it cost, what your agents can reach — and turn what the AI wrote into skills you actually learn.</b></p>
+  <p><i>A local-first CLI for building in a room full of agents. It measures how much of your code AI wrote (honestly — it abstains when it can't tell), what it cost, and what your agents can actually touch — works with any tool via <code>outlier watch</code>, not just Claude Code, and never sends a byte off your machine.</i></p>
   <br/>
   
   <p>
@@ -30,13 +30,9 @@
   │ █▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█  :: CODE AUDIT                          │
   │ █▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄  :: my-repo · JUN 23, 2026              │
   ├──────────────────────────────────────────────────────────────────┤
-  │  WHO WROTE THE CODE   execution is only one axis                 │
-  │ Execution  62% AI (blame · 5.1K of 8.2K live lines)              │
-  │ Intent     240 prompts · ~180K tokens you typed                  │
-  │ Oversight  18% fix/refactor/review commits (29/160)              │
-  │                                                                  │
-  │ Centaur — AI writes most of it, but you steer and review.        │
-  │ Blind: copy-paste from chat is invisible; prompt quality unmeas… │
+  │  WHAT YOUR AGENTS CAN REACH                                      │
+  │ Blast radius   HIGH · 13 tools, 5 can write/deploy · 6 unused    │
+  │ Full map (deploy/push/write tools): outlier capabilities         │
   ├──────────────────────────────────────────────────────────────────┤
   │  WHAT IT COST                                                    │
   │ New tokens       3.1M (work done)                                │
@@ -46,17 +42,22 @@
   │ Energy           0.12kg CO2 (Global Average grid)                │
   │ Source: estimated · Claude Code transcripts                      │
   ├──────────────────────────────────────────────────────────────────┤
-  │  WHAT YOUR AGENTS CAN REACH                                      │
-  │ Blast radius   HIGH · 13 tools, 5 can write/deploy · 6 unused    │
-  │ Full map (deploy/push/write tools): outlier capabilities         │
-  ├──────────────────────────────────────────────────────────────────┤
   │  YOUR LIMIT                                                      │
   │ AI cap   70% · change with: outlier policy                       │
   │ Status   Within limit · Nothing to do.                           │
   ├──────────────────────────────────────────────────────────────────┤
+  │ Who wrote the code · a mirror, not a verdict · outlier learn     │
+  │ Execution  62% AI (blame · 5.1K of 8.2K live lines)              │
+  │ Intent     240 prompts · ~180K tokens you typed                  │
+  │ Oversight  64% · 18/160 rework commits · 240/380 in-session rev. │
+  │                                                                  │
+  │ Centaur — AI writes most of it, but you steer and review.        │
+  │ Blind: copy-paste from chat is invisible; prompt quality unmeas… │
+  ├──────────────────────────────────────────────────────────────────┤
   │  WHAT TO DO                                                      │
   │ ⚠ Blast radius HIGH                                              │
   │   → Disable the write/deploy MCP tools you don't need now.       │
+  │ → Learn what the AI wrote: outlier learn — one skill to unlock   │
   └──────────────────────────────────────────────────────────────────┘
   ```
 </div>
@@ -148,10 +149,12 @@ later runs. To replay it: `rm ~/.outlier_config`.
 
 | Capability | Ungoverned AI | Outlier Governed |
 |------------|---------------|------------------|
-| **Deskilling** | Silent skill atrophy | Flags high AI-authorship as a deskilling risk |
-| **Commit Gate**| Ships AI code unchecked | A local hook *warns* when AI authorship is over your limit |
-| **Context** | Blind token spend | Surfaces re-used context (the part that's most of your bill) |
-| **Agent reach** | Opaque MCP access | Maps what your agents can reach + a **blast-radius** score |
+| **Authorship** | You can't tell how much is yours | Blame-based, content-matched, team-scoped — and it abstains rather than guess |
+| **Skill** | The AI's code teaches you nothing | `outlier learn` turns a technique it used into a lesson with the `file:line` in your repo |
+| **Agent reach** | Opaque MCP access | Maps what your agents can reach + a **blast-radius** score; flags unused-but-reachable tools |
+| **Context cost** | Blind token spend | Splits new work from re-sent context (most of your bill) |
+| **Any tool** | Only Claude leaves a readable log | `outlier watch` captures Cursor/Aider/Copilot/… by their file changes |
+| **Commit gate** | Ships AI code unchecked | A local hook *warns* when AI authorship is over your limit |
 | **Agents & CI** | No machine signal | `--json` audit a supervisor agent or pipeline can act on |
 
 ## Commands
@@ -235,19 +238,25 @@ If you run `npx outlier-audit` directly, you'll instantly get your audit receipt
    ```bash
    npx outlier-audit
    ```
-   *See who wrote the code, what it cost, and what your agents can reach.*
+   *See who wrote the code, what it cost, and what your agents can reach. (First run also asks you to set a governance cap.)*
 
-2. **Set a limit (optional)**
+2. **Learn what the AI wrote**
    ```bash
-   npx outlier-audit policy
+   npx outlier-audit learn
    ```
-   *Pick a tier (e.g. "Team — 70% max AI"). It installs a local pre-commit hook that **warns** when AI authorship goes over your limit — it never silently blocks your work.*
+   *One technique the agent used in your code — concept, the `file:line` in your repo, and a 30-second challenge. Coach, not judge.*
 
-3. **Wire it into agents or CI**
+3. **Capture any tool (not just Claude Code)**
    ```bash
-   npx outlier-audit --json
+   npx outlier-audit watch -- cursor-agent     # or aider, codex, claude…
    ```
-   *A clean JSON audit a supervisor agent, a swarm, or a CI pipeline can read and act on.*
+   *Observe an agent by its file changes, so its work counts even if it leaves no readable log.*
+
+4. **Set a limit & wire into CI (optional)**
+   ```bash
+   npx outlier-audit policy     # local pre-commit hook that WARNS, never blocks
+   npx outlier-audit --json     # machine-readable audit for a supervisor agent or pipeline
+   ```
 
 ## Theoretical Foundations
 `outlier` is the live, technical implementation of an academic thesis on the thermodynamics of AI code generation and digital sovereignty. 
@@ -281,26 +290,24 @@ This tool is the technical implementation of an ongoing academic thesis on the t
 
 See our [Contributing Guide](CONTRIBUTING.md) to get started. Great first issues include adding new regional grid factors to `data/grid-factors.json` or writing custom CI/CD pipeline integrations.
 
-## The Compounding Horizon of AI Deskilling
+## Why outlier exists
 
-When you use an AI agent to skip the boring stuff today, it feels amazing. You get your time back. But what happens over the next 5 to 10 years? 
+AI writing your code is not the problem. **Losing track of it is.**
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/metr-long-tasks.png" alt="METR Graph" width="350" />
-  <p><i>Source: METR (Measuring AI Ability to Complete Long Tasks)</i></p>
-</div>
+Every month, agents write more of what ships under your name. That is good leverage — *as long as you stay the author of your own judgment.* The risk isn't some 10-year apocalypse; it's the quiet, present-tense gap you already have:
 
-### What Does This Mean For Developers?
-- **Today (The 5-minute task):** You gain speed. You lose the muscle memory of writing low-level code.
-- **Tomorrow (The 5-hour task):** Agents will solve complex tickets across multiple files. You gain massive scale. You lose the deep, intimate understanding of your own system's architecture.
-- **Next 5-10 Years (The 1M+ LOC Crisis):** When an agent introduces a critical bug in a massive codebase, human reviewers will lack the deeply ingrained "systems thinking" required to debug it. 
+- You can't see **how much** of your codebase is actually yours.
+- You can't see **what your agents can reach** — which of them can deploy, push, or move money if a prompt injection drives them.
+- You can't see **what it cost** — most of your token bill is re-sent context, not work.
+- And the code the AI wrote teaches you nothing — unless something turns it into a lesson.
 
-### Why This Project Exists
-`outlier` is the technical circuit breaker that forces developers to stay sharp. We measure the exact cost of AI for humans—not just in API tokens burnt, but in cognitive load and lost mastery. 
+Outlier closes that gap, locally, in about 90 seconds. It's a **mirror, not a verdict**: it measures honestly (and abstains rather than guess when it can't tell), shows your real security surface, and — instead of scolding you about "deskilling" — turns the techniques the AI used into skills you can actually learn (`outlier learn`). Keep the speed. Keep the skill.
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/rosh100yx/outlier/main/assets/codecore.gif" alt="Codecore Aesthetic" width="300" />
 </div>
+
+> The macro picture — how fast agents are taking on longer tasks, and what that means for review and oversight — is laid out (with the METR data) in `outlier impact` and the [research](paper/measuring-ai-use.md). It's context, not a scare graphic: the point is to close the understanding gap on purpose, not to panic about it.
 
 ## License
 MIT License
