@@ -237,7 +237,14 @@ async function main() {
 
   const configPath = join(os.homedir(), '.outlier_config');
   if (!existsSync(configPath) && !action) {
-    await runOnboarding();
+    // Onboarding has an interactive confirm(); only run it in a real terminal.
+    // In CI / piped / non-interactive contexts (incl. some npx setups) skip it so we
+    // never hang, and go straight to the audit.
+    if (process.stdin.isTTY) {
+      await runOnboarding();
+    } else {
+      try { writeFileSync(configPath, JSON.stringify({ onboarded: true, date: new Date().toISOString() })); } catch {}
+    }
     action = 'status'; // auto-run status after onboarding
   }
 
