@@ -1,5 +1,6 @@
 use rayon::prelude::*;
 use serde::Deserialize;
+use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
@@ -8,18 +9,21 @@ use walkdir::WalkDir;
 struct TokenStats {
     prompt_tokens: u64,
     output_tokens: u64,
+    cache_read_tokens: u64,
 }
 
 #[derive(Deserialize)]
 struct ClaudeMessageUsage {
+    input_tokens: Option<u64>,
     output_tokens: Option<u64>,
+    cache_creation_input_tokens: Option<u64>,
+    cache_read_input_tokens: Option<u64>,
 }
 
 #[derive(Deserialize)]
 struct ClaudeMessage {
     role: Option<String>,
     usage: Option<ClaudeMessageUsage>,
-    content: Option<serde_json::Value>,
 }
 
 #[derive(Deserialize)]
@@ -27,17 +31,19 @@ struct ClaudeLog {
     message: Option<ClaudeMessage>,
 }
 
-#[derive(Deserialize)]
-struct GeminiLog {
-    #[serde(rename = "type")]
-    entry_type: Option<String>,
-    content: Option<String>,
-    thinking: Option<String>,
+fn claude_project_slug(cwd: &str) -> String {
+    let mut s = cwd.replace('/', "-");
+    if s.starts_with('-') {
+        s.remove(0);
+    }
+    s
 }
 
-fn parse_claude_logs(base_dir: &Path) -> TokenStats {
+fn parse_claude_logs(base_dir: &Path, cwd: &str) -> TokenStats {
     let mut stats = TokenStats::default();
-    let claude_dir = base_dir.join(".claude").join("projects");
+    let slug = claude_project_slug(cwd);
+    let claude_dir = base_dir.join(".claude").join("projects").join(slug);
+    
     if !claude_dir.exists() {
         return stats;
     }
@@ -49,7 +55,6 @@ fn parse_claude_logs(base_dir: &Path) -> TokenStats {
         .map(|e| e.path().to_path_buf())
         .collect();
 
-    // Use Rayon to process files in parallel
     let file_stats: Vec<TokenStats> = jsonl_files
         .par_iter()
         .map(|file| {
@@ -59,17 +64,10 @@ fn parse_claude_logs(base_dir: &Path) -> TokenStats {
                     if line.trim().is_empty() { continue; }
                     if let Ok(log) = serde_json::from_str::<ClaudeLog>(line) {
                         if let Some(msg) = log.message {
-                            match msg.role.as_deref() {
-                                Some("assistant") => {
-                                    if let Some(usage) = msg.usage {
-                                        local_stats.output_tokens += usage.output_tokens.unwrap_or(0);
-                                    }
-                                }
-                                Some("user") => {
-                                    // Extremely rough proxy for testing
-                                    local_stats.prompt_tokens += 10; 
-                                }
-                                _ => {}
+                            if let Some(usage) = msg.usage {
+                                local_stats.output_tokens += usage.output_tokens.unwrap_or(0);
+                                local_stats.prompt_tokens += usage.input_tokens.unwrap_or(0) + usage.cache_creation_input_tokens.unwrap_or(0);
+                                local_stats.cache_read_tokens += usage.cache_read_input_tokens.unwrap_or(0);
                             }
                         }
                     }
@@ -82,73 +80,33 @@ fn parse_claude_logs(base_dir: &Path) -> TokenStats {
     for s in file_stats {
         stats.prompt_tokens += s.prompt_tokens;
         stats.output_tokens += s.output_tokens;
+        stats.cache_read_tokens += s.cache_read_tokens;
     }
 
-    stats
-}
-
-fn parse_gemini_logs(base_dir: &Path) -> TokenStats {
-    let mut stats = TokenStats::default();
-    
-    for tool in ["antigravity-cli", "antigravity-ide"] {
-        let brain_dir = base_dir.join(".gemini").join(tool).join("brain");
-        if !brain_dir.exists() {
-            continue;
-        }
-
-        let jsonl_files: Vec<PathBuf> = WalkDir::new(brain_dir)
-            .into_iter()
-            .filter_map(Result::ok)
-            .filter(|e| e.path().extension().map_or(false, |ext| ext == "jsonl"))
-            .map(|e| e.path().to_path_buf())
-            .collect();
-
-        let file_stats: Vec<TokenStats> = jsonl_files
-            .par_iter()
-            .map(|file| {
-                let mut local_stats = TokenStats::default();
-                if let Ok(content) = fs::read_to_string(file) {
-                    for line in content.lines() {
-                        if line.trim().is_empty() { continue; }
-                        if let Ok(log) = serde_json::from_str::<GeminiLog>(line) {
-                            if let Some(t) = log.entry_type {
-                                if t == "USER_INPUT" {
-                                    let len = log.content.map_or(0, |c| c.len() as u64);
-                                    local_stats.prompt_tokens += len / 4;
-                                } else if t == "PLANNER_RESPONSE" {
-                                    let len = log.thinking.map_or(0, |c| c.len() as u64);
-                                    local_stats.output_tokens += len / 4;
-                                }
-                            }
-                        }
-                    }
-                }
-                local_stats
-            })
-            .collect();
-
-        for s in file_stats {
-            stats.prompt_tokens += s.prompt_tokens;
-            stats.output_tokens += s.output_tokens;
-        }
-    }
     stats
 }
 
 fn main() {
-    println!("Starting Outlier Telemetry Engine (Rust Core)...");
-    
+    let args: Vec<String> = env::args().collect();
+    let cwd = if args.len() > 1 {
+        args[1].clone()
+    } else {
+        env::current_dir().unwrap_or_default().to_string_lossy().to_string()
+    };
+
     if let Some(home_dir) = dirs::home_dir() {
-        let start = std::time::Instant::now();
+        let claude_stats = parse_claude_logs(&home_dir, &cwd);
         
-        let claude_stats = parse_claude_logs(&home_dir);
-        let gemini_stats = parse_gemini_logs(&home_dir);
+        let out = serde_json::json!({
+            "claude": {
+                "outputTokens": claude_stats.output_tokens,
+                "promptTokens": claude_stats.prompt_tokens,
+                "cacheReadTokens": claude_stats.cache_read_tokens,
+            }
+        });
         
-        let duration = start.elapsed();
-        
-        println!("Parsed all local telemetry in {:?}", duration);
-        println!("Claude: {} output tokens", claude_stats.output_tokens);
-        println!("Gemini: {} output tokens", gemini_stats.output_tokens);
-        println!("Performance: Multi-threaded mmap JSONL parsing achieved.");
+        println!("{}", out.to_string());
+    } else {
+        println!("{}", serde_json::json!({"error": "No home dir"}).to_string());
     }
 }
