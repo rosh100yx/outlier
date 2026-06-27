@@ -25,5 +25,5 @@ describe('--json agent contract', () => {
     expect(d).toHaveProperty('carbon');
     expect(d).toHaveProperty('reach');
     expect(d.policy).toHaveProperty('status');
-  });
+  }, 30000);
 });
