@@ -24,16 +24,58 @@ export interface CarbonStats {
   localRegion: string;
   sessions: number;
   estUsd: number;          // estimated spend in USD
+  estCacheUsd: number;     // estimated spend on cache/context re-reads
   costIsReal: boolean;     // true if summed from the log's own cost field, false if estimated
   tokenProvenance: Provenance;
   carbonProvenance: Provenance;
   sourceLabel: string;     // e.g. "estimated · Claude Code transcripts"
 }
 
-// Rough blended token pricing (USD per 1M tokens) for when the log has no cost field.
-function estimateUsd(output: number, cacheRead: number, total: number): number {
+const DEFAULT_PRICING = { out: 9.00,  in: 3.00, cache: 0.30 };
+
+const MODEL_PRICING: Record<string, { out: number, in: number, cache: number }> = {
+  'opus':    { out: 15.00, in: 3.00, cache: 0.30 }, // Claude 3 Opus
+  'sonnet':  { out: 15.00, in: 3.00, cache: 0.30 }, // Claude 3.5 Sonnet
+  'haiku':   { out: 1.25,  in: 0.25, cache: 0.03 }, // Claude 3.5 Haiku
+  'gpt-4':   { out: 30.00, in: 10.00, cache: 5.00 },
+  'gpt-4o':  { out: 10.00, in: 2.50, cache: 1.25 },
+  'gemini':  { out: 4.00,  in: 1.00, cache: 0.25 }, // Gemini 1.5 Pro
+  'flash':   { out: 0.30,  in: 0.075,cache: 0.02 }, // Gemini 1.5 Flash
+  'local':   { out: 0.00,  in: 0.00, cache: 0.00 },
+  'default': DEFAULT_PRICING, 
+};
+
+import { modelClass } from './emissions';
+
+function estimateUsd(output: number, cacheRead: number, total: number, outputByModel: Record<string, number>): { total: number, cache: number } {
   const otherInput = Math.max(0, total - output - cacheRead);
-  return (output / 1e6) * 9 + (cacheRead / 1e6) * 0.3 + (otherInput / 1e6) * 3;
+  
+  if (output === 0) {
+    // Fallback if no output tokens to weight by
+    const cacheCost = (cacheRead / 1e6) * DEFAULT_PRICING.cache;
+    const inputCost = (otherInput / 1e6) * DEFAULT_PRICING.in;
+    return { total: cacheCost + inputCost, cache: cacheCost };
+  }
+
+  let totalCost = 0;
+  let cacheCost = 0;
+  for (const [m, outTokens] of Object.entries(outputByModel)) {
+    const cls = modelClass(m);
+    const pricing = MODEL_PRICING[cls] ?? DEFAULT_PRICING;
+    
+    // Allocate cache and input proportionally to this model's output
+    const ratio = outTokens / output;
+    const modelCache = cacheRead * ratio;
+    const modelInput = otherInput * ratio;
+    
+    totalCost += (outTokens / 1e6) * pricing.out;
+    const cCost = (modelCache / 1e6) * pricing.cache;
+    cacheCost += cCost;
+    totalCost += cCost;
+    totalCost += (modelInput / 1e6) * pricing.in;
+  }
+  
+  return { total: totalCost, cache: cacheCost };
 }
 
 // #6 CodeCarbon: if the developer runs CodeCarbon, it writes a real MEASURED
@@ -112,7 +154,13 @@ export async function getCarbonStats(): Promise<CarbonStats> {
   const sources = detectSources(cwd);
 
   const costIsReal = loggedCost > 0;
-  const estUsd = costIsReal ? loggedCost : estimateUsd(outputTokens, cacheReadTokens, totalTokens);
+  let estUsd = loggedCost;
+  let estCacheUsd = 0;
+  if (!costIsReal) {
+    const estimated = estimateUsd(outputTokens, cacheReadTokens, totalTokens, outputByModel);
+    estUsd = estimated.total;
+    estCacheUsd = estimated.cache;
+  }
 
   return {
     totalTokens,
@@ -125,6 +173,7 @@ export async function getCarbonStats(): Promise<CarbonStats> {
     localRegion: measured ? 'CodeCarbon (measured)' : localGrid.region,
     sessions,
     estUsd,
+    estCacheUsd,
     costIsReal,
     tokenProvenance: sources.tokenSource.provenance,
     carbonProvenance: sources.carbonSource.provenance,

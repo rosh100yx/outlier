@@ -707,9 +707,10 @@ ${tokenBlock}`,
         // (The old @clack dashboard panel was removed: it duplicated the receipt's
         // numbers in a second format, doubling the output on every run.)
         const isInefficient = parseFloat(cachePct) > 40;
-        const cacheVerdict = isInefficient ? pc.yellow('Lots of re-reads') : pc.green('Lean');
+        const cacheVerdict = isInefficient ? pc.yellow('High Context Tax') : pc.green('Lean');
+        const cacheCostStr = carbon && carbon.estCacheUsd > 0 ? ` (~$${carbon.estCacheUsd.toFixed(2)})` : '';
         const cacheText = isInefficient
-          ? `Most of your tokens just re-send old context.\n   It's normal for agents, but it's most of the bill.`
+          ? `You are burning money re-sending context${cacheCostStr}.\n   → Start a fresh session to flush the context window.`
           : `Little wasted context. Your spend is mostly\n   real work.`;
 
         const policyStatus = ruleFailures > 0 ? pc.red('Over your limit') : pc.green('Within limit');
