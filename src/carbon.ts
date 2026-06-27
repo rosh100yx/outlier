@@ -128,6 +128,9 @@ export async function getCarbonStats(): Promise<CarbonStats> {
     costIsReal,
     tokenProvenance: sources.tokenSource.provenance,
     carbonProvenance: sources.carbonSource.provenance,
-    sourceLabel: provLabel(sources.tokenSource)
+    sourceLabel: sources.tokenSources
+      .filter(s => s.provenance !== 'none')
+      .map(s => provLabel(s))
+      .join(', ') || 'no local data'
   };
 }
