@@ -68,7 +68,7 @@ function closeBox(s: string, W = 66): string {
 
 // Build a stable, machine-readable audit object. This is the contract agents,
 // swarms, and CI parse — everything the human receipt shows, as plain JSON.
-async function emitJson() {
+async function emitJson(sinceRef?: string) {
   const pkg = require('../package.json');
   const [gitStats, carbon, caps] = await Promise.all([
     getAuthorshipStats().catch(() => null),
@@ -102,7 +102,7 @@ async function emitJson() {
         aiPercent: t.aiPercent, aiOutputTokens: t.aiOutputTokens, humanPromptTokens: t.humanPromptTokens, sessions: t.sessions,
       } : null; })(),
       // 3-axis contribution profile: execution + intent + oversight + a judgment.
-      contribution: (() => { const c = buildContribution(gitStats); return {
+      contribution: (() => { const c = buildContribution(gitStats, process.cwd(), sinceRef); return {
         label: c.label, judgment: c.judgment,
         execution: c.execution, intent: c.intent, oversight: c.oversight,
         blindSpots: c.blindSpots,
@@ -264,6 +264,7 @@ async function whatNext() {
         { value: 'impact',        label: 'Impact over time',            hint: 'the macro shadow' },
         { value: 'authorship',    label: 'Just authorship',             hint: 'AI vs human commits' },
         { value: 'carbon',        label: 'Just cost & carbon',          hint: 'tokens, waste, CO2' },
+        { value: 'contributors',  label: 'Non-code contributors',       hint: 'Points for docs & research' },
         { value: 'status',        label: 'Re-run the full audit',       hint: '' },
         { value: 'knowledge',     label: 'The research behind it',      hint: '' },
         { value: 'exit',          label: 'Exit',                        hint: 'or press Esc' },
@@ -356,7 +357,9 @@ async function main() {
   // Agent / CI / swarm contract: --json emits a structured audit and nothing else
   // (no logo, no spinner, no ANSI). This is how an agent perceives outlier.
   if (process.argv.includes('--json')) {
-    await emitJson();
+    const sinceIdx = process.argv.indexOf('--since');
+    const sinceRef = sinceIdx !== -1 ? process.argv[sinceIdx + 1] : undefined;
+    await emitJson(sinceRef);
     process.exit(0);
   }
 
@@ -378,6 +381,7 @@ async function main() {
     console.log(`  ${pc.cyan(CMD + ' --json')}       Machine-readable audit (for agents, CI, swarms)`);
     console.log(`  ${pc.cyan(CMD + ' authorship')}   Just the AI-vs-human commit breakdown`);
     console.log(`  ${pc.cyan(CMD + ' carbon')}       Just the token spend, cache waste & carbon`);
+    console.log(`  ${pc.cyan(CMD + ' contributors')} Non-code contribution points (docs/research)`);
     console.log(`  ${pc.cyan(CMD + ' capabilities')} What tools & skills your agents can reach`);
     console.log(`  ${pc.cyan(CMD + ' learn')}        Turn what the AI wrote into a skill you can learn`);
     console.log(`  ${pc.cyan(CMD + ' watch -- <cmd>')} Observe any agent (Cursor/Aider/…) by its file changes, not its logs`);
@@ -483,6 +487,24 @@ Ratio: ~31x carbon penalty on coal-heavy grid`,
       s.stop('Audit failed');
       console.error(pc.red(e.message));
     }
+  } else if (action === 'contributors' || (action === 'status' && process.argv.includes('--contributors'))) {
+    const { getCredits, calculatePoints } = require('./credits');
+    const repoName = process.cwd().split('/').pop();
+    const credits = getCredits(os.homedir(), repoName);
+    const points = calculatePoints(credits);
+    const sorted = Object.entries(points).sort((a: any, b: any) => b[1] - a[1]);
+    
+    console.log(pc.bold('\n🏆 Non-Code Contribution Ledger'));
+    console.log(pc.dim(`Points awarded for documentation, research, and review in ${repoName}.\n`));
+    
+    if (sorted.length === 0) {
+      console.log(pc.dim('No non-code contributions recorded yet.'));
+    } else {
+      for (const [email, pts] of sorted) {
+         console.log(`${pc.cyan(String(email).padEnd(30))} ${pc.bold(pc.green(String(pts)) + ' pts')}`);
+      }
+    }
+    process.exit(0);
   } else if (action === 'authorship') {
     s.start('Scanning local git history...');
     try {
@@ -528,8 +550,10 @@ ${tokenBlock}`,
       s.stop('Audit failed');
       console.error(pc.red(e.message));
     }
-  } else if (action === 'status') {
+  } else if (action === 'status' || action === 'audit') {
     const isStrict = process.argv.includes('--strict');
+    const sinceIdx = process.argv.indexOf('--since');
+    const sinceRef = sinceIdx !== -1 ? process.argv[sinceIdx + 1] : undefined;
     
     let gitStats: any = null;
     let carbon: any = null;
@@ -598,7 +622,7 @@ ${tokenBlock}`,
 
         // 3-axis contribution profile: execution (who wrote tokens) is only one axis —
         // intent (you steer) and oversight (you review/iterate) are where human value moved.
-        const contrib = buildContribution(gitStats);
+        const contrib = buildContribution(gitStats, process.cwd(), sinceRef);
         const execAi = contrib.execution.aiPercent;
         const measured = contrib.execution.confidence === 'measured';
         // A proxy number must not look authoritative: render it dim with a ⚠, never colored.

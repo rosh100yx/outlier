@@ -19,3 +19,8 @@ Major architectural changes, especially those involving dependencies that touch 
 
 ## Modifying the Governance Model
 Changes to this `GOVERNANCE.md` require a pull request, community review period, and unanimous consent from active Maintainers.
+
+## AI Authorship & Contribution Credits
+As AI takes over code execution, human value shifts to Intent (Architecture) and Oversight (Review). 
+- **The Bouncer Pattern:** All PRs must be audited via `outlier status --since main`. Merging code with an excessively high Execution AI Share (>70%) and low Oversight will require documented justification.
+- **Credit where due:** Non-code contributions (Documentation, Research, and Architectural Review) are formally credited. Reviewers earn points, ensuring the team is rewarded for steering and reviewing, not just executing.

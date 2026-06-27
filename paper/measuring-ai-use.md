@@ -80,6 +80,8 @@ To fix this, we upgraded the instrument to use **blame-based, content-matched li
 
 > **Execution Share = (AI-authored lines that survive in HEAD) / (Total lines in the codebase)**
 
+We further isolate this measurement to the **branch or Pull Request level** (using `sinceRef`), preventing repository-wide metrics from masking localized architectural degradation.
+
 We don't guess. The CLI parses the developer's local Claude session transcripts (the `.jsonl` logs) to find the exact lines the agent generated. It hashes those lines and walks `git blame` to see how many of them actually survive in the living codebase. Trivial lines (blanks, bare brackets) are ignored.
 
 For tools that don't leave logs (like Cursor or Copilot), the CLI uses `outlier watch`. You start the watch, work with your agent, and stop the watch. The CLI brackets the session and counts the file changes. It's tool-agnostic, local-first, and gives a hard mathematical ratio of who actually wrote the code.
@@ -210,6 +212,8 @@ AI authorship share and session carbon give the state a leading indicator of AI 
 *   **Team.** An engineering lead sets team-wide guardrails.
 *   **Enterprise.** Compliance layer: "AI authorship share must not exceed 60% in production."
 *   **Regulatory.** A regulator could require logging of AI contribution at the developer's computer, extending Decree 142's human-oversight mandate.
+
+**The Bouncer Pattern & Non-Code Credits.** To integrate this into real workflows, we enforce a strict local-first Bouncer Pattern: `outlier status --since main` executes against new PRs. High AI-Execution must be met with proportional human oversight. Because human value shifts to Intent and Oversight, the framework automatically issues verifiable **Credit Points** in a local ledger for non-code contributions—such as writing documentation, architectural research, and rigorous code reviews—ensuring developers are incentivized for their systemic judgment, rather than mere execution throughput.
 
 **Tool-agnostic measurement.** GitHub is a coordination layer, not the work layer. Agents operate across IDE, terminal, orchestration, and CI/CD. The formula stays the same; only the collection point changes:
 

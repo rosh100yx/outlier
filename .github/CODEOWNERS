@@ -1,4 +1,6 @@
-*       @rosh100yx
-src/*   @rosh100yx
-data/*  @rosh100yx
-tests/* @rosh100yx
+* @rosh100yx
+/docs/ @rosh100yx
+/research/ @rosh100yx
+/paper/ @rosh100yx
+/src/observe.ts @rosh100yx
+/src/edits.ts @rosh100yx
