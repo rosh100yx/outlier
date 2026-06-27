@@ -75,10 +75,11 @@ export function deriveInsights({ authorship, carbon, caps, policyCap = 0.70 }: I
 
   // 5. Cache waste = where the money goes.
   if (cachePct !== null && cachePct > 80) {
+    const costStr = carbon && carbon.estCacheUsd > 0 ? ` (~$${carbon.estCacheUsd.toFixed(2)})` : '';
     out.push({
       severity: 'warn',
-      title: 'Most of your spend is re-sent context',
-      detail: `${cachePct.toFixed(0)}% of your tokens just re-read old context — that is most of the bill, not new work.`,
+      title: 'Context Tax is burning money',
+      detail: `${cachePct.toFixed(0)}% of your tokens just re-read old context${costStr} — that is most of the bill, not new work.`,
       action: 'Start fresh sessions for new tasks; keep context tight.',
     });
   }
