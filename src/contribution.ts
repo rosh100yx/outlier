@@ -13,6 +13,8 @@ import { execSync } from 'child_process';
 import type { AuthorshipStats } from './git';
 import { getTokenAuthorship, type TokenAuthorship } from './agentic';
 import { getEditAuthorship, type EditAuthorship } from './edits';
+import { getCredits, calculatePoints } from './credits';
+import { basename } from 'path';
 
 export interface Contribution {
   execution: {
@@ -43,6 +45,9 @@ export interface Contribution {
   label: string;
   judgment: string;
   blindSpots: string[];
+  nonCode?: {
+    points: number;
+  };
 }
 
 // Oversight = sign that a human reviews/iterates on (often AI) output, not blindly accepts it.
@@ -79,9 +84,9 @@ function getOversight(
   };
 }
 
-export function buildContribution(gitStats: AuthorshipStats | null, cwd: string = process.cwd()): Contribution {
+export function buildContribution(gitStats: AuthorshipStats | null, cwd: string = process.cwd(), sinceRef?: string): Contribution {
   const tok: TokenAuthorship = getTokenAuthorship(cwd);
-  const edits: EditAuthorship = getEditAuthorship(cwd);
+  const edits: EditAuthorship = getEditAuthorship(cwd, require('os').homedir(), sinceRef);
 
   // Execution: prefer EDIT attribution — lines an agent actually wrote to repo files,
   // measured against git's shipped additions. That is denominated in the artifact, not
@@ -131,6 +136,11 @@ export function buildContribution(gitStats: AuthorshipStats | null, cwd: string 
   const reviews = oversight.iterationRate >= 0.15;
   const steers = (intent.prompts ?? 0) >= STEER_MIN;
   let label: string, judgment: string;
+  
+  const credits = getCredits(require('os').homedir(), basename(cwd));
+  const points = Object.values(calculatePoints(credits)).reduce((a, b) => a + b, 0);
+  const nonCode = { points };
+
   // #1 Honesty gap: without edit-attribution we are blind to who actually wrote the code.
   // Do NOT assert a behavioral label (Artisan/Director/…) off the weak commit-tag proxy —
   // abstain and say so. A confident character read on a blind signal is the dishonest part.
@@ -146,6 +156,7 @@ export function buildContribution(gitStats: AuthorshipStats | null, cwd: string 
         'Copy-paste from a chat is invisible — pasted AI code looks 100% human.',
         'Whether you understood the AI code cannot be measured here.',
       ],
+      nonCode
     };
   }
   if (ai < 30 && !steers) {
@@ -177,5 +188,6 @@ export function buildContribution(gitStats: AuthorshipStats | null, cwd: string 
       'Whether you understood the AI code cannot be measured here.',
       "Oversight counts in-session revisions; an agent's own multi-step edits also count as iteration.",
     ],
+    nonCode
   };
 }

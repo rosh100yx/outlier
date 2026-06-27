@@ -64,31 +64,83 @@ function diffSnapshots(base: Map<string, Set<string>>, now: Map<string, Set<stri
   return { hashes: [...hashes], files: [...files] };
 }
 
-interface LedgerEntry { ts: string; tool: string; head: string; files: string[]; addedLines: number; hashes: string[]; }
+export interface LedgerEntry { ts: string; tool: string; head: string; branch?: string; contributorEmail?: string; files: string[]; addedLines: number; hashes: string[]; }
 
 function headSha(repoRoot: string): string {
   try { return execSync(`git -C "${repoRoot}" rev-parse --short HEAD`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); }
   catch { return ''; }
 }
 
+function currentBranch(repoRoot: string): string {
+  try { return execSync(`git -C "${repoRoot}" branch --show-current`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); }
+  catch { return ''; }
+}
+
+function currentUserEmail(repoRoot: string): string {
+  try { return execSync(`git -C "${repoRoot}" config user.email`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim().toLowerCase().replace(/^<|>$/g, ''); }
+  catch { return ''; }
+}
+
 function appendLedger(repoRoot: string, baseDir: string, tool: string, diff: { hashes: string[]; files: string[] }): number {
   if (diff.hashes.length === 0) return 0;
+  
+  const branch = currentBranch(repoRoot);
+  const contributorEmail = currentUserEmail(repoRoot);
+  
   const entry: LedgerEntry = {
     ts: new Date().toISOString(), tool, head: headSha(repoRoot),
+    branch, contributorEmail,
     files: diff.files, addedLines: diff.hashes.length, hashes: diff.hashes,
   };
   try { appendFileSync(ledgerPath(repoRoot, baseDir), JSON.stringify(entry) + '\n'); } catch {}
+  
+  // Award credits for non-code contributions
+  const { recordCredit } = require('./credits');
+  let docsFiles = 0;
+  let researchFiles = 0;
+  for (const f of diff.files) {
+    if (f.startsWith('docs/')) docsFiles++;
+    else if (f.startsWith('research/') || f.startsWith('paper/')) researchFiles++;
+  }
+  
+  if (docsFiles > 0) {
+    recordCredit({
+      repo: basename(repoRoot),
+      branch,
+      contributor: contributorEmail,
+      contributionType: 'documentation',
+      details: `Modified ${docsFiles} documentation files`,
+      points: docsFiles * 2 // 2 points per doc file changed
+    }, baseDir);
+  }
+  
+  if (researchFiles > 0) {
+    recordCredit({
+      repo: basename(repoRoot),
+      branch,
+      contributor: contributorEmail,
+      contributionType: 'research',
+      details: `Modified ${researchFiles} research/paper files`,
+      points: researchFiles * 5 // 5 points per research file changed
+    }, baseDir);
+  }
+  
   return diff.hashes.length;
 }
 
 // Public: union of all observed line hashes for this repo (the second aiSet provider).
-export function getObservedHashes(repoRoot: string, baseDir: string = homedir()): Set<string> {
+export function getObservedHashes(repoRoot: string, baseDir: string = homedir(), filterBranch?: string, filterEmail?: string): Set<string> {
   const out = new Set<string>();
   const p = ledgerPath(repoRoot, baseDir);
   let text = ''; try { text = readFileSync(p, 'utf-8'); } catch { return out; }
   for (const line of text.split('\n')) {
     if (!line.trim()) continue;
-    try { const e = JSON.parse(line); if (Array.isArray(e.hashes)) for (const h of e.hashes) out.add(h); } catch {}
+    try { 
+      const e = JSON.parse(line) as LedgerEntry; 
+      if (filterBranch && e.branch && e.branch !== filterBranch) continue;
+      if (filterEmail && e.contributorEmail && e.contributorEmail !== filterEmail) continue;
+      if (Array.isArray(e.hashes)) for (const h of e.hashes) out.add(h); 
+    } catch {}
   }
   return out;
 }

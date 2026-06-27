@@ -170,9 +170,9 @@ export function getAiLines(cwd: string = process.cwd(), baseDir: string = homedi
   return set;
 }
 
-export function getEditAuthorship(cwd: string = process.cwd(), baseDir: string = homedir()): EditAuthorship {
+export function getEditAuthorship(cwd: string = process.cwd(), baseDir: string = homedir(), sinceRef?: string, explicitRepoRoot?: string): EditAuthorship {
   const empty: EditAuthorship = { found: false, aiLines: 0, totalLines: 0, humanLines: 0, aiPercent: 0, filesTouched: 0, contributors: 0, shared: false, scopedToUser: false, sessionEdits: 0, sessionRevisions: 0 };
-  const repoRoot = repoRootOf(cwd);
+  const repoRoot = explicitRepoRoot || repoRootOf(cwd);
 
   const { lines: aiSet, files, editEvents } = buildAiLineSet(repoRoot, baseDir, cwd);
   // Union the tool-agnostic observed ledger (sessions captured via `outlier watch`), so
@@ -187,6 +187,41 @@ export function getEditAuthorship(cwd: string = process.cwd(), baseDir: string =
   const contributors = authors.length;
   const shared = contributors > 1;
   const tracked = trackedFiles(repoRoot);
+
+  if (sinceRef) {
+    let aiLines = 0, totalLines = 0;
+    const diffFiles = new Set<string>();
+    try {
+      const diffOut = execSync(`git -C "${repoRoot}" diff -U0 "${sinceRef}"...HEAD`, { stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 128 * 1024 * 1024 }).toString();
+      const lines = diffOut.split('\n');
+      let currentFile = '';
+      for (const line of lines) {
+        if (line.startsWith('+++ b/')) {
+          currentFile = line.slice(6);
+        } else if (line.startsWith('+') && !line.startsWith('+++')) {
+          if (!isCountedPath(currentFile)) continue;
+          const t = line.slice(1).trim();
+          if (!isSubstantive(t)) continue;
+          diffFiles.add(currentFile);
+          totalLines++;
+          if (aiSet.has(hashLine(t))) aiLines++;
+        }
+      }
+    } catch {}
+
+    if (totalLines === 0) return empty;
+
+    return {
+      found: true,
+      aiLines,
+      totalLines,
+      humanLines: totalLines - aiLines,
+      aiPercent: +((aiLines / totalLines) * 100).toFixed(1),
+      filesTouched: diffFiles.size,
+      contributors, shared, scopedToUser: true, // branch diff implicitly scopes to branch authors
+      sessionEdits, sessionRevisions,
+    };
+  }
 
   // Shared repo: scope to YOUR lines via blame so teammates aren't counted as "human you".
   // Only when the repo is small enough to blame quickly; otherwise fall back and flag it.

@@ -1,14 +1,13 @@
-## What does this PR do?
-<!-- Describe the problem you are solving and the solution -->
+## Outlier PR Audit
 
-## The Honesty Declaration (Required)
-*We do not ban AI code. We just require honesty. Please declare your reliance level for this PR:*
-- [ ] **Human Artisan:** 100% human-crafted code.
-- [ ] **Centaur (AI-Assisted):** Mostly human logic, AI used for syntax/boilerplate.
-- [ ] **Cybernetic (Mostly AI):** Heavy LLM generation. I managed the architecture.
+Before merging, ensure you have run the Outlier audit against the base branch to evaluate the AI usage and ensure human mastery is maintained.
 
-*Note: The Outlier Bot will audit this PR against your `Co-Authored-By` trailers.*
+- [ ] I have run `npx outlier-audit status --since main` locally.
+- [ ] The **Cognitive Budget** is within acceptable limits.
+- [ ] For heavy AI-generated PRs, I have documented my architectural choices.
+- [ ] Non-code contributions (Documentation, Research) have been properly credited.
 
-## Checklist
-- [ ] Tests pass locally (`bun test`)
-- [ ] Build succeeds (`npm run build`)
+### Summary of Changes
+
+### Outlier Profile
+<!-- Paste the output of `npx outlier-audit status --since main` here -->
