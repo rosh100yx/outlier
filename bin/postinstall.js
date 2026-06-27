@@ -19,3 +19,16 @@ console.log('');
 console.log('  Other commands:  ' + dim('outlier --help'));
 console.log(dim('  ──────────────────────────────────────────────────────────'));
 console.log('  ' + green('Local-first:') + ' nothing ever leaves your machine.\n');
+
+try {
+  const { execSync } = require('child_process');
+  const { existsSync } = require('fs');
+  const path = require('path');
+  const scriptPath = path.join(__dirname, '..', 'scripts', 'build-proxy.sh');
+  if (existsSync(scriptPath)) {
+    console.log(dim('  [Optional] Attempting to build high-performance Rust proxy...'));
+    execSync(`bash "${scriptPath}"`, { stdio: 'ignore' });
+  }
+} catch (e) {
+  // Silent fail, it's optional
+}
