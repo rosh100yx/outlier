@@ -26,6 +26,7 @@ export type Provenance = 'measured' | 'estimated' | 'proxy' | 'none';
 export interface DetectedSources {
   tools: string[];                 // tools/CLIs found on this machine
   tokenSource: { name: string; provenance: Provenance };
+  tokenSources: { name: string; provenance: Provenance }[];
   carbonSource: { name: string; provenance: Provenance };
   capabilitySource: { name: string; provenance: Provenance };
 }
@@ -112,32 +113,43 @@ export function detectSources(cwd: string = process.cwd()): DetectedSources {
   const claudeProjectDir = join(HOME, '.claude', 'projects', slug);
   const tokenomicsLog = join(HOME, '.claude', 'tokenomics-log.jsonl');
 
-  let tokenSource: DetectedSources['tokenSource'];
+  const tokenSources: { name: string; provenance: Provenance }[] = [];
 
   if (hasPath(tokenomicsLog)) {
     // Custom Stop hook: carries real cost_usd → measured cost.
-    tokenSource = { name: 'caveman tokenomics log', provenance: 'measured' };
-  } else if (hasPath(claudeProjectDir)) {
+    tokenSources.push({ name: 'caveman tokenomics log', provenance: 'measured' });
+  } 
+  if (hasPath(claudeProjectDir) && !hasPath(tokenomicsLog)) {
     // Standard transcripts: real tokens, cost estimated.
-    tokenSource = { name: 'Claude Code transcripts', provenance: 'estimated' };
-  } else if (tools.includes('ccusage')) {
-    tokenSource = { name: 'ccusage', provenance: 'estimated' };
-  } else if (hasPath(join(HOME, '.gemini', 'antigravity-cli', 'brain'))) {
+    tokenSources.push({ name: 'Claude Code transcripts', provenance: 'estimated' });
+  } 
+  if (tools.includes('ccusage')) {
+    tokenSources.push({ name: 'ccusage', provenance: 'estimated' });
+  } 
+  if (hasPath(join(HOME, '.gemini', 'antigravity-cli', 'brain'))) {
     // Gemini/Antigravity: proxy token count from JSONL transcripts.
-    tokenSource = { name: 'Gemini CLI transcripts', provenance: 'proxy' };
-  } else if (hasPath(join(HOME, '.cursor', 'ai-tracking', 'ai-code-tracking.db'))) {
+    tokenSources.push({ name: 'Gemini CLI transcripts', provenance: 'proxy' });
+  } 
+  if (hasPath(join(HOME, '.cursor', 'ai-tracking', 'ai-code-tracking.db'))) {
     // Cursor: AI code hashes / file snapshots → proxy token count.
-    tokenSource = { name: 'Cursor ai-code-tracking.db', provenance: 'proxy' };
-  } else if (hasPath(join(cwd, '.aider.chat.history.md'))) {
+    tokenSources.push({ name: 'Cursor ai-code-tracking.db', provenance: 'proxy' });
+  } 
+  if (hasPath(join(cwd, '.aider.chat.history.md'))) {
     // Aider: conversation history → proxy token count.
-    tokenSource = { name: 'Aider .aider.chat.history.md', provenance: 'proxy' };
-  } else if (hasPath(join(HOME, '.opencode', 'session'))) {
-    tokenSource = { name: 'OpenCode session logs', provenance: 'proxy' };
-  } else if (hasPath(join(HOME, '.continue', 'sessions'))) {
-    tokenSource = { name: 'Continue session logs', provenance: 'proxy' };
-  } else {
-    tokenSource = { name: 'none', provenance: 'none' };
+    tokenSources.push({ name: 'Aider .aider.chat.history.md', provenance: 'proxy' });
+  } 
+  if (hasPath(join(HOME, '.opencode', 'session'))) {
+    tokenSources.push({ name: 'OpenCode session logs', provenance: 'proxy' });
+  } 
+  if (hasPath(join(HOME, '.continue', 'sessions'))) {
+    tokenSources.push({ name: 'Continue session logs', provenance: 'proxy' });
   }
+
+  if (tokenSources.length === 0) {
+    tokenSources.push({ name: 'none', provenance: 'none' });
+  }
+
+  const tokenSource = tokenSources[0] || { name: 'none', provenance: 'none' };
 
   // ── Carbon source ──────────────────────────────────────────────────────────
   const codecarbonData = hasPath(join(cwd, 'emissions.csv')) || hasPath(join(HOME, '.codecarbon', 'emissions.csv'));
@@ -164,7 +176,7 @@ export function detectSources(cwd: string = process.cwd()): DetectedSources {
     capabilitySource = { name: 'none', provenance: 'none' };
   }
 
-  return { tools, tokenSource, carbonSource, capabilitySource };
+  return { tools, tokenSource, tokenSources, carbonSource, capabilitySource };
 }
 
 // Short label for the receipt, e.g. "estimated · Claude Code transcripts".
