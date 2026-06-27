@@ -75,21 +75,29 @@ export function findAntigravityTranscriptsForRepo(cwd: string, baseDir: string):
   let repoRoot = cwd;
   try { repoRoot = execSync(`git -C "${cwd}" rev-parse --show-toplevel`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() || cwd; } catch {}
   
-  const brainDir = join(baseDir, '.gemini', 'antigravity-cli', 'brain');
-  const matches: string[] = [];
-  let convDirs: string[] = [];
-  try { convDirs = readdirSync(brainDir); } catch { return []; }
+  // Cross-platform path matching: JSON logs on Windows might escape backslashes
+  const winRepoRoot = repoRoot.replace(/\\/g, '\\\\');
+  const unixRepoRoot = repoRoot.replace(/\\/g, '/');
 
-  for (const dir of convDirs) {
-    const jsonl = join(brainDir, dir, '.system_generated', 'logs', 'transcript.jsonl');
-    if (!existsSync(jsonl)) continue;
-    try {
-      // Check if the file is associated with this repo
-      const text = readFileSync(jsonl, 'utf-8');
-      if (text.includes(repoRoot)) {
-        matches.push(jsonl);
-      }
-    } catch { continue; }
+  const matches: string[] = [];
+  const tools = ['antigravity-cli', 'antigravity-ide'];
+
+  for (const tool of tools) {
+    const brainDir = join(baseDir, '.gemini', tool, 'brain');
+    let convDirs: string[] = [];
+    try { convDirs = readdirSync(brainDir); } catch { continue; }
+
+    for (const dir of convDirs) {
+      const jsonl = join(brainDir, dir, '.system_generated', 'logs', 'transcript.jsonl');
+      if (!existsSync(jsonl)) continue;
+      try {
+        const text = readFileSync(jsonl, 'utf-8');
+        // Check if the file is associated with this repo
+        if (text.includes(repoRoot) || text.includes(winRepoRoot) || text.includes(unixRepoRoot)) {
+          matches.push(jsonl);
+        }
+      } catch { continue; }
+    }
   }
   return matches;
 }
