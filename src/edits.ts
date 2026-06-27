@@ -32,6 +32,7 @@ import { homedir } from 'os';
 import { findRepoTranscriptDirs, findAntigravityTranscriptsForRepo } from './agentic';
 import { isSubstantive, isCountedPath, repoRootOf, hashLine } from './util';
 import { getObservedHashes } from './observe';
+import { parseAndHashAst } from './ast';
 
 export interface EditAuthorship {
   found: boolean;
@@ -61,6 +62,11 @@ function buildAiLineSet(repoRoot: string, baseDir: string, cwd: string): { lines
   const addContent = (s: any, path: string) => {
     if (typeof s !== 'string') return;
     files.add(path);
+    if (path.match(/\.(ts|js|tsx|jsx)$/)) {
+      const astHashes = parseAndHashAst(path, s);
+      for (const hash of astHashes.keys()) lines.add(hash);
+    }
+    // Always fall back to line hashing for standard tracking
     for (const raw of s.split('\n')) {
       const t = raw.trim();
       if (isSubstantive(t)) lines.add(hashLine(t));
