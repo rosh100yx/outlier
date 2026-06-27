@@ -122,9 +122,9 @@ export function detectSources(cwd: string = process.cwd()): DetectedSources {
     tokenSource = { name: 'Claude Code transcripts', provenance: 'estimated' };
   } else if (tools.includes('ccusage')) {
     tokenSource = { name: 'ccusage', provenance: 'estimated' };
-  } else if (hasPath(join(HOME, '.gemini', 'antigravity-cli', 'history.jsonl'))) {
-    // Gemini/Antigravity: prompt text only → proxy token count.
-    tokenSource = { name: 'Gemini CLI history.jsonl', provenance: 'proxy' };
+  } else if (hasPath(join(HOME, '.gemini', 'antigravity-cli', 'brain'))) {
+    // Gemini/Antigravity: proxy token count from JSONL transcripts.
+    tokenSource = { name: 'Gemini CLI transcripts', provenance: 'proxy' };
   } else if (hasPath(join(HOME, '.cursor', 'ai-tracking', 'ai-code-tracking.db'))) {
     // Cursor: AI code hashes / file snapshots → proxy token count.
     tokenSource = { name: 'Cursor ai-code-tracking.db', provenance: 'proxy' };
