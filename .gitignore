@@ -14,3 +14,4 @@ node_modules
 bin/
 outlier-audit.txt
 outlier-audit-report.jsonl
+packages/mcp-proxy/target

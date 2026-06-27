@@ -23,9 +23,9 @@ describe('insight rules engine', () => {
     expect(ins.some(i => i.title.includes('Low AI%'))).toBe(true);
   });
 
-  test('high cache flags spend on re-sent context', () => {
+  test('high cache flags spend on context tax', () => {
     const ins = deriveInsights({ authorship: git(0.3), carbon: carbon(90), caps: caps('LOW') });
-    expect(ins.some(i => i.title.toLowerCase().includes('re-sent context'))).toBe(true);
+    expect(ins.some(i => i.title.toLowerCase().includes('context tax'))).toBe(true);
   });
 
   test('clean state yields a single good insight', () => {

@@ -13,10 +13,11 @@ export interface AstNodeOwnership {
   aiPercent: number;   // 0.0 to 1.0 ownership
 }
 
-function hashStructuralNode(nodeText: string): string {
+function hashStructuralNode(nodeText: string, nodeType: string): string {
   // Normalize by stripping all whitespace and comments, to get the pure structural string
   const norm = nodeText.replace(/\s+/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '');
-  return createHash('md5').update(norm).digest('hex');
+  // Salt with nodeType to prevent generic boilerplate collisions across different syntax kinds
+  return createHash('md5').update(`${nodeType}:${norm}`).digest('hex');
 }
 
 export function parseAndHashAst(fileName: string, code: string): Map<string, AstNodeOwnership> {
@@ -45,10 +46,11 @@ export function parseAndHashAst(fileName: string, code: string): Map<string, Ast
       const text = node.getText(sourceFile);
       // Skip trivial nodes
       if (text.length > 20) {
-        const hash = hashStructuralNode(text);
+        const nodeType = ts.SyntaxKind[node.kind];
+        const hash = hashStructuralNode(text, nodeType);
         map.set(hash, {
           id: hash,
-          nodeType: ts.SyntaxKind[node.kind],
+          nodeType: nodeType,
           aiPercent: 0, // Default to 0, later evaluated by evaluator
         });
       }
