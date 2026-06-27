@@ -1,37 +1,20 @@
 // Gemini / Antigravity CLI parser.
 //
-// The Gemini CLI (antigravity) writes two readable artifacts:
-//   ~/.gemini/antigravity-cli/history.jsonl  — one JSON line per user turn
-//     { display, timestamp, workspace, conversationId? }
-//   ~/.gemini/antigravity-cli/settings.json  — contains the chosen model name
+// The Gemini CLI (antigravity) writes its readable artifacts here:
+//   ~/.gemini/antigravity-cli/brain/<conversation-id>/.system_generated/logs/transcript.jsonl
 //
-// Actual token counts are server-side only. We derive a proxy:
-//   prompt tokens  ≈ display.length / 4   (chars → tokens)
-//   output tokens  ≈ prompt tokens × 2    (responses are ~2× input for coding agents)
-// Provenance: proxy (not measured, not estimated from a token log — derived from text length).
+// We derive a proxy from the 'content' length of the JSONL logs:
+//   prompt tokens  ≈ USER_INPUT length / 4
+//   output tokens  ≈ PLANNER_RESPONSE length / 4
+// Provenance: proxy.
 
 import { homedir } from 'os';
 import { join } from 'path';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
 import type { ParseResult } from './types';
 
 function geminiDir(baseDir: string): string {
   return join(baseDir, '.gemini', 'antigravity-cli');
-}
-
-function readSettings(dir: string): { model: string } {
-  try {
-    const s = JSON.parse(readFileSync(join(dir, 'settings.json'), 'utf-8'));
-    return { model: (s.model || 'gemini').toLowerCase() };
-  } catch { return { model: 'gemini' }; }
-}
-
-// Map Gemini model display names to emission model keys.
-function geminiModelKey(raw: string): string {
-  const m = raw.toLowerCase();
-  if (m.includes('flash') || m.includes('mini')) return 'flash';
-  if (m.includes('pro') || m.includes('ultra') || m.includes('exp')) return 'gemini';
-  return 'gemini';
 }
 
 export class GeminiLogParser {
@@ -44,43 +27,64 @@ export class GeminiLogParser {
 
   async parse(): Promise<ParseResult> {
     const dir = geminiDir(this.baseDir);
-    const historyPath = join(dir, 'history.jsonl');
-    if (!existsSync(historyPath)) return empty();
-
-    let text = '';
-    try { text = readFileSync(historyPath, 'utf-8'); } catch { return empty(); }
-
-    const { model } = readSettings(dir);
-    const modelKey = geminiModelKey(model);
+    const brainDir = join(dir, 'brain');
+    if (!existsSync(brainDir)) return empty();
 
     const sessions = new Set<string>();
     let promptChars = 0;
+    let outputChars = 0;
     let turnCount = 0;
 
-    for (const line of text.split('\n')) {
-      if (!line.trim()) continue;
+    let convDirs: string[] = [];
+    try {
+      convDirs = readdirSync(brainDir);
+    } catch {
+      return empty();
+    }
+
+    for (const convId of convDirs) {
+      const convPath = join(brainDir, convId);
       try {
-        const entry = JSON.parse(line);
-        const display: string = entry.display || '';
-        promptChars += display.length;
-        turnCount++;
-        if (entry.conversationId) {
-          sessions.add(entry.conversationId);
-        } else {
-          // No conversationId: group by timestamp proximity (same session if <1h apart)
-          sessions.add(String(Math.floor((entry.timestamp || 0) / 3_600_000)));
-        }
-      } catch {}
+        if (!statSync(convPath).isDirectory()) continue;
+      } catch { continue; }
+
+      const transcriptPath = join(convPath, '.system_generated', 'logs', 'transcript.jsonl');
+      if (!existsSync(transcriptPath)) continue;
+
+      let text = '';
+      try { text = readFileSync(transcriptPath, 'utf-8'); } catch { continue; }
+
+      let sessionTurnCount = 0;
+      for (const line of text.split('\n')) {
+        if (!line.trim()) continue;
+        try {
+          const entry = JSON.parse(line);
+          const type = entry.type;
+          const content = entry.content || '';
+          
+          if (type === 'USER_INPUT') {
+            promptChars += content.length;
+            sessionTurnCount++;
+          } else if (type === 'PLANNER_RESPONSE') {
+            outputChars += content.length;
+          }
+        } catch {}
+      }
+      
+      if (sessionTurnCount > 0) {
+        turnCount += sessionTurnCount;
+        sessions.add(convId);
+      }
     }
 
     if (turnCount === 0) return empty();
 
     const promptTokens = Math.round(promptChars / 4);
-    // Coding agent responses tend to be ~2× the prompt for coding tasks.
-    const outputTokens = promptTokens * 2;
+    const outputTokens = Math.round(outputChars / 4);
     const total = promptTokens + outputTokens;
 
-    const outputByModel: Record<string, number> = { [modelKey]: outputTokens };
+    // For simplicity, just attribute it to 'gemini' 
+    const outputByModel: Record<string, number> = { 'gemini': outputTokens };
 
     return { total, output: outputTokens, cache: 0, sessions: sessions.size, cost: 0, outputByModel };
   }
