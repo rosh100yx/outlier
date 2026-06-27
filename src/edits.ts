@@ -29,7 +29,7 @@ import { execSync } from 'child_process';
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-import { findRepoTranscriptDirs } from './agentic';
+import { findRepoTranscriptDirs, findAntigravityTranscriptsForRepo } from './agentic';
 import { isSubstantive, isCountedPath, repoRootOf, hashLine } from './util';
 import { getObservedHashes } from './observe';
 
@@ -104,6 +104,33 @@ function buildAiLineSet(repoRoot: string, baseDir: string, cwd: string): { lines
       }
     }
   }
+  for (const f of findAntigravityTranscriptsForRepo(cwd, baseDir)) {
+    let text = '';
+    try { text = readFileSync(f, 'utf-8'); } catch { continue; }
+    for (const line of text.split('\n')) {
+      if (!line.trim()) continue;
+      try {
+        const d = JSON.parse(line);
+        if (d.type === 'PLANNER_RESPONSE' && d.tool_calls) {
+          for (const tc of d.tool_calls) {
+            if (!tc.args) continue;
+            const args = tc.args;
+            if (tc.name === 'write_to_file' || tc.name === 'replace_file_content' || tc.name === 'multi_replace_file_content') {
+              const path = args.TargetFile;
+              if (!path || !inRepo(path)) continue;
+              if (args.CodeContent) addContent(args.CodeContent, path);
+              if (args.ReplacementContent) addContent(args.ReplacementContent, path);
+              if (args.ReplacementChunks && Array.isArray(args.ReplacementChunks)) {
+                for (const chunk of args.ReplacementChunks) addContent(chunk.ReplacementContent, path);
+              }
+              editEvents++;
+            }
+          }
+        }
+      } catch {}
+    }
+  }
+
   return { lines, files, editEvents };
 }
 

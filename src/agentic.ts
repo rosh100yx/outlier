@@ -11,7 +11,7 @@
 // — but it captures the reality the commit count cannot.
 
 import { homedir } from 'os';
-import { join, basename } from 'path';
+import { join, basename, dirname } from 'path';
 import { readdirSync, readFileSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
 import { claudeProjectSlug } from './util';
@@ -71,10 +71,34 @@ function humanTextLen(content: any): number {
   return 0;
 }
 
+export function findAntigravityTranscriptsForRepo(cwd: string, baseDir: string): string[] {
+  let repoRoot = cwd;
+  try { repoRoot = execSync(`git -C "${cwd}" rev-parse --show-toplevel`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() || cwd; } catch {}
+  
+  const brainDir = join(baseDir, '.gemini', 'antigravity-cli', 'brain');
+  const matches: string[] = [];
+  let convDirs: string[] = [];
+  try { convDirs = readdirSync(brainDir); } catch { return []; }
+
+  for (const dir of convDirs) {
+    const jsonl = join(brainDir, dir, '.system_generated', 'logs', 'transcript.jsonl');
+    if (!existsSync(jsonl)) continue;
+    try {
+      // Check if the file is associated with this repo
+      const text = readFileSync(jsonl, 'utf-8');
+      if (text.includes(repoRoot)) {
+        matches.push(jsonl);
+      }
+    } catch { continue; }
+  }
+  return matches;
+}
+
 export function getTokenAuthorship(cwd: string = process.cwd(), baseDir: string = homedir()): TokenAuthorship {
   const empty: TokenAuthorship = { found: false, aiOutputTokens: 0, humanPromptTokens: 0, aiPercent: 0, sessions: 0, prompts: 0 };
   const dirs = findRepoTranscriptDirs(cwd, baseDir);
-  if (dirs.length === 0) return empty;
+  const agyFiles = findAntigravityTranscriptsForRepo(cwd, baseDir);
+  if (dirs.length === 0 && agyFiles.length === 0) return empty;
 
   let aiOut = 0, humanChars = 0, prompts = 0;
   const sessions = new Set<string>();
@@ -105,6 +129,44 @@ export function getTokenAuthorship(cwd: string = process.cwd(), baseDir: string 
       }
     }
   }
+
+  // Parse Antigravity files
+  for (const f of agyFiles) {
+    anyFile = true;
+    let text = '';
+    try { text = readFileSync(f, 'utf-8'); } catch { continue; }
+    
+    // Each Antigravity transcript is a unique session
+    const sessionId = basename(dirname(dirname(dirname(f))));
+    sessions.add(sessionId);
+
+    for (const line of text.split('\n')) {
+      if (!line.trim()) continue;
+      try {
+        const d = JSON.parse(line);
+        if (d.type === 'USER_INPUT' && d.content) {
+          const content = d.content;
+          // Extract the actual user text from <USER_REQUEST> tags if present
+          let userText = content;
+          const match = content.match(/<USER_REQUEST>([\s\S]*?)<\/USER_REQUEST>/);
+          if (match) userText = match[1];
+          humanChars += userText.length;
+          if (userText.trim().length > 0) prompts++;
+        } else if (d.type === 'PLANNER_RESPONSE') {
+          // Fallback proxy: length / 4 for Antigravity output tokens (since it's not logged in transcript)
+          let aiText = d.thinking || '';
+          if (d.tool_calls) {
+            aiText += JSON.stringify(d.tool_calls);
+          }
+          if (d.content) {
+             aiText += d.content;
+          }
+          aiOut += Math.round(aiText.length / CHARS_PER_TOKEN);
+        }
+      } catch {}
+    }
+  }
+
   if (!anyFile) return empty;
 
   const humanTokens = Math.round(humanChars / CHARS_PER_TOKEN);
