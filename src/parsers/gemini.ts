@@ -26,54 +26,50 @@ export class GeminiLogParser {
   }
 
   async parse(): Promise<ParseResult> {
-    const dir = geminiDir(this.baseDir);
-    const brainDir = join(dir, 'brain');
-    if (!existsSync(brainDir)) return empty();
-
     const sessions = new Set<string>();
     let promptChars = 0;
     let outputChars = 0;
     let turnCount = 0;
 
-    let convDirs: string[] = [];
-    try {
-      convDirs = readdirSync(brainDir);
-    } catch {
-      return empty();
-    }
+    const tools = ['antigravity-cli', 'antigravity-ide'];
+    for (const tool of tools) {
+      const brainDir = join(this.baseDir, '.gemini', tool, 'brain');
+      if (!existsSync(brainDir)) continue;
 
-    for (const convId of convDirs) {
-      const convPath = join(brainDir, convId);
-      try {
-        if (!statSync(convPath).isDirectory()) continue;
-      } catch { continue; }
+      let convDirs: string[] = [];
+      try { convDirs = readdirSync(brainDir); } catch { continue; }
 
-      const transcriptPath = join(convPath, '.system_generated', 'logs', 'transcript.jsonl');
-      if (!existsSync(transcriptPath)) continue;
+      for (const convId of convDirs) {
+        const convPath = join(brainDir, convId);
+        try { if (!statSync(convPath).isDirectory()) continue; } catch { continue; }
 
-      let text = '';
-      try { text = readFileSync(transcriptPath, 'utf-8'); } catch { continue; }
+        const transcriptPath = join(convPath, '.system_generated', 'logs', 'transcript.jsonl');
+        if (!existsSync(transcriptPath)) continue;
 
-      let sessionTurnCount = 0;
-      for (const line of text.split('\n')) {
-        if (!line.trim()) continue;
-        try {
-          const entry = JSON.parse(line);
-          const type = entry.type;
-          const content = entry.content || '';
-          
-          if (type === 'USER_INPUT') {
-            promptChars += content.length;
-            sessionTurnCount++;
-          } else if (type === 'PLANNER_RESPONSE') {
-            outputChars += content.length;
-          }
-        } catch {}
-      }
-      
-      if (sessionTurnCount > 0) {
-        turnCount += sessionTurnCount;
-        sessions.add(convId);
+        let text = '';
+        try { text = readFileSync(transcriptPath, 'utf-8'); } catch { continue; }
+
+        let sessionTurnCount = 0;
+        for (const line of text.split('\n')) {
+          if (!line.trim()) continue;
+          try {
+            const entry = JSON.parse(line);
+            const type = entry.type;
+            const content = entry.content || '';
+            
+            if (type === 'USER_INPUT') {
+              promptChars += content.length;
+              sessionTurnCount++;
+            } else if (type === 'PLANNER_RESPONSE') {
+              outputChars += content.length;
+            }
+          } catch {}
+        }
+        
+        if (sessionTurnCount > 0) {
+          turnCount += sessionTurnCount;
+          sessions.add(convId);
+        }
       }
     }
 

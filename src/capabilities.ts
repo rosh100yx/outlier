@@ -130,9 +130,11 @@ export async function getCapabilitiesStats(repoPath: string = process.cwd(), hom
     if (j?.mcpServers) Object.keys(j.mcpServers).forEach(k => mcpNames.add(k));
   }
   // Gemini-style MCP dir
-  const geminiMcp = join(homeDirPath, '.gemini', 'antigravity-cli', 'mcp');
-  if (existsSync(geminiMcp)) {
-    try { readdirSync(geminiMcp, { withFileTypes: true }).filter(d => d.isDirectory()).forEach(d => mcpNames.add(d.name)); } catch {}
+  for (const tool of ['antigravity-cli', 'antigravity-ide']) {
+    const geminiMcp = join(homeDirPath, '.gemini', tool, 'mcp');
+    if (existsSync(geminiMcp)) {
+      try { readdirSync(geminiMcp, { withFileTypes: true }).filter(d => d.isDirectory()).forEach(d => mcpNames.add(d.name)); } catch {}
+    }
   }
 
   const observed = observedMcpServers(repoPath, homeDirPath);

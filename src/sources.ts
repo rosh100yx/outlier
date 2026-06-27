@@ -126,9 +126,9 @@ export function detectSources(cwd: string = process.cwd()): DetectedSources {
   if (tools.includes('ccusage')) {
     tokenSources.push({ name: 'ccusage', provenance: 'estimated' });
   } 
-  if (hasPath(join(HOME, '.gemini', 'antigravity-cli', 'brain'))) {
+  if (hasPath(join(HOME, '.gemini', 'antigravity-cli', 'brain')) || hasPath(join(HOME, '.gemini', 'antigravity-ide', 'brain'))) {
     // Gemini/Antigravity: proxy token count from JSONL transcripts.
-    tokenSources.push({ name: 'Gemini CLI transcripts', provenance: 'proxy' });
+    tokenSources.push({ name: 'Gemini transcripts', provenance: 'proxy' });
   } 
   if (hasPath(join(HOME, '.cursor', 'ai-tracking', 'ai-code-tracking.db'))) {
     // Cursor: AI code hashes / file snapshots → proxy token count.
