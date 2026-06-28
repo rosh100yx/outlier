@@ -60,6 +60,7 @@ export async function runAuditCommand(_args: string[]): Promise<void> {
          require('fs').writeFileSync(configPath, JSON.stringify(cfg));
        } catch(e) {}
     }
+    s.stop('Audit complete');
   } else {
     const s = spinner();
     s.start('Running outlier telemetry audit...');
