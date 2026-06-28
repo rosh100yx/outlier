@@ -284,6 +284,7 @@ async function main() {
     if ((action === 'status' || action === 'audit' || isBare) && process.stdout.isTTY && !process.argv.includes('--json') && !process.argv.includes('--save')) {
       const { select } = require('@clack/prompts');
       const shareModule = require('./share');
+      console.log(pc.dim('\n ─── Outlier · local-first audit ── post-receipt menu'));
       while (true) {
         console.log('');
         const choice = await select({
@@ -304,12 +305,14 @@ async function main() {
         if (choice === 'share' && stats) {
           shareModule.executeShare(stats);
         } else if (choice === 'discuss' && stats) {
-          shareModule.executeDiscuss(stats);
+          await shareModule.showDiscussMenu(stats);
         } else if (choice !== 'share' && choice !== 'discuss') {
           const { spawnSync } = require('child_process');
           spawnSync(process.argv[0], [process.argv[1], String(choice)], { stdio: 'inherit' });
+          console.log(pc.dim('\n ─── back to menu ──'));
         }
       }
+      console.log(pc.dim('\n ─── Outlier session closed ── stay local.'));
     }
   } else {
     console.log(pc.red(`Unknown command: ${action}`));

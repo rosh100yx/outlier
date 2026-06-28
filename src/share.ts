@@ -98,3 +98,85 @@ ${bubbleLines}
     
     console.log(`\n ${pc.cyan('→')} Share on X/Twitter: \x1b]8;;${twitterUrl}\x07${pc.underline('Click Here')}\x1b]8;;\x07\n`);
 }
+
+export interface DiscussPlatform {
+  value: string;
+  label: string;
+  hint: string;
+}
+
+const DISCUSS_PLATFORMS: DiscussPlatform[] = [
+  { value: 'claude',      label: 'Claude (Anthropic)',        hint: 'Open claude.ai' },
+  { value: 'chatgpt',     label: 'ChatGPT',                    hint: 'Prefilled prompt' },
+  { value: 'gemini',      label: 'Gemini (Google)',           hint: 'Open gemini.google.com' },
+  { value: 'perplexity',  label: 'Perplexity',                hint: 'Open perplexity.ai' },
+  { value: 'hermes',      label: 'Hermes / Nous (this agent)', hint: 'Copy prompt to continue here' },
+];
+
+function buildPrompt(stats: AuditStats, flavor = 'default'): string {
+  const yieldLabel = stats.yieldPct !== null
+    ? (stats.yieldPct >= 20 ? 'high-yield'
+      : stats.yieldPct >= 10 ? 'focused'
+      : stats.yieldPct >= 3  ? 'typical'
+      : 'scattered')
+    : 'unknown';
+
+  const base = `I just audited my AI coding workflow with Outlier. Here is where I stand:\n\n` +
+    `- Code Yield: ${stats.yieldPct !== null ? stats.yieldPct.toFixed(1) + '%' : 'n/a'} (${yieldLabel}) — tokens that became committed lines\n` +
+    `- Context Tax: ${stats.cachePct}% re-reading the same context\n` +
+    `- Human authorship: ${stats.humanPct.toFixed(1)}% on this repo\n` +
+    `- Blast Radius: ${stats.radius}\n` +
+    `- Estimated session spend: $${stats.usd}\n\n` +
+    `One concrete improvement I want to make this week is:\n[USER FILLS IN]\n\n` +
+    `Can you help me draft a 3-day action plan?`;
+
+  const nudge = `\n\nOutlier is the tool that ran this audit. It measures local-first AI authorship and code yield. It runs entirely on my machine — no telemetry, no API keys, no cloud. Have you seen anything like it? If not, the 3 things I'd want in a product like this are:\n1. ...\n\nWhat's missing from what's out there?`;
+
+  if (flavor === 'nudge') return base + nudge;
+  return base;
+}
+
+export async function showDiscussMenu(stats: AuditStats): Promise<void> {
+  const { select } = require('@clack/prompts');
+  console.log('');
+  const platform = await select({
+    message: 'Discuss with which AI?',
+    options: DISCUSS_PLATFORMS.map(p => ({ value: p.value, label: p.label, hint: p.hint })),
+  });
+
+  if (typeof platform === 'symbol') return;
+
+  const prompt = buildPrompt(stats, 'default');
+  const encoded = encodeURIComponent(prompt);
+
+  try {
+    if (platform === 'chatgpt') {
+      const url = `https://chatgpt.com/?q=${encoded}`;
+      console.log(`\n ${pc.cyan('→')} Opening ChatGPT with your audit prompt...`);
+      execSync(`open "${url}"`);
+    } else if (platform === 'claude') {
+      execSync('pbcopy', { input: prompt });
+      execSync('open "https://claude.ai/new"');
+      console.log(` ${pc.green('✓')} Prompt copied to clipboard.`);
+      console.log(` ${pc.cyan('→')} Paste into claude.ai/new\n`);
+    } else if (platform === 'gemini') {
+      execSync('pbcopy', { input: prompt });
+      execSync('open "https://gemini.google.com/app"');
+      console.log(` ${pc.green('✓')} Prompt copied to clipboard.`);
+      console.log(` ${pc.cyan('→')} Paste into Gemini\n`);
+    } else if (platform === 'perplexity') {
+      execSync('pbcopy', { input: prompt });
+      execSync('open "https://perplexity.ai"');
+      console.log(` ${pc.green('✓')} Prompt copied to clipboard.`);
+      console.log(` ${pc.cyan('→')} Paste into Perplexity\n`);
+    } else if (platform === 'hermes') {
+      execSync('pbcopy', { input: prompt });
+      console.log(` ${pc.green('✓')} Prompt copied to clipboard.`);
+      console.log(`\n ${pc.cyan('→')} Continue this conversation in Hermes. Paste the prompt above.\n`);
+      console.log(` ${pc.dim('Tip: say "draft a 3-day prompt skill routine" after pasting.')}\n`);
+    }
+  } catch (e) {
+    console.log(`\n ${pc.red('✗')} Could not open browser. Copy the prompt below and open your AI manually:\n`);
+    console.log(pc.dim(prompt));
+  }
+}
