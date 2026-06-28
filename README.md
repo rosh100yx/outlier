@@ -245,7 +245,7 @@ The very first time you run it in a terminal, outlier shows a short welcome: wha
 Run `outlier` and pick **Share flex receipt** from the menu. It copies an anonymized ASCII receipt to your clipboard — ready to paste in Slack, Discord, or X.
 
 - **25 roast-style templates**, including news-themed quotes (token bills, AI safety, regulation).
-- **Multi-AI Discuss submenu** — pick **ChatGPT** or **Perplexity** and get a prefilled prompt that opens instantly in the browser.
+- **Multi-AI Chat** — pick **ChatGPT** or **Perplexity** and get a prefilled prompt that opens instantly in the browser.
 - **RSS-refreshing feed** — science-headline templates auto-update from HN, The Verge, TechCrunch, and MIT Tech Review (`bun scripts/refresh-quotes.ts`).
 
 ```text

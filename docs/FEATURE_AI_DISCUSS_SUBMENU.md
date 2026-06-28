@@ -1,4 +1,4 @@
-# Feature Request — Multi-AI Discuss Submenu (Growth Hack)
+# Feature Request — Multi-AI Chat (Growth Hack)
 
 **Status:** Draft  
 **Priority:** P1  
@@ -6,21 +6,21 @@
 
 ## Problem
 
-The `Discuss with AI` menu item currently opens a single hard-coded link to ChatGPT with a stock prompt:
+The `Chat with your AI` menu item currently opens a single hard-coded link to ChatGPT with a stock prompt:
 
-- **No platform choice.** Users are forced to ChatGPT; many work in Claude, Gemini, Perplexity, or Hermes.
+- **No platform choice.** Users are forced to ChatGPT; many prefer Perplexity.
 - **No retention loop.** The user clicks, chats, and the conversation with *this tool* ends. Outlier is a one-shot audit.
 - **Prompt is generic.** It does not embed the user's actual audit stats or invite them back to Outlier.
 - **Zero growth signal.** We miss the chance to plant a product nudge inside the chat every time they share.
 
 ## Solution
 
-Add a **Discuss submenu** after the user picks `🤖 Discuss with AI`:
+Add a **Chat submenu** after the user picks `💬 Chat with your AI (ChatGPT & Perplexity)`:
 
 ```
 What next?
   🔊 Share flex receipt (Anonymized ASCII)
-  🤖 Discuss with AI              ← selected
+  💬 Chat with your AI (ChatGPT & Perplexity)   ← selected
     ├─ ChatGPT
     └─ Perplexity
   Pre-flight briefing

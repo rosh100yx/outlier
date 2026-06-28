@@ -148,7 +148,7 @@ export async function showDiscussMenu(stats: AuditStats): Promise<void> {
   const { select } = require('@clack/prompts');
   console.log('');
   const platform = await select({
-    message: 'Discuss with which AI?',
+    message: 'Chat with which AI?',
     options: DISCUSS_PLATFORMS.map(p => ({ value: p.value, label: p.label, hint: p.hint })),
   });
 
