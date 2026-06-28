@@ -9,6 +9,7 @@ import { deriveInsights, type Insight } from '../insights';
 import { projectEconomics } from '../economics';
 import { configuredCap, CMD } from '../shared';
 import { closeBox } from '../receipt';
+import { promptShareAudit } from '../share';
 
 export async function runAuditCommand(_args: string[]): Promise<void> {
   const isStrict = process.argv.includes('--strict');
@@ -243,4 +244,19 @@ ${insightLines}
  ${pc.dim('└────────────────────────────────────────────────────────')}`;
 
   console.log(closeBox(finalReceipt));
+
+  const ai = contrib.execution.aiLines || 0;
+  const total = contrib.execution.totalLines || 0;
+  const human = Math.max(0, total - ai);
+  const humanPct = total > 0 ? (human / total) * 100 : 100;
+
+  await promptShareAudit({
+    aiLines: ai,
+    humanPct: humanPct,
+    tokens: newTokensStr,
+    cachePct: cachePct,
+    usd: (carbon?.estUsd || 0).toFixed(2),
+    yieldPct: yieldPct,
+    radius: reachStr
+  });
 }
