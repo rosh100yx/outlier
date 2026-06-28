@@ -9,7 +9,7 @@ import { deriveInsights, type Insight } from '../insights';
 import { projectEconomics } from '../economics';
 import { configuredCap, CMD } from '../shared';
 import { closeBox } from '../receipt';
-import { randomHeader, randomFooter } from '../animation';
+import { playNyanCatLoop } from '../animation';
 
 export async function runAuditCommand(_args: string[]): Promise<any> {
   const isStrict = process.argv.includes('--strict');
@@ -30,8 +30,9 @@ export async function runAuditCommand(_args: string[]): Promise<any> {
   }
 
   let _spinner: ReturnType<typeof spinner> | null = null;
+  let stopAnim: (() => void) | null = null;
   if (!isStrict) {
-    console.log(pc.dim(randomHeader()));
+    stopAnim = playNyanCatLoop(140) ?? null;
     const s = spinner();
     _spinner = s;
     s.start('[SYSTEM] Booting local-first sandbox...');
@@ -66,7 +67,7 @@ export async function runAuditCommand(_args: string[]): Promise<any> {
     }
     s.stop('Audit complete');
   } else {
-    console.log(pc.dim(randomHeader()));
+    stopAnim = playNyanCatLoop(140) ?? null;
     const s = spinner();
     s.start('Running outlier telemetry audit...');
     gitStats = await getAuthorshipStats().catch(() => null);
@@ -253,7 +254,7 @@ ${insightLines}
 
   if (_spinner) _spinner.stop('Audit complete');
   console.log(closeBox(finalReceipt));
-  console.log(pc.dim(randomFooter()));
+  if (stopAnim) stopAnim();
 
   const ai = contrib.execution.aiLines || 0;
   const total = contrib.execution.totalLines || 0;
