@@ -181,6 +181,28 @@ export async function runAuditCommand(_args: string[]): Promise<void> {
   };
   const cacheBar = pc.magenta(getProgressBar(parseFloat(cachePct) || 0));
 
+  // Code yield: fraction of AI output tokens that survived as committed lines.
+  // avg ~10 tokens per substantive code line (≈40 chars / 4 chars-per-token).
+  // Only computed when we have both real edit attribution AND token logs.
+  const AVG_TOKENS_PER_LINE = 10;
+  const aiLines = contrib.execution.source === 'edits' ? (contrib.execution.aiLines ?? 0) : 0;
+  const yieldPct = (carbon && carbon.outputTokens > 0 && aiLines > 0)
+    ? Math.min(100, (aiLines * AVG_TOKENS_PER_LINE / carbon.outputTokens) * 100)
+    : null;
+  const yieldLabel = yieldPct === null ? null
+    : yieldPct >= 20 ? 'high-yield'
+    : yieldPct >= 10 ? 'focused'
+    : yieldPct >= 3  ? 'typical'
+    : 'scattered';
+  const yieldColor = yieldPct === null ? pc.dim
+    : yieldPct >= 10 ? pc.green
+    : yieldPct >= 3  ? pc.yellow
+    : pc.red;
+  const yieldBar = yieldPct !== null ? yieldColor(getProgressBar(yieldPct)) : null;
+  const yieldStr = yieldPct !== null
+    ? `${yieldBar} ${yieldColor(pc.bold(yieldPct.toFixed(1) + '%'))} ${pc.dim('— ' + yieldLabel)}`
+    : pc.dim('n/a · need both token logs + edit attribution');
+
   const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
   const repoName = process.cwd().split('/').pop() || 'Unknown';
 
@@ -197,6 +219,7 @@ export async function runAuditCommand(_args: string[]): Promise<void> {
  ${pc.dim('│')} Re-read context  ${pc.bold(reReadStr)} ${pc.dim('(' + cachePct + '% of all tokens')}
  ${pc.dim('│')} Est. spend       ${pc.bold(estUsdStr)}
  ${pc.dim('│')} Re-read ratio    ${cacheBar} ${pc.bold(cachePct + '%')}
+ ${pc.dim('│')} Code yield       ${yieldStr}
  ${pc.dim('│')} Energy           ${pc.bold(co2Str)} ${pc.dim('(' + regionStr + ' grid')}
  ${pc.dim('│')} ${pc.dim('Source: ' + sourceLabel)}
  ${pc.dim('│')}

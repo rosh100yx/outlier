@@ -59,17 +59,25 @@ async function emitJson(sinceRef?: string): Promise<void> {
       provenance: 'proxy',
       note: 'commit tags are a weak proxy; byTokens + contribution reflect real agentic authorship when session logs exist',
     } : null,
-    cost: carbon ? {
-      totalTokens: carbon.totalTokens,
-      newTokens: Math.max(0, carbon.totalTokens - carbon.cacheReadTokens),
-      reReadTokens: carbon.cacheReadTokens,
-      outputTokens: carbon.outputTokens,
-      cacheReusePercent: carbon.totalTokens ? +((carbon.cacheReadTokens / carbon.totalTokens) * 100).toFixed(1) : 0,
-      estUsd: +carbon.estUsd.toFixed(2),
-      costIsReal: carbon.costIsReal,
-      provenance: carbon.tokenProvenance,
-      source: carbon.sourceLabel,
-    } : null,
+    cost: carbon ? (() => {
+      const aiLines = contrib.execution.source === 'edits' ? (contrib.execution.aiLines ?? 0) : 0;
+      const yieldPct = (carbon.outputTokens > 0 && aiLines > 0)
+        ? +Math.min(100, (aiLines * 10 / carbon.outputTokens) * 100).toFixed(1)
+        : null;
+      return {
+        totalTokens: carbon.totalTokens,
+        newTokens: Math.max(0, carbon.totalTokens - carbon.cacheReadTokens),
+        reReadTokens: carbon.cacheReadTokens,
+        outputTokens: carbon.outputTokens,
+        cacheReusePercent: carbon.totalTokens ? +((carbon.cacheReadTokens / carbon.totalTokens) * 100).toFixed(1) : 0,
+        codeYieldPct: yieldPct,
+        codeYieldLabel: yieldPct === null ? null : yieldPct >= 20 ? 'high-yield' : yieldPct >= 10 ? 'focused' : yieldPct >= 3 ? 'typical' : 'scattered',
+        estUsd: +carbon.estUsd.toFixed(2),
+        costIsReal: carbon.costIsReal,
+        provenance: carbon.tokenProvenance,
+        source: carbon.sourceLabel,
+      };
+    })() : null,
     carbon: carbon ? {
       energyKwh: +carbon.energyKwh.toFixed(4),
       co2Kg: +carbon.localCo2Kg.toFixed(4),
