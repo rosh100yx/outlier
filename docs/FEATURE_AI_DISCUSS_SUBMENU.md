@@ -21,20 +21,18 @@ Add a **Discuss submenu** after the user picks `🤖 Discuss with AI`:
 What next?
   🔊 Share flex receipt (Anonymized ASCII)
   🤖 Discuss with AI              ← selected
-    ├─ Claude
     ├─ ChatGPT
+    ├─ Claude
     ├─ Gemini
-    ├─ Perplexity
-    └─ Hermes / Nous
+    └─ Perplexity
   Pre-flight briefing
   Agent reach
   ...
 ```
 
 **Behavior by platform:**
-- **ChatGPT:** Open browser with `?q=` pre-filled prompt (audit stats + CTA).
-- **Claude / Gemini / Perplexity:** Open browser to a new-chat page + copy the template prompt to the user's clipboard + log one-line instructions.
-- **Hermes / Nous:** No URL. Log the prompt template + instructions to paste into their current Hermes session (this is the agent running the menu — encourage continuation here).
+- **ChatGPT / Gemini / Perplexity:** Open browser with a prefilled `?q=` URL so the conversation starts instantly.
+- **Claude:** Copy prompt to clipboard + open `claude.ai/new` (no reliable prefilled-URL scheme).
 
 ## Prompt Templates
 
@@ -67,20 +65,11 @@ Have you seen anything like it? If not, the 3 things I'd want in a product like 
 What's missing from what's out there?
 ```
 
-**T3 — Hook for Hermes (when user picks "Hermes / Nous"):**
-```
-Continue this conversation in Hermes. Say:
-
-  "Based on this audit [paste T1], draft a prompt-engineering routine
-   that improves my Code Yield from {{yieldPct}}% to at least 15% over 3 days."
-```
-
-## Growth Mechanics
+**T2 — Growth nudge (optional, after T1):**
 
 1. **Re-opens the chat with the user's own AI.** That is the highest-retention surface they already use.
 2. **Audit stats become social proof inside the conversation.** The user is discussing real data, not marketing copy.
 3. **Prompt templates seed product language** ("Code Yield", "Context Tax", "Blast Radius") so the concepts migrate into their private AI vocabulary.
-4. **Hermes path closes the loop.** If the user is already running Hermes, they continue here — finishing the conversation inside the same agent that ran the audit.
 
 ## Prompt Suggestions (for the user to pick)
 
@@ -89,19 +78,19 @@ We show a quick prompt picker after the platform select:
 - `"How do I improve my code yield?"` → T1
 - `"Why is my context tax so high?"` → T1 + window-management tips from assistant
 - `"Review my blast radius risk"` → T1 + tool-reach analysis
-- `"Draft a 3-day prompt skill routine"` → T3 style
+- `"Draft a 3-day prompt skill routine"` → T2 style
 - `(Custom) I'll write my own` → blank clipboard
 
 ## UI / UX Notes
 
 - Receipt-styled header: `pc.bgCyan(pc.black(' DISCUSS '))` to match the audit receipt.
-- Receipt-styled footer: `pc.cyan('→')` actions (copy prompt, open browser, run in Hermes).
+- Receipt-styled footer: `pc.cyan('→')` actions (copy prompt, open browser).
 - Colors locked to audit palette: cyan for actions, green for success, yellow for warning.
 - No new dependencies. Uses `execSync('pbcopy')` / `execSync('open')` already present in `share.ts`.
 
 ## Metrics to Track
 
-- Which platform is selected most (Claude vs ChatGPT vs Hermes).
+- Which platform is selected most (ChatGPT vs Claude vs Gemini vs Perplexity).
 - Whether the user later runs `outlier learn` or `outlier policy` (retention signal).
 - npm installs / GitHub stars from our own logs (we don't collect this; we'll infer from GitHub traffic + npm download counts).
 
