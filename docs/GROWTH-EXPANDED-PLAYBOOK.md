@@ -118,7 +118,7 @@ HN-specific:
 ### Week 3.1 — Optimization
 - [ ] Add 5 GIFs to README under "Share" showing:
   1. Audit receipt
-  2. Discuss submenu → ChatGPT/Claude/Gemini/Perplexity
+  2. Discuss submenu → ChatGPT/Perplexity
   3. `outlier watch` flow
   4. `outlier learn` flow
   5. `outlier policy` git hook install

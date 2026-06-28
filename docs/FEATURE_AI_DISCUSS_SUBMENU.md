@@ -22,8 +22,6 @@ What next?
   🔊 Share flex receipt (Anonymized ASCII)
   🤖 Discuss with AI              ← selected
     ├─ ChatGPT
-    ├─ Claude
-    ├─ Gemini
     └─ Perplexity
   Pre-flight briefing
   Agent reach
@@ -31,8 +29,7 @@ What next?
 ```
 
 **Behavior by platform:**
-- **ChatGPT / Perplexity:** Prefill the prompt via `?q=` so the conversation starts instantly.
-- **Claude / Gemini:** Copy prompt to clipboard and open a new-chat page (no reliable prefilled-URL scheme).
+- **ChatGPT / Perplexity:** Open the platform with the prompt prefilled in the URL so the conversation starts immediately, no copy/paste needed.
 
 ## Prompt Templates
 
