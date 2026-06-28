@@ -10,7 +10,7 @@ import { projectEconomics } from '../economics';
 import { configuredCap, CMD } from '../shared';
 import { closeBox } from '../receipt';
 
-export async function runAuditCommand(_args: string[]): Promise<void> {
+export async function runAuditCommand(_args: string[]): Promise<any> {
   const isStrict = process.argv.includes('--strict');
   const sinceIdx = process.argv.indexOf('--since');
   const sinceRef = sinceIdx !== -1 ? process.argv[sinceIdx + 1] : undefined;
@@ -28,29 +28,31 @@ export async function runAuditCommand(_args: string[]): Promise<void> {
      } catch(e) {}
   }
 
+  let _spinner: ReturnType<typeof spinner> | null = null;
   if (!isStrict) {
     const s = spinner();
+    _spinner = s;
     s.start('[SYSTEM] Booting local-first sandbox...');
     if (!skipDelay) await new Promise(r => setTimeout(r, 800));
-    s.message(`Governance: No API calls. Your code and logs never leave this machine.`);
+    s.message(`Securing local-only environment (zero telemetry)...`);
     if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
 
-    s.message('[GIT] Scanning your commit history...');
+    s.message('Measuring your code yield and authorship...');
+    await new Promise(r => setTimeout(r, skipDelay ? 50 : 600));
     gitStats = await getAuthorshipStats().catch(() => null);
-    if (!skipDelay) await new Promise(r => setTimeout(r, 600));
     if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
 
-    s.message('[TOKENS] Parsing local AI logs (~/.claude/)...');
+    s.message('Calculating context efficiency and token spend...');
+    await new Promise(r => setTimeout(r, skipDelay ? 50 : 600));
     carbon = await getCarbonStats().catch(() => null);
-    if (!skipDelay) await new Promise(r => setTimeout(r, 600));
     if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
 
-    s.message('[ANALYSIS] Computing mastery score...');
+    s.message('Analyzing your centaur workflow...');
+    await new Promise(r => setTimeout(r, skipDelay ? 50 : 600));
     capabilities = await getCapabilitiesStats().catch(() => null);
-    if (!skipDelay) await new Promise(r => setTimeout(r, 600));
     if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
 
-    s.message('[PRINT] Generating Thermal Receipt...');
+    s.message('Generating diagnostic receipt...');
     if (!skipDelay) await new Promise(r => setTimeout(r, 600));
 
     if (!skipDelay) {
@@ -136,6 +138,7 @@ export async function runAuditCommand(_args: string[]): Promise<void> {
   }
 
   let reachStr = pc.dim('run: ' + CMD + ' capabilities');
+  let radiusPlain = 'unknown';
   if (capabilities) {
     const rc = capabilities.blastRadius;
     const col = rc === 'CRITICAL' || rc === 'HIGH' ? pc.red : rc === 'MEDIUM' ? pc.yellow : pc.green;
@@ -144,6 +147,8 @@ export async function runAuditCommand(_args: string[]): Promise<void> {
     reachStr = `${col(pc.bold(rc))} · ${capabilities.mcps.length} tools` +
       (risky ? pc.dim(`, ${risky} can write/deploy`) : '') +
       (latent ? pc.dim(` · ${latent} unused (latent)`) : '');
+    radiusPlain = `${rc} · ${capabilities.mcps.length} tools` +
+      (risky ? `, ${risky} can write/deploy` : '');
   }
 
   const insights = deriveInsights({ authorship: gitStats, carbon, caps: capabilities, policyCap: configuredCap()/100 });
@@ -243,5 +248,21 @@ ${insightLines}
  ${pc.dim('│')} ${pc.dim(pc.italic('Run this before you start. Keep the skill while you use the speed.'))}
  ${pc.dim('└────────────────────────────────────────────────────────')}`;
 
+  if (_spinner) _spinner.stop('Audit complete');
   console.log(closeBox(finalReceipt));
+
+  const ai = contrib.execution.aiLines || 0;
+  const total = contrib.execution.totalLines || 0;
+  const humanCalc = Math.max(0, total - ai);
+  const humanPct = total > 0 ? (humanCalc / total) * 100 : 100;
+
+  return {
+    aiLines: ai,
+    humanPct: humanPct,
+    tokens: newTokensStr,
+    cachePct: cachePct,
+    usd: (carbon?.estUsd || 0).toFixed(2),
+    yieldPct: yieldPct,
+    radius: radiusPlain
+  };
 }

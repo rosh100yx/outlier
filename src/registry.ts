@@ -16,7 +16,7 @@ import { runParticipateCommand } from './commands/participate';
 import { runImpactCommand } from './commands/impact';
 import { runInitCommand } from './commands/init';
 
-export type CommandFn = (args: string[]) => Promise<void>;
+export type CommandFn = (args: string[]) => Promise<any>;
 
 export const COMMANDS: Record<string, CommandFn> = {
   hook: runHookCommand,

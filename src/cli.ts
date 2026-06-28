@@ -254,28 +254,6 @@ async function main() {
     console.log(`  ${pc.cyan(CMD + ' uninit')}       Remove that greeting`);
     console.log('\n' + pc.dim('Local-first: nothing ever leaves your machine.'));
     console.log(pc.dim('How it works → https://github.com/rosh100yx/outlier#how-it-works'));
-    if (process.stdout.isTTY) {
-      console.log('');
-      const { select } = require('@clack/prompts');
-      while (true) {
-        const choice = await select({
-          message: 'What next?',
-          options: [
-            { value: 'status', label: 'Run full audit', hint: '' },
-            { value: 'preflight', label: 'Pre-flight briefing', hint: '' },
-            { value: 'capabilities', label: 'Agent reach', hint: '' },
-            { value: 'policy', label: 'Set a limit', hint: '' },
-            { value: 'learn', label: 'Learn a skill', hint: '' },
-            { value: 'impact', label: 'Impact over time', hint: '' },
-            { value: 'exit', label: 'Exit', hint: '' },
-          ],
-        });
-        if (typeof choice === 'symbol' || choice === 'exit') break;
-        const { spawnSync } = require('child_process');
-        spawnSync(process.argv[0], [process.argv[1], String(choice)], { stdio: 'inherit' });
-        console.log('');
-      }
-    }
     process.exit(0);
   }
 
@@ -291,14 +269,48 @@ async function main() {
   }
 
   // 6. Default bare interactive → status
+  let isBare = false;
   if (!action) {
     action = 'status';
+    isBare = true;
   }
 
   // 7. Registry dispatch
   const fn = COMMANDS[action];
   if (fn) {
-    await fn(process.argv.slice(2));
+    const stats = await fn(process.argv.slice(2));
+
+    // Show consolidated menu for bare invocations (or status)
+    if ((action === 'status' || action === 'audit' || isBare) && process.stdout.isTTY && !process.argv.includes('--json') && !process.argv.includes('--save')) {
+      const { select } = require('@clack/prompts');
+      const shareModule = require('./share');
+      while (true) {
+        console.log('');
+        const choice = await select({
+          message: 'What next?',
+          options: [
+            { value: 'share', label: '📢 Share flex receipt (Anonymized ASCII)', hint: '' },
+            { value: 'discuss', label: '🤖 Discuss with AI', hint: '' },
+            { value: 'preflight', label: 'Pre-flight briefing', hint: '' },
+            { value: 'capabilities', label: 'Agent reach', hint: '' },
+            { value: 'policy', label: 'Set a limit', hint: '' },
+            { value: 'learn', label: 'Learn a skill', hint: '' },
+            { value: 'impact', label: 'Impact over time', hint: '' },
+            { value: 'exit', label: '🚪 Exit', hint: '' },
+          ],
+        });
+        if (typeof choice === 'symbol' || choice === 'exit') break;
+
+        if (choice === 'share' && stats) {
+          shareModule.executeShare(stats);
+        } else if (choice === 'discuss' && stats) {
+          shareModule.executeDiscuss(stats);
+        } else if (choice !== 'share' && choice !== 'discuss') {
+          const { spawnSync } = require('child_process');
+          spawnSync(process.argv[0], [process.argv[1], String(choice)], { stdio: 'inherit' });
+        }
+      }
+    }
   } else {
     console.log(pc.red(`Unknown command: ${action}`));
     console.log(pc.dim(`Run  ${CMD} --help  for available commands.`));
