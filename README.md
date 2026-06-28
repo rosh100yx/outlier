@@ -7,6 +7,8 @@
   
   <p>
     <a href="https://www.npmjs.com/package/outlier-audit"><img src="https://img.shields.io/npm/v/outlier-audit?style=for-the-badge&color=cb3837&logo=npm" alt="npm" /></a>
+    <a href="https://www.npmjs.com/package/outlier-audit"><img src="https://img.shields.io/npm/dm/outlier-audit?style=for-the-badge&color=cb3837&logo=npm" alt="npm downloads" /></a>
+    <a href="https://github.com/rosh100yx/outlier"><img src="https://img.shields.io/github/stars/rosh100yx/outlier?style=for-the-badge&color=ffdd57&logo=github" alt="GitHub stars" /></a>
     <a href="https://github.com/rosh100yx/outlier/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=%5BFEATURE%5D+"><img src="https://img.shields.io/badge/%E2%9C%A8_Feature_Request-Submit_an_idea-blueviolet?style=for-the-badge&logo=github" alt="Feature Request" /></a>
   </p>
   <p>
@@ -102,7 +104,6 @@ We are deliberately honest about this:
 - **Tokens, split honestly.** The headline "new tokens" is `total − cache_read`: the work actually done. For agentic sessions ~95%+ of raw tokens are cache **re-reads** (context re-sent each turn), shown separately so the cost number isn't a vanity figure. Energy is computed from output tokens only; cost discounts cache reads.
 - **Cost ($)** is exact when the log carries a cost field, otherwise a *rough* blended token estimate (labelled as such).
 - **Carbon** is a rough estimate (inference energy varies ~4–20× in the literature) and the per-region figure is a *counterfactual* — cloud inference runs on the provider's grid, not yours. Treat it as an order-of-magnitude signal, not an audit.
-
 ## Install & Use
 
 **The easy path — just run it.** One word, then a menu does the rest:
@@ -110,17 +111,42 @@ We are deliberately honest about this:
 ```bash
 npx outlier-audit          # runs the audit, then opens a guided menu
 ```
+
 ```text
-◆  What next?
-│  ● Pre-flight briefing        before you start an agent
-│  ○ Agent reach / blast radius  what your agents can touch
-│  ○ Set an AI-authorship limit  local git hook / CI
-│  ○ Impact over time · authorship · cost & carbon · research
-│  ○ Exit
-└  ↑/↓ navigate · enter select · esc to leave
+┌──────────────────────────────────────────────────────────────────┐
+│ █▀█ █░█ ▀█▀ █░░ █ █▀▀ █▀█  :: CODE AUDIT                          │
+│ █▄█ █▄█ ░█░ █▄▄ █ ██▄ █▀▄  :: my-repo · JUN 23, 2026              │
+├──────────────────────────────────────────────────────────────────┤
+│  WHAT YOUR AGENTS CAN REACH                                      │
+│ Blast radius   HIGH · 13 tools, 5 can write/deploy · 6 unused    │
+│ Full map (deploy/push/write tools): outlier capabilities         │
+├──────────────────────────────────────────────────────────────────┤
+│  WHAT IT COST                                                    │
+│ New tokens       3.1M (work done)                                │
+│ Re-read context  74M (96% of all tokens)                         │
+│ Est. spend       $18.40                                          │
+│ Re-read ratio    ▰▰▰▰▰▰▰▰▰▰ 96%                                  │
+│ Energy           0.12kg CO2 (Global Average grid)                │
+│ Source: estimated · Claude Code transcripts                      │
+├──────────────────────────────────────────────────────────────────┤
+│  YOUR LIMIT                                                      │
+│ AI cap   70% · change with: outlier policy                       │
+│ Status   Within limit · Nothing to do.                           │
+├──────────────────────────────────────────────────────────────────┤
+│ Who wrote the code · a mirror, not a verdict · outlier learn     │
+│ Execution  62% AI (blame · 5.1K of 8.2K live lines)              │
+│ Intent     240 prompts · ~180K tokens you typed                  │
+│ Oversight  64% · 18/160 rework commits · 240/380 in-session rev. │
+│                                                                  │
+│ Centaur — AI writes most of it, but you steer and review.        │
+│ Blind: copy-paste from chat is invisible; prompt quality unmeas… │
+├──────────────────────────────────────────────────────────────────┤
+│  WHAT TO DO                                                      │
+│ ⚠ Blast radius HIGH                                              │
+│   → Disable the write/deploy MCP tools you don't need now.       │
+│ → Learn what the AI wrote: outlier learn — one skill to unlock   │
+└──────────────────────────────────────────────────────────────────┘
 ```
-No commands to memorise — arrow-key through it. (Run a command directly any time, e.g.
-`npx outlier-audit capabilities`, to skip the menu.)
 
 **Want the short `outlier` command?** Install globally:
 ```bash
@@ -213,6 +239,23 @@ A reliance number can scold ("you're a Spectator") without helping. `outlier lea
 
 ### First run
 The very first time you run it in a terminal, outlier shows a short welcome: what it stands for (keep the skill while you use the speed; measure honestly; local, not surveillance), the problem it addresses, and its zero-trust principles — then asks you to set your **governance framework**: who the limit is for (Personal / Team / Enterprise) and the maximum AI-authorship share you'll allow before it flags a review (50 / 70 / 85 / 100%). That cap is saved to `~/.outlier_config` and drives the **YOUR LIMIT** line on every audit. Change it anytime with `outlier policy`. In CI / non-interactive shells the welcome is skipped (no hang) and the default 70% cap applies.
+
+## Share
+
+Run `outlier` and pick **Share flex receipt** from the menu. It copies an anonymized ASCII receipt to your clipboard — ready to paste in Slack, Discord, or X.
+
+- **25 roast-style templates**, including news-themed quotes (token bills, AI safety, regulation).
+- **Multi-AI Discuss submenu** — pick Claude, ChatGPT, Gemini, Perplexity, or Hermes/Nous and get a prefilled prompt with your live audit stats.
+- **RSS-refreshing feed** — science-headline templates auto-update from HN, The Verge, TechCrunch, and MIT Tech Review (`bun scripts/refresh-quotes.ts`).
+
+```text
+ ┌──────────────────────────────────────────────────────────────────┐
+ │ "My token bill this month could fund a junior dev.  Context: 93%"│
+ └─┬────────────────────────────────────────────────────────────────┘
+   │
+  [🤖] — Audit generated by outlier
+         Code Yield: 3.6% | Context Tax: 93.8%
+```
 
 ## Quickstart: Your First Audit
 
