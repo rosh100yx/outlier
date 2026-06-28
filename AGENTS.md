@@ -12,3 +12,8 @@
 ## Tone & Output
 - Keep the CLI output strictly "Brutalist" and "Cybernetic". Do not add emojis outside of the specific Vibe outputs. 
 - Use plain language like "Tokens Burnt vs Human Judgement", "Deskilling Risk", and "Cognitive Budget". No corporate buzzwords.
+
+## Git Workflow Law
+Never commit directly to the `main` branch. 
+When given a task, always create a new branch (e.g., `git checkout -b feat/task-name`) or a git worktree. 
+Only push the feature branch to origin, and let the user review it via Pull Request.
