@@ -117,11 +117,10 @@ export interface DiscussPlatform {
 }
 
 const DISCUSS_PLATFORMS: DiscussPlatform[] = [
-  { value: 'claude',      label: 'Claude (Anthropic)',        hint: 'Open claude.ai' },
-  { value: 'chatgpt',     label: 'ChatGPT',                    hint: 'Prefilled prompt' },
-  { value: 'gemini',      label: 'Gemini (Google)',           hint: 'Open gemini.google.com' },
-  { value: 'perplexity',  label: 'Perplexity',                hint: 'Open perplexity.ai' },
-  { value: 'hermes',      label: 'Hermes / Nous (this agent)', hint: 'Copy prompt to continue here' },
+  { value: 'chatgpt',     label: 'ChatGPT',         hint: 'Prefilled prompt in chatgpt.com' },
+  { value: 'claude',      label: 'Claude (Anthropic)', hint: 'Copy prompt + open claude.ai/new' },
+  { value: 'gemini',      label: 'Gemini (Google)',  hint: 'Prefilled prompt in gemini.google.com' },
+  { value: 'perplexity',  label: 'Perplexity',       hint: 'Prefilled prompt in perplexity.ai' },
 ];
 
 function buildPrompt(stats: AuditStats, flavor = 'default'): string {
@@ -171,20 +170,13 @@ export async function showDiscussMenu(stats: AuditStats): Promise<void> {
       console.log(` ${pc.green('✓')} Prompt copied to clipboard.`);
       console.log(` ${pc.cyan('→')} Paste into claude.ai/new\n`);
     } else if (platform === 'gemini') {
-      execSync('pbcopy', { input: prompt });
-      execSync('open "https://gemini.google.com/app"');
-      console.log(` ${pc.green('✓')} Prompt copied to clipboard.`);
-      console.log(` ${pc.cyan('→')} Paste into Gemini\n`);
+      const url = `https://gemini.google.com/app?q=${encoded}`;
+      console.log(`\n ${pc.cyan('→')} Opening Gemini with your audit prompt...`);
+      execSync(`open "${url}"`);
     } else if (platform === 'perplexity') {
-      execSync('pbcopy', { input: prompt });
-      execSync('open "https://perplexity.ai"');
-      console.log(` ${pc.green('✓')} Prompt copied to clipboard.`);
-      console.log(` ${pc.cyan('→')} Paste into Perplexity\n`);
-    } else if (platform === 'hermes') {
-      execSync('pbcopy', { input: prompt });
-      console.log(` ${pc.green('✓')} Prompt copied to clipboard.`);
-      console.log(`\n ${pc.cyan('→')} Continue this conversation in Hermes. Paste the prompt above.\n`);
-      console.log(` ${pc.dim('Tip: say "draft a 3-day prompt skill routine" after pasting.')}\n`);
+      const url = `https://www.perplexity.ai/search?q=${encoded}`;
+      console.log(`\n ${pc.cyan('→')} Opening Perplexity with your audit prompt...`);
+      execSync(`open "${url}"`);
     }
   } catch (e) {
     console.log(`\n ${pc.red('✗')} Could not open browser. Copy the prompt below and open your AI manually:\n`);
