@@ -4,7 +4,7 @@ import path from 'path';
 import pc from 'picocolors';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FRAMES_PATH = path.join(__dirname, '..', '..', '..', '..', 'Users', 'rosh100yx', 'Downloads', 'ascii-frames.json');
+const FRAMES_PATH = path.join(__dirname, 'assets', 'ascii-frames.json');
 
 let frames: string[][] = [];
 
