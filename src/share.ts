@@ -170,9 +170,10 @@ export async function showDiscussMenu(stats: AuditStats): Promise<void> {
       console.log(` ${pc.green('✓')} Prompt copied to clipboard.`);
       console.log(` ${pc.cyan('→')} Paste into claude.ai/new\n`);
     } else if (platform === 'gemini') {
-      const url = `https://gemini.google.com/app?q=${encoded}`;
-      console.log(`\n ${pc.cyan('→')} Opening Gemini with your audit prompt...`);
-      execSync(`open "${url}"`);
+      execSync('pbcopy', { input: prompt });
+      execSync('open "https://gemini.google.com/app"');
+      console.log(` ${pc.green('✓')} Prompt copied to clipboard.`);
+      console.log(` ${pc.cyan('→')} Paste into Gemini\n`);
     } else if (platform === 'perplexity') {
       const url = `https://www.perplexity.ai/search?q=${encoded}`;
       console.log(`\n ${pc.cyan('→')} Opening Perplexity with your audit prompt...`);

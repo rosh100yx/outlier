@@ -31,8 +31,8 @@ What next?
 ```
 
 **Behavior by platform:**
-- **ChatGPT / Gemini / Perplexity:** Open browser with a prefilled `?q=` URL so the conversation starts instantly.
-- **Claude:** Copy prompt to clipboard + open `claude.ai/new` (no reliable prefilled-URL scheme).
+- **ChatGPT / Perplexity:** Prefill the prompt via `?q=` so the conversation starts instantly.
+- **Claude / Gemini:** Copy prompt to clipboard and open a new-chat page (no reliable prefilled-URL scheme).
 
 ## Prompt Templates
 
