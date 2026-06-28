@@ -22,7 +22,7 @@ function extractTitles(xml: string): string[] {
   const titles: string[] = [];
   let m: RegExpExecArray | null;
   while ((m = re.exec(xml))) {
-    const raw = m[1].replace(/<!\[CDATA\[/g, '').replace(/\]\]>/g, '').trim();
+    const raw = String(m[1]).replace(/<!\[CDATA\[/g, '').replace(/\]\]>/g, '').trim();
     if (raw && raw.length > 20 && raw.length < 200) titles.push(raw);
   }
   return titles;
@@ -96,7 +96,7 @@ async function main() {
     process.exit(1);
   }
 
-  const existing = closeMatch[1];
+  const existing = String(closeMatch[1]);
   const existingEntries = existing.match(/"(.+?)"/g)?.map(s => s.slice(1, -1)) || [];
   const merged = Array.from(new Set(existingEntries.concat(newQuotes)));
   const newBlock = merged.map(q => `  "${q.replace(/"/g, '\\"')}"`).join(',\n');
