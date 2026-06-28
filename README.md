@@ -272,11 +272,11 @@ Run `outlier` and pick **Share flex receipt** from the menu. It copies an anonym
 Add your terminal captures to `assets/` and link them here:
 
 ```text
-![audit receipt](assets/screenshots/receipt.png)
-![share submenu](assets/screenshots/share.png)
-![chat submenu](assets/screenshots/chat.png)
+![audit receipt](assets/screenshots/seo-1.png)
+![share submenu](assets/screenshots/seo-2.png)
+![chat submenu](assets/screenshots/seo-3.png)
 ![wait animation](assets/screenshots/nyan-animation.gif)
-![watch + learn](assets/screenshots/watch-learn.png)
+![watch + learn](assets/screenshots/seo-5.png)
 ```
 
 ## Quickstart: Your First Audit
