@@ -9,9 +9,8 @@ import { deriveInsights, type Insight } from '../insights';
 import { projectEconomics } from '../economics';
 import { configuredCap, CMD } from '../shared';
 import { closeBox } from '../receipt';
-import { promptShareAudit } from '../share';
 
-export async function runAuditCommand(_args: string[]): Promise<void> {
+export async function runAuditCommand(_args: string[]): Promise<any> {
   const isStrict = process.argv.includes('--strict');
   const sinceIdx = process.argv.indexOf('--since');
   const sinceRef = sinceIdx !== -1 ? process.argv[sinceIdx + 1] : undefined;
@@ -53,6 +52,7 @@ export async function runAuditCommand(_args: string[]): Promise<void> {
 
     s.message('Generating diagnostic receipt...');
     if (!skipDelay) await new Promise(r => setTimeout(r, 600));
+    s.stop();
 
     if (!skipDelay) {
        try {
@@ -247,10 +247,10 @@ ${insightLines}
 
   const ai = contrib.execution.aiLines || 0;
   const total = contrib.execution.totalLines || 0;
-  const human = Math.max(0, total - ai);
-  const humanPct = total > 0 ? (human / total) * 100 : 100;
+  const humanCalc = Math.max(0, total - ai);
+  const humanPct = total > 0 ? (humanCalc / total) * 100 : 100;
 
-  await promptShareAudit({
+  return {
     aiLines: ai,
     humanPct: humanPct,
     tokens: newTokensStr,
@@ -258,5 +258,5 @@ ${insightLines}
     usd: (carbon?.estUsd || 0).toFixed(2),
     yieldPct: yieldPct,
     radius: reachStr
-  });
+  };
 }

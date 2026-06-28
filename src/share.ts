@@ -47,27 +47,12 @@ function wrapText(text: string, maxLen: number): string[] {
   return lines;
 }
 
-export async function promptShareAudit(stats: AuditStats) {
-  const answer = await select({
-    message: 'What would you like to do with this audit?',
-    options: [
-      { value: 'none', label: '🚪 Exit' },
-      { value: 'share', label: '📢 Share flex receipt (Anonymized ASCII)' },
-      { value: 'discuss', label: '🤖 Discuss with AI' }
-    ]
-  });
+export function executeDiscuss(stats: AuditStats) {
+  const chatUrl = `https://chatgpt.com/?q=${encodeURIComponent("Here is my code audit stats. My AI yield is " + (stats.yieldPct ?? "unknown") + "% and my context cache is " + stats.cachePct + "%. How do I improve my prompt efficiency?")}`;
+  console.log(`\n ${pc.cyan('→')} Discuss with ChatGPT: \x1b]8;;${chatUrl}\x07${pc.underline('Click Here')}\x1b]8;;\x07`);
+}
 
-  if (isCancel(answer) || answer === 'none') {
-    return;
-  }
-
-  if (answer === 'discuss') {
-    const chatUrl = `https://chatgpt.com/?q=${encodeURIComponent("Here is my code audit stats. My AI yield is " + (stats.yieldPct ?? "unknown") + "% and my context cache is " + stats.cachePct + "%. How do I improve my prompt efficiency?")}`;
-    console.log(`\n ${pc.cyan('→')} Discuss with ChatGPT: \x1b]8;;${chatUrl}\x07${pc.underline('Click Here')}\x1b]8;;\x07`);
-    return;
-  }
-
-  if (answer === 'share') {
+export function executeShare(stats: AuditStats) {
     const quoteTemplate = (MUSK_QUOTES[Math.floor(Math.random() * MUSK_QUOTES.length)] as string);
     const text = quoteTemplate
       .replace('{tokens}', stats.tokens)
@@ -112,5 +97,4 @@ ${bubbleLines}
     const twitterUrl = `https://twitter.com/intent/tweet?text=${twitterText}`;
     
     console.log(`\n ${pc.cyan('→')} Share on X/Twitter: \x1b]8;;${twitterUrl}\x07${pc.underline('Click Here')}\x1b]8;;\x07\n`);
-  }
 }
