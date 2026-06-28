@@ -33,25 +33,25 @@ export async function runAuditCommand(_args: string[]): Promise<void> {
     const s = spinner();
     s.start('[SYSTEM] Booting local-first sandbox...');
     if (!skipDelay) await new Promise(r => setTimeout(r, 800));
-    s.message(`Governance: No API calls. Your code and logs never leave this machine.`);
+    s.message(`Securing local-only environment (zero telemetry)...`);
     if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
 
-    s.message('[GIT] Scanning your commit history...');
+    s.message('Measuring your code yield and authorship...');
     gitStats = await getAuthorshipStats().catch(() => null);
     if (!skipDelay) await new Promise(r => setTimeout(r, 600));
     if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
 
-    s.message('[TOKENS] Parsing local AI logs (~/.claude/)...');
+    s.message('Calculating context efficiency and token spend...');
     carbon = await getCarbonStats().catch(() => null);
     if (!skipDelay) await new Promise(r => setTimeout(r, 600));
     if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
 
-    s.message('[ANALYSIS] Computing mastery score...');
+    s.message('Analyzing your centaur workflow...');
     capabilities = await getCapabilitiesStats().catch(() => null);
     if (!skipDelay) await new Promise(r => setTimeout(r, 600));
     if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
 
-    s.message('[PRINT] Generating Thermal Receipt...');
+    s.message('Generating diagnostic receipt...');
     if (!skipDelay) await new Promise(r => setTimeout(r, 600));
 
     if (!skipDelay) {
