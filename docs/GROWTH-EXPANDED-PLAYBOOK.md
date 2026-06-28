@@ -34,9 +34,7 @@ Success criteria: README renders a real receipt, package installs in <60s, paper
 - [ ] Register ORCID: https://orcid.org/register → save ID in `paper/osf-metadata.md`
 - [ ] Reserve DOI via OSF Preprints (instant, free). OSF returns DOI on upload. Copy it into:
   - `paper/measuring-ai-use.tex` `\hypersetup{doi=...}`
-  - `README.md` badge `![DOI](https://doi.org/<DOI>)`
   - `paper/osf-metadata.md`
-- [ ] Make the repo the canonical "code" link: add DOI badge to README.
 
 ### Step 1.3 — Distributions
 Priority order:
@@ -55,7 +53,7 @@ Priority order:
 3. Open PR → self-merge with `--admin` after sanity review
 4. Tag commit hash in paper/osf-metadata.md "Submitted to <server> on <date>"
 
-Success criteria: DOI appears in README + paper PDF + Zenodo release.
+Success criteria: paper PDF, Zenodo release, and ORCID are finalized.
 
 ---
 
@@ -123,7 +121,6 @@ HN-specific:
   4. `outlier watch` flow
   5. `outlier policy` git hook install
 - [ ] Create `scripts/refresh-quotes.ts` successful run → commit fresh quotes
-- [ ] Link paper DOI prominently: "Peer-reviewed methodology: OSF Preprints (DOI)"
 
 ### Week 3.2 — Submission to directories
 Submit to (use `docs/WINS.md` to track status):

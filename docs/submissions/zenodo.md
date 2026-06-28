@@ -8,12 +8,7 @@
 
 ## After setup
 - Every `git tag vX.Y.Z && git push --tags` triggers Zenodo.
-- Add the Zenodo DOI badge to README when the first release is minted.
-
-## Badge template
-```markdown
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXX)
-```
+- Releases are archived with DOI automatically.
 
 ## Notes
 - Don't enable auto-archive on pre-releases.
