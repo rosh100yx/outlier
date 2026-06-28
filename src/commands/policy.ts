@@ -34,7 +34,7 @@ export function installPolicyHook(cwd: string, maxAuthorship: number): PolicyIns
 
 OUTLIER_CMD=""
 if [ -x "${resolvedBin}" ]; then
-  OUTLIER_CMD="node ${resolvedBin}"
+  OUTLIER_CMD="node \"${resolvedBin}\""
 elif command -v outlier >/dev/null 2>&1; then
   OUTLIER_CMD="outlier"
 else
