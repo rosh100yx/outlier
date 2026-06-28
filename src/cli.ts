@@ -291,7 +291,7 @@ async function main() {
           message: 'What next?',
           options: [
             { value: 'share', label: '📢 Share flex receipt (Anonymized ASCII)', hint: '' },
-            { value: 'discuss', label: '🤖 Discuss with AI', hint: '' },
+            { value: 'discuss', label: '💬 Chat with your AI (ChatGPT & Perplexity)', hint: '' },
             { value: 'preflight', label: 'Pre-flight briefing', hint: '' },
             { value: 'capabilities', label: 'Agent reach', hint: '' },
             { value: 'policy', label: 'Set a limit', hint: '' },
