@@ -10,6 +10,7 @@
     <a href="https://www.npmjs.com/package/outlier-audit"><img src="https://img.shields.io/npm/dm/outlier-audit?style=for-the-badge&color=cb3837&logo=npm" alt="npm downloads" /></a>
     <a href="https://github.com/rosh100yx/outlier"><img src="https://img.shields.io/github/stars/rosh100yx/outlier?style=for-the-badge&color=ffdd57&logo=github" alt="GitHub stars" /></a>
     <a href="https://github.com/rosh100yx/outlier/issues/new?assignees=&labels=enhancement&template=feature_request.md&title=%5BFEATURE%5D+"><img src="https://img.shields.io/badge/%E2%9C%A8_Feature_Request-Submit_an_idea-blueviolet?style=for-the-badge&logo=github" alt="Feature Request" /></a>
+    <a href="https://doi.org/10.0000/outlier.2026.001" id="doi-badge"><img src="https://img.shields.io/badge/DOI-10.0000%2Foutlier.2026.001-blue?style=for-the-badge&logo=doi" alt="DOI badge (update after OSF upload)" /></a>
   </p>
   <p>
     <img src="https://img.shields.io/badge/Compliance-Strict-blue?style=for-the-badge" />
