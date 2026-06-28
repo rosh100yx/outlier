@@ -117,10 +117,8 @@ export interface DiscussPlatform {
 }
 
 const DISCUSS_PLATFORMS: DiscussPlatform[] = [
-  { value: 'chatgpt',     label: 'ChatGPT',         hint: 'Prefilled prompt in chatgpt.com' },
-  { value: 'claude',      label: 'Claude (Anthropic)', hint: 'Copy prompt + open claude.ai/new' },
-  { value: 'gemini',      label: 'Gemini (Google)',  hint: 'Prefilled prompt in gemini.google.com' },
-  { value: 'perplexity',  label: 'Perplexity',       hint: 'Prefilled prompt in perplexity.ai' },
+  { value: 'chatgpt',    label: 'ChatGPT',         hint: 'Prefilled chat in chatgpt.com' },
+  { value: 'perplexity', label: 'Perplexity',       hint: 'Prefilled search in perplexity.ai' },
 ];
 
 function buildPrompt(stats: AuditStats, flavor = 'default'): string {
@@ -164,16 +162,6 @@ export async function showDiscussMenu(stats: AuditStats): Promise<void> {
       const url = `https://chatgpt.com/?q=${encoded}`;
       console.log(`\n ${pc.cyan('→')} Opening ChatGPT with your audit prompt...`);
       execSync(`open "${url}"`);
-    } else if (platform === 'claude') {
-      execSync('pbcopy', { input: prompt });
-      execSync('open "https://claude.ai/new"');
-      console.log(` ${pc.green('✓')} Prompt copied to clipboard.`);
-      console.log(` ${pc.cyan('→')} Paste into claude.ai/new\n`);
-    } else if (platform === 'gemini') {
-      execSync('pbcopy', { input: prompt });
-      execSync('open "https://gemini.google.com/app"');
-      console.log(` ${pc.green('✓')} Prompt copied to clipboard.`);
-      console.log(` ${pc.cyan('→')} Paste into Gemini\n`);
     } else if (platform === 'perplexity') {
       const url = `https://www.perplexity.ai/search?q=${encoded}`;
       console.log(`\n ${pc.cyan('→')} Opening Perplexity with your audit prompt...`);
