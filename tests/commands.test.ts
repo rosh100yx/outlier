@@ -1,9 +1,10 @@
-import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
+import { describe, expect, test, beforeAll, afterAll, mock, spyOn } from 'bun:test';
 import { COMMANDS } from '../src/registry';
 import { runAuditCommand } from '../src/commands/audit';
 import { runCapabilitiesCommand } from '../src/commands/capabilities';
 import { runAuthorshipCommand } from '../src/commands/authorship';
 import { runCarbonCommand } from '../src/commands/carbon';
+import { runWatchCommand } from '../src/commands/watch';
 import { installPolicyHook } from '../src/commands/policy';
 import { join } from 'path';
 import { rmSync, mkdirSync, writeFileSync, existsSync, readFileSync } from 'fs';
@@ -50,6 +51,51 @@ describe('Command module exports', () => {
 
   test('carbon command handles missing logs gracefully', async () => {
     await expect(runCarbonCommand([])).resolves.toBeUndefined();
+  });
+});
+
+describe('runWatchCommand subcommand dispatch', () => {
+  // Intercept process.exit so tests don't terminate the runner.
+  const exits: number[] = [];
+  const logs: string[] = [];
+  let exitSpy: any;
+  let logSpy: any;
+
+  beforeAll(() => {
+    exitSpy = spyOn(process, 'exit').mockImplementation((code?: number) => { exits.push(code ?? 0); return undefined as never; });
+    logSpy = spyOn(console, 'log').mockImplementation((msg: string) => { logs.push(String(msg)); });
+  });
+
+  afterAll(() => {
+    exitSpy.mockRestore();
+    logSpy.mockRestore();
+  });
+
+  test('args[1] is read as subcommand — start branch reached', async () => {
+    exits.length = 0; logs.length = 0;
+    // args = ['watch', 'start'] — what cli.ts passes via process.argv.slice(2)
+    await runWatchCommand(['watch', 'start']);
+    expect(exits).toContain(0);
+    const out = logs.join(' ');
+    // Should mention start/observing, not "no active session"
+    expect(out).toMatch(/observing|already/i);
+  });
+
+  test('stop subcommand reached with args[1]', async () => {
+    exits.length = 0; logs.length = 0;
+    await runWatchCommand(['watch', 'stop']);
+    expect(exits).toContain(0);
+    // Either "no active session" or observed lines — both come from stop branch
+    const out = logs.join(' ');
+    expect(out).toMatch(/session|observed/i);
+  });
+
+  test('status (no subcommand) falls through correctly', async () => {
+    logs.length = 0;
+    await runWatchCommand(['watch']);
+    // No exit call for status — just a log
+    const out = logs.join(' ');
+    expect(out).toMatch(/session/i);
   });
 });
 

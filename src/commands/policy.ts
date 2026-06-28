@@ -22,7 +22,12 @@ export function installPolicyHook(cwd: string, maxAuthorship: number): PolicyIns
 
   writeFileSync(join(gitDir, 'outlier-cap'), String(maxAuthorship) + '\n');
 
-  const resolvedBin = join(dirname(dirname(require.main?.filename || __dirname || '')), 'bin', 'outlier.js');
+  // Resolve the outlier.js binary path at install-time so the generated shell hook can use it.
+  // require.main.filename is the running entry point (bin/outlier.js); go up two dirs to project root.
+  // Bun polyfills __dirname in ESM so the fallback works in dev. Empty string → shell [ -x "" ] is
+  // false, so the hook falls through to `outlier` CLI or `npx outlier-audit` gracefully.
+  const mainFile = (typeof require !== 'undefined' && require.main?.filename) || (typeof __dirname !== 'undefined' ? __dirname : '');
+  const resolvedBin = mainFile ? join(dirname(dirname(mainFile)), 'bin', 'outlier.js') : '';
   const hookContent = `#!/bin/sh
 # outlier Pre-Commit Governance Hook
 # Calls the CLI's own hook command so the check uses the measured signal (edits.ts).
