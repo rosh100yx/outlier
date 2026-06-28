@@ -23,7 +23,6 @@
 ## After upload
 1. Copy the DOI (e.g. `10.17605/OSF.IO/XXXXX`).
 2. Update:
-   - `README.md` — replace `10.0000/outlier.2026.001` with real DOI
    - `paper/osf-metadata.md` — update DOI field and log
    - `paper/measuring-ai-use.tex` — `\hypersetup{doi=...}` and citation line
 3. Commit + push.
