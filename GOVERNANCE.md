@@ -12,6 +12,7 @@ Major architectural changes, especially those involving dependencies that touch 
 - A public issue discussion for at least 72 hours.
 - A passing `tsc --noEmit` check.
 - Approval from at least two core maintainers.
+> **Current state:** Outlier is maintained by a single primary maintainer (Roshan Abraham). As the contributor base grows, this section will be updated to reflect the actual maintainer roster. Until then, the maintainer reserves final decision authority while keeping all changes public and documented.
 
 ## Contributor Roles
 - **Maintainers:** Have push access to the main branch. Responsible for reviewing PRs, enforcing the Core Tenets, and managing releases.
