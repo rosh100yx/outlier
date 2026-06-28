@@ -8,13 +8,33 @@
 \usepackage{float}
 \usepackage{enumitem}
 \usepackage{amsmath}
+\usepackage{epstopdf}
 
 \geometry{margin=1in}
 
-\title{Outlier - Measuring AI Use: A Governance Framework for Carbon, Authorship Erosion, and AI Adoption}
+% — Google Scholar / indexing metadata —
+\hypersetup{
+  pdftitle={Measuring AI Use: A Governance Framework for Carbon, Authorship Erosion, and AI Adoption},
+  pdfauthor={Roshan Abraham},
+  pdfsubject={AI Safety, Carbon Footprint, Software Engineering, Global South, Data Sovereignty},
+  pdfkeywords={AI Safety, Carbon Footprint, Software Engineering, Global South, Deskilling, Authorship Verification, Data Sovereignty, AI Governance},
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue,
+}
+\pdfinfo{
+  /Title (Measuring AI Use: A Governance Framework for Carbon, Authorship Erosion, and AI Adoption)
+  /Author (Roshan Abraham)
+  /Subject (AI Safety and Governance)
+  /Keywords (AI Safety, Carbon Footprint, Software Engineering, Global South, Deskilling, Authorship Verification, Data Sovereignty, AI Governance)
+}
+
+\title{Measuring AI Use: A Governance Framework for Carbon, Authorship Erosion, and AI Adoption}
 
 \author[1]{Roshan Abraham}
 \affil[1]{Independent Researcher and UX Design Engineer, Ho Chi Minh City, Vietnam}
+%\affil[2]{Corresponding author: \href{mailto:...}{...}}
 
 \date{22 June 2026}
 
@@ -23,13 +43,23 @@
 \maketitle
 
 \begin{abstract}
-We introduce a local-telemetry methodology to quantify the invisible externalities of AI coding assistants at the developer terminal. Although the existing literature measures the systemic risks of AI at the datacenter or organizational level, adoption of AI occurs at the individual terminal. At this intersection, two hidden costs emerge: the carbon emission of inference and the gradual dis-empowerment of the human author. We built a simple monitoring approach that tracks both. It reads the logs already sitting on the developer's machine. No new infrastructure. No data leaves the country. Why measure at the developer's computer instead of the datacenter? Because local measurement reveals a hidden geographic tax. Developers in regions with coal-heavy grids, like Vietnam, generate up to 31 times more carbon per prompt than their European counterparts. Because local measurement reveals a hidden geographic tax. Developers in regions with coal-heavy grids, such as Vietnam, generate up to 31 times more carbon per prompt than their European counterparts. Inadvertently, they pay a massive, disproportionate environmental cost just to access the same global AI tools. To prove this works, we built and deployed a live, open-source CLI instrument. We demonstrate its viability on a live repository, corroborating the high rates of AI authorship observed in public enterprise frameworks. This instrument makes both the carbon and skill costs visible at the exact moment of delegation. Why should governments care? Because AI adoption and usage monitoring gives regulators a simple, auditable signal of foreign AI dependency at three levels they already regulate: the worker (premature de-professionalization), the firm (human oversight of high-risk AI), and the nation (trade-off between foreign cloud spending and local carbon cost), all without exporting citizen data to foreign servers.
+\noindent
+AI adoption happens one person at a time: a developer at a computer asks an AI agent to write code, and in that moment two hidden costs appear. First, running the AI uses electricity and creates carbon emissions. Second, the developer gives up some of their own understanding and skill. Existing tools count the tokens and the cloud bill. They do not count the carbon footprint, and they do not count what the developer loses.
+
+We built a simple monitoring approach that tracks both. It reads the logs already sitting on the developer's machine. No new infrastructure. No data leaves the country. Why measure at the developer's computer instead of the datacenter? Because local measurement reveals a hidden geographic tax: developers in regions with coal-heavy grids, like Vietnam, generate up to 31 times more carbon per prompt than their European counterparts. They inadvertently bear a massive, disproportionate environmental cost just to access the same global AI tools.
+
+To prove this works, we built and deployed a live, open-source CLI instrument. We demonstrate its viability on a live repository, corroborating the high rates of AI authorship observed in public enterprise frameworks. This instrument makes both the carbon and skill costs visible at the exact moment of delegation. Why should governments care? Because AI adoption and usage monitoring gives regulators a simple, auditable signal of foreign AI dependency at three levels they already regulate: the worker (premature deprofessionalization), the firm (human oversight of high-risk AI), and the nation (trade-off between foreign cloud spending and local carbon cost), all without exporting citizen data to foreign servers.
+
+\vspace{0.5em}
+\noindent\textbf{Keywords.} AI Safety; Carbon Footprint; Software Engineering; Global South; Deskilling; Authorship Verification; Data Sovereignty; AI Governance
 \end{abstract}
 
 \section{Introduction}
 The usual AI safety picture is sudden: a system defects and damage follows. A quieter failure is already happening. Incremental AI improvements erode human influence over the economy, culture, and the state until that loss becomes hard to reverse---not because any system defected, but because each small act of delegation is locally rational \cite{kulveit2025gradual}.
 
-This problem is particularly acute in software engineering. A developer who asks AI to write code consumes electricity and simultaneously reduces their own engagement with the work. Existing governance frameworks treat these as separate problems. However, at the developer's computer, they are a single event. Our contributions are:
+This problem is particularly acute in software engineering. A developer who asks AI to write code consumes electricity and simultaneously reduces their own engagement with the work. Existing governance frameworks treat these as separate problems. However, at the developer's computer, they are a single event.
+
+Our contributions are:
 \begin{itemize}
     \item A methodology to measure AI's impact at the individual developer level using existing local logs.
     \item Two quantifiable indicators: the Authorship Ratio and the Session Carbon Footprint.
@@ -37,11 +67,11 @@ This problem is particularly acute in software engineering. A developer who asks
 \end{itemize}
 
 \section{Related Work}
-\textbf{Disempowerment:} Kulveit et al. (2025) argue incremental AI substitution quietly erodes human influence \cite{kulveit2025gradual}. Recent studies show that higher Generative AI confidence predicts less critical thinking, and experienced developers become slower while believing they are faster \cite{metr2025}.
+\textbf{Disempowerment.} Kulveit et al.\ (2025) argue incremental AI substitution quietly erodes human influence \cite{kulveit2025gradual}. Recent studies show that higher Generative AI confidence predicts less critical thinking, and experienced developers become slower while believing they are faster \cite{metr2025}.
 
-\textbf{Carbon:} The literature meters AI's footprint at model and datacenter scale: training energy and inference energy converging on $\sim$0.3 Wh per chat query \cite{oviedo2025energy, you2025energy}. We meter by developer, at the moment of delegation, weighted by the local power grid.
+\textbf{Carbon.} The literature meters AI's footprint at model and datacenter scale: training energy and inference energy converging on $\sim$0.3 Wh per chat query \cite{oviedo2025energy, you2025energy}. We meter by developer, at the moment of delegation, weighted by the local power grid.
 
-\textbf{Authorship:} Ecosystem trackers note fully-AI pull requests rising rapidly \cite{greptile2026}. We localize this to the individual terminal, providing an auditable proxy for human oversight.
+\textbf{Authorship.} Ecosystem trackers note fully-AI pull requests rising rapidly \cite{greptile2026}. We localize this to the individual terminal, providing an auditable proxy for human oversight.
 
 \section{Methodology}
 \subsection{Execution Share (Authorship via Line Survival)}
@@ -75,7 +105,7 @@ Aggregating the developer's Claude Code session logs yielded 2.26 billion tokens
     \item USA (384 $gCO_2/kWh$): 3.84 $kgCO_2$
     \item France (21.7 $gCO_2/kWh$): 0.22 $kgCO_2$
 \end{itemize}
-This reveals an undeniable infrastructural fact: the same AI workload produces approximately 31 times more carbon on Vietnam's grid than on France's grid. 
+This reveals an undeniable infrastructural fact: the same AI workload produces approximately 31 times more carbon on Vietnam's grid than on France's grid.
 
 \section{Socio-Economic \& Governance Implications}
 AI Authorship Ratio and Session Carbon provide the state with a leading indicator of AI dependency. For IT-export economies in the Global South, a high AI authorship share threatens premature deprofessionalization. Simultaneously, the massive carbon disparity highlights an ``imported emissions'' problem, where local infrastructure is forced to absorb the environmental cost of accessing foreign AI tools.
