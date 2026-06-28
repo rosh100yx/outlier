@@ -28,31 +28,32 @@ export async function runAuditCommand(_args: string[]): Promise<any> {
      } catch(e) {}
   }
 
+  let _spinner: ReturnType<typeof spinner> | null = null;
   if (!isStrict) {
     const s = spinner();
+    _spinner = s;
     s.start('[SYSTEM] Booting local-first sandbox...');
     if (!skipDelay) await new Promise(r => setTimeout(r, 800));
     s.message(`Securing local-only environment (zero telemetry)...`);
     if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
 
     s.message('Measuring your code yield and authorship...');
+    await new Promise(r => setTimeout(r, skipDelay ? 50 : 600));
     gitStats = await getAuthorshipStats().catch(() => null);
-    if (!skipDelay) await new Promise(r => setTimeout(r, 600));
     if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
 
     s.message('Calculating context efficiency and token spend...');
+    await new Promise(r => setTimeout(r, skipDelay ? 50 : 600));
     carbon = await getCarbonStats().catch(() => null);
-    if (!skipDelay) await new Promise(r => setTimeout(r, 600));
     if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
 
     s.message('Analyzing your centaur workflow...');
+    await new Promise(r => setTimeout(r, skipDelay ? 50 : 600));
     capabilities = await getCapabilitiesStats().catch(() => null);
-    if (!skipDelay) await new Promise(r => setTimeout(r, 600));
     if (!skipDelay) await new Promise(r => setTimeout(r, 1200));
 
     s.message('Generating diagnostic receipt...');
     if (!skipDelay) await new Promise(r => setTimeout(r, 600));
-    s.stop();
 
     if (!skipDelay) {
        try {
@@ -136,6 +137,7 @@ export async function runAuditCommand(_args: string[]): Promise<any> {
   }
 
   let reachStr = pc.dim('run: ' + CMD + ' capabilities');
+  let radiusPlain = 'unknown';
   if (capabilities) {
     const rc = capabilities.blastRadius;
     const col = rc === 'CRITICAL' || rc === 'HIGH' ? pc.red : rc === 'MEDIUM' ? pc.yellow : pc.green;
@@ -144,6 +146,8 @@ export async function runAuditCommand(_args: string[]): Promise<any> {
     reachStr = `${col(pc.bold(rc))} · ${capabilities.mcps.length} tools` +
       (risky ? pc.dim(`, ${risky} can write/deploy`) : '') +
       (latent ? pc.dim(` · ${latent} unused (latent)`) : '');
+    radiusPlain = `${rc} · ${capabilities.mcps.length} tools` +
+      (risky ? `, ${risky} can write/deploy` : '');
   }
 
   const insights = deriveInsights({ authorship: gitStats, carbon, caps: capabilities, policyCap: configuredCap()/100 });
@@ -243,6 +247,7 @@ ${insightLines}
  ${pc.dim('│')} ${pc.dim(pc.italic('Run this before you start. Keep the skill while you use the speed.'))}
  ${pc.dim('└────────────────────────────────────────────────────────')}`;
 
+  if (_spinner) _spinner.stop('Audit complete');
   console.log(closeBox(finalReceipt));
 
   const ai = contrib.execution.aiLines || 0;
@@ -257,6 +262,6 @@ ${insightLines}
     cachePct: cachePct,
     usd: (carbon?.estUsd || 0).toFixed(2),
     yieldPct: yieldPct,
-    radius: reachStr
+    radius: radiusPlain
   };
 }

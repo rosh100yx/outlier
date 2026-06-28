@@ -281,7 +281,7 @@ async function main() {
     const stats = await fn(process.argv.slice(2));
 
     // Show consolidated menu for bare invocations (or status)
-    if ((action === 'status' || isBare) && process.stdout.isTTY && !process.argv.includes('--json') && !process.argv.includes('--save')) {
+    if ((action === 'status' || action === 'audit' || isBare) && process.stdout.isTTY && !process.argv.includes('--json') && !process.argv.includes('--save')) {
       const { select } = require('@clack/prompts');
       const shareModule = require('./share');
       while (true) {
