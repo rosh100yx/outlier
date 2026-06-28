@@ -246,6 +246,7 @@ Run `outlier` and pick **Share flex receipt** from the menu. It copies an anonym
 
 - **25 roast-style templates**, including news-themed quotes (token bills, AI safety, regulation).
 - **Multi-AI Chat** — pick **ChatGPT** or **Perplexity** and get a prefilled prompt that opens instantly in the browser.
+- **Multi-platform Share submenu** — share your anonymized ASCII receipt directly to X/Twitter, Reddit, Slack/Discord, WhatsApp, Telegram, Threads, Facebook, or just copy it.
 - **RSS-refreshing feed** — science-headline templates auto-update from HN, The Verge, TechCrunch, and MIT Tech Review (`bun scripts/refresh-quotes.ts`).
 
 ```text

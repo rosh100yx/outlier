@@ -1,4 +1,4 @@
-# Feature Request — Multi-AI Chat (Growth Hack)
+# Feature Request — Multi-AI Chat + Share Submenu (Growth Hack)
 
 **Status:** Draft  
 **Priority:** P1  
@@ -30,6 +30,34 @@ What next?
 
 **Behavior by platform:**
 - **ChatGPT / Perplexity:** Open the platform with the prompt prefilled in the URL so the conversation starts immediately, no copy/paste needed.
+
+## Share Submenu
+
+Add a **Share submenu** after the user picks `📢 Share flex receipt (Anonymized ASCII)`:
+
+```
+What next?
+  🔊 Share flex receipt (Anonymized ASCII)   ← selected
+    ├─ X / Twitter
+    ├─ Reddit
+    ├─ Slack / Discord
+    ├─ WhatsApp / Telegram
+    ├─ Threads
+    ├─ Facebook
+    └─ Copy and Share link
+  💬 Chat with your AI (ChatGPT & Perplexity)
+  Pre-flight briefing
+  ...
+```
+
+**Behavior by platform:**
+- **X/Twitter:** Open tweet composer with the receipt quote prefilled.
+- **Reddit:** Open `r/LocalLLM/submit` with a title pre-filled; user pastes receipt text.
+- **Slack / Discord:** Copy the receipt ASCII to clipboard (no universal share intent).
+- **WhatsApp / Telegram:** Open the respective messenger share flow with text.
+- **Threads:** Open `threads.net/intent/post` with text.
+- **Facebook:** Open Facebook share dialog with quote text.
+- **Copy and Share link:** Copy receipt to clipboard for manual paste.
 
 ## Prompt Templates
 

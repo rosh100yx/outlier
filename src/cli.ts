@@ -303,7 +303,7 @@ async function main() {
         if (typeof choice === 'symbol' || choice === 'exit') break;
 
         if (choice === 'share' && stats) {
-          shareModule.executeShare(stats);
+          await shareModule.showShareMenu(stats);
         } else if (choice === 'discuss' && stats) {
           await shareModule.showDiscussMenu(stats);
         } else if (choice !== 'share' && choice !== 'discuss') {

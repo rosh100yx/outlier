@@ -118,9 +118,9 @@ HN-specific:
 ### Week 3.1 — Optimization
 - [ ] Add 5 GIFs to README under "Share" showing:
   1. Audit receipt
-  2. Chat submenu → ChatGPT/Perplexity
-  3. `outlier watch` flow
-  4. `outlier learn` flow
+  2. Share submenu → X/Reddit/Slack/WhatsApp/Threads/Facebook
+  3. Chat submenu → ChatGPT/Perplexity
+  4. `outlier watch` flow
   5. `outlier policy` git hook install
 - [ ] Create `scripts/refresh-quotes.ts` successful run → commit fresh quotes
 - [ ] Link paper DOI prominently: "Peer-reviewed methodology: OSF Preprints (DOI)"
