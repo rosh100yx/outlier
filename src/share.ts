@@ -12,6 +12,7 @@ export interface AuditStats {
   radius: string;
 }
 
+
 const MUSK_QUOTES = [
   "I just burnt {tokens} tokens on a typo. Am I funding Sam Altman's yacht?",
   "My AI Context Tax is {cachePct}%. I am literally paying AI to read my bad code over and over.",
@@ -27,7 +28,17 @@ const MUSK_QUOTES = [
   "Zero-trust architecture... except for the AI agent that has full read/write access to my machine.",
   "If this code breaks in production, it's not my fault. Take it up with the LLM.",
   "I used to be a Senior Engineer. Now I'm just a babysitter for a local LLM.",
-  "I need to be safer with AI agents controlling my product build... but I won't."
+  "I need to be safer with AI agents controlling my product build... but I won't.",
+  "My token bill this month could fund a junior dev. But at least the junior wouldn't re-read 93% of my context.",
+  "After the EU AI Act passed, my agent is still not compliant. Neither am I.",
+  "I watched the AI safety summit livestream while my agent wrote 400 lines I don't understand. Peak irony.",
+  "Somewhere a VC is pitching 'AI-first' while my Code Yield is 3.6% and my context cache is 93.8%.",
+  "OpenAI raised $6.6B. My repo raised {aiLines} lines of AI-authored code. We are not the same.",
+  "The copyright lawsuit says training on repos is theft. My agent just committed {aiLines} lines of exactly that.",
+  "Energy grid is maxed. Carbon intensity: high. My agent re-read the same prompt {cachePct}% of the time.",
+  "Hiring freeze for junior devs. Great, now the AI that writes 80% of the code also has no one to learn from.",
+  "I treat my AI agent like an intern: unlimited access, zero oversight, and somehow it's still the senior engineer.",
+  "The safety researcher said 'pause.' My agent said 'sure' and kept writing. The alignment problem is not the model.",
 ];
 
 function wrapText(text: string, maxLen: number): string[] {
