@@ -15,3 +15,8 @@ bin/
 outlier-audit.txt
 outlier-audit-report.jsonl
 packages/mcp-proxy/target
+
+# private strategy docs — never commit
+zero-to-one-diagnostic.*
+growth-plan*
+GROWTH-PLAN*
