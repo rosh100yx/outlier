@@ -20,3 +20,7 @@ packages/mcp-proxy/target
 zero-to-one-diagnostic.*
 growth-plan*
 GROWTH-PLAN*
+docs/GROWTH*
+docs/*-PLAN.md
+docs/submissions/
+docs/FEATURE_AI_DISCUSS_SUBMENU.md
